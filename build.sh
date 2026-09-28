@@ -107,7 +107,7 @@ load_product() {
     : "${CHIP:=x2000h}"
     : "${MEDIA:=nand}"
     : "${APP_CONFIG:=x2000_darwin_v20_5.10_nand_factory_defconfig}"
-    : "${BUILDROOT_CONFIG:=buildroot_x2000_510_wifi_common_defconfig}"
+    : "${ROOTFS_CONFIG:=buildroot_x2000_510_wifi_common_defconfig}"
     : "${KERNEL_DIR:=vendor/kernel/kernel}"
     : "${KERNEL_CONFIG:=x2000_module_base_linux_sfc_nand_defconfig}"
     : "${UBOOT_CONFIG:=x2000_base_xImage_sfc_nand}"
@@ -116,8 +116,6 @@ load_product() {
     : "${OTA:=n}"
     : "${OUTPUT_NAME:=$PRODUCT}"
 
-    export PRODUCT PRODUCT_NAME CHIP MEDIA APP_CONFIG BUILDROOT_CONFIG
-    export KERNEL_DIR KERNEL_CONFIG UBOOT_CONFIG FS_OVERLAY OTA OUTPUT_NAME JOBS
 }
 # End-func load_product
 
@@ -134,7 +132,7 @@ do_env() {
     echo "app defconfig   : $APP_CONFIG"
     echo "kernel          : $KERNEL_DIR  config=$KERNEL_CONFIG"
     echo "uboot config    : $UBOOT_CONFIG"
-    echo "buildroot cfg   : $BUILDROOT_CONFIG"
+    echo "buildroot cfg   : $ROOTFS_CONFIG"
     echo "fs overlay      : $FS_OVERLAY"
     echo "OTA             : $OTA"
     echo "toolchains dir  : $TOOLCHAINS_DIR"
@@ -143,6 +141,17 @@ do_env() {
     echo "release dir     : $BUILD_DIR/release/$OUTPUT_NAME"
 }
 # End-func do_env
+
+##
+ # @brief Map a repository-relative vendor path to its sandbox location.
+ #
+ # @note vendor/kernel/kernel -> kernel/kernel : inside build/ the vendor tree
+ #       sits at the sandbox root, without the "vendor/" prefix.
+ #
+ # @param $1 repository-relative path (e.g. vendor/kernel/kernel)
+ #
+sb_path() { printf '%s' "${1#vendor/}"; }
+# End-func sb_path
 
 ##
  # @brief Verify the source prerequisites (product conf, vendor tree).
@@ -305,21 +314,28 @@ sync_sources() {
     mkdir -p "$BUILD_DIR"
     rsync -a --exclude='/.git' "$VENDOR_DIR/" "$BUILD_DIR/"
 
-    # our product configs take precedence over the vendor ones
-    if [ -d "$CONFIGS_DIR/build" ]; then
-        info "overlaying configs/build -> build/build/configs"
-        mkdir -p "$BUILD_DIR/build/configs"
-        rsync -a "$CONFIGS_DIR/build/" "$BUILD_DIR/build/configs/"
+    # The vendor framework copies finished images into build/build/output/.
+    # Only its "all" target creates that directory, so we create it here for the
+    # single-module targets as well; a stray file with the same name (seen once
+    # after an aborted run) would make later cp calls fail, so clean it up.
+    if [ -e "$BUILD_DIR/build/output" ] && [ ! -d "$BUILD_DIR/build/output" ]; then
+        info "removing stray file build/build/output (leftover of an aborted run)"
+        rm -f "$BUILD_DIR/build/output"
     fi
-    if [ -d "$CONFIGS_DIR/buildroot" ]; then
-        info "overlaying configs/buildroot -> build/build/configs/buildroot"
-        mkdir -p "$BUILD_DIR/build/configs/buildroot"
-        rsync -a "$CONFIGS_DIR/buildroot/" "$BUILD_DIR/build/configs/buildroot/"
+    mkdir -p "$BUILD_DIR/build/output"
+
+    # our product configs take precedence over the vendor ones.
+    # configs/build/ mirrors the layout of vendor/build/ (framework files such as
+    # Config.in, and optionally configs/<name>_defconfig).
+    if [ -d "$CONFIGS_DIR/build" ]; then
+        info "overlaying configs/build -> build/build"
+        mkdir -p "$BUILD_DIR/build"
+        rsync -a "$CONFIGS_DIR/build/" "$BUILD_DIR/build/"
     fi
     if [ -d "$CONFIGS_DIR/kernel" ]; then
-        info "overlaying configs/kernel -> $KERNEL_DIR/arch/mips/configs"
-        mkdir -p "$BUILD_DIR/$KERNEL_DIR/arch/mips/configs"
-        rsync -a "$CONFIGS_DIR/kernel/" "$BUILD_DIR/$KERNEL_DIR/arch/mips/configs/"
+        info "overlaying configs/kernel -> $(sb_path "$KERNEL_DIR")/arch/mips/configs"
+        mkdir -p "$BUILD_DIR/$(sb_path "$KERNEL_DIR")/arch/mips/configs"
+        rsync -a "$CONFIGS_DIR/kernel/" "$BUILD_DIR/$(sb_path "$KERNEL_DIR")/arch/mips/configs/"
     fi
     # u-boot board table (e.g. the LPJ calibration for this board revision).
     # Our copy differs from the vendor file only in the lines we deliberately change.
@@ -376,6 +392,17 @@ do_config() {
 # End-func do_config
 
 ##
+ # @brief Run a vendor make target inside the sandbox (no sync).
+ #
+ # @param $1 vendor make target
+ #
+vendor_make_nosync() {
+    local target="$1"
+    ( cd "$BUILD_DIR/build" && make "$target" THREAD_ARG="-j$JOBS" )
+}
+# End-func vendor_make_nosync
+
+##
  # @brief Pass a vendor make target through inside the sandbox.
  #
  # @param $1 vendor make target (all, uboot, kernel, buildroot, apps, ...)
@@ -384,9 +411,50 @@ do_vendor_make() {
     local target="$1"
     sync_sources
     info "make $target (jobs=$JOBS)"
-    ( cd "$BUILD_DIR/build" && make "$target" THREAD_ARG="-j$JOBS" )
+    vendor_make_nosync "$target"
 }
 # End-func do_vendor_make
+
+##
+ # @brief Pre-build packages that later packages need at compile time.
+ #
+ # @note The vendor package order in build/product.mk builds third_party/speexdsp
+ #       AFTER libmedia, but libmedia's speex AEC devices include <speex/...>
+ #       headers that have to be installed into the buildroot staging sysroot
+ #       first. Building that one package early fixes the order without touching
+ #       any vendor file. Extend this list if a future configuration introduces
+ #       more such dependencies.
+ #
+prebuild_staging_deps() {
+    local cfg="$BUILD_DIR/build/.config.in"
+    [ -f "$cfg" ] || return 0
+    if grep -q '^APP_speexdsp=y' "$cfg"; then
+        info "pre-building third_party/speexdsp (required by libmedia speex AEC)"
+        ( cd "$BUILD_DIR/build" && make app_third_party/speexdsp THREAD_ARG="-j$JOBS" ) \
+            || die "third_party/speexdsp pre-build failed"
+    fi
+}
+# End-func prebuild_staging_deps
+
+##
+ # @brief Full build: sync, prepare, then the vendor "make all".
+ #
+ # @note Two phases: uboot + buildroot first (the latter creates the host
+ #       toolchain and the staging sysroot), then the staging dependencies,
+ #       then the vendor "all" which re-runs everything incrementally.
+ #
+do_all() {
+    sync_sources
+    info "phase 1/3: u-boot"
+    vendor_make_nosync uboot
+    info "phase 1/3: buildroot (host toolchain + staging sysroot)"
+    vendor_make_nosync buildroot
+    info "phase 2/3: staging dependencies"
+    prebuild_staging_deps
+    info "phase 3/3: vendor make all (kernel + apps + rootfs + images)"
+    vendor_make_nosync all
+}
+# End-func do_all
 
 ##
  # @brief Merge the product fs overlay into the buildroot target dir and rebuild images.
@@ -461,7 +529,7 @@ do_check() {
         load_product
         echo "  [ OK ] $PRODUCT / chip=$CHIP media=$MEDIA"
         echo "         apps=$APP_CONFIG"
-        echo "         kernel=$KERNEL_CONFIG uboot=$UBOOT_CONFIG buildroot=$BUILDROOT_CONFIG"
+        echo "         kernel=$KERNEL_CONFIG uboot=$UBOOT_CONFIG buildroot=$ROOTFS_CONFIG"
     else
         echo "  [FAIL] missing $PRODUCTS_DIR/$PRODUCT.conf"; rc=1
     fi
@@ -535,7 +603,7 @@ case "$TARGET" in
     toolchain)  do_toolchain ${TARGET_ARGS:-list} ;;
     sync)       sync_sources ;;
     config)     do_config ;;
-    all)        do_vendor_make all ;;
+    all)        do_all ;;
     uboot)      do_vendor_make uboot ;;
     kernel)     do_vendor_make kernel ;;
     buildroot)  do_vendor_make buildroot ;;

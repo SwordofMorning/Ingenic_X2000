@@ -1,0 +1,34 @@
+source product.in
+
+menuconfig APP_module_driver
+    bool "模块化驱动"
+    default y
+sub_package ../module_driver/Config.in
+endmenu
+
+sub_package ../buildroot/buildroot_patch/Config.in
+sub_package ../ota_updater/Config.in
+sub_package ../libhardware2/Config.in
+sub_package ../libmedia/Config.in
+sub_package ../libutils2/Config.in
+sub_package ../libimpf/Config.in
+sub_package ../libisp/Config.in
+sub_package ../factory_test/Config.in
+
+sub_package ../lib2d/Config.in
+
+menu "wireless(无线设备)"
+sub_package ../wireless/bcm/Config.in
+endmenu
+
+
+menu "third_party"
+sub_package ../third_party/lvgl/Config.in
+sub_package ../third_party/usb_mtp/Config.in
+sub_package ../third_party/libiniparser/Config.in
+sub_package ../third_party/alsa_aeq/Config.in
+sub_package ../third_party/speexdsp/Config.in
+sub_package ../third_party/hping3/Config.in
+sub_package ../third_party/awtk/Config.in
+endmenu
+
