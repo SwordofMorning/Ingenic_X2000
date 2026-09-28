@@ -50,7 +50,19 @@ VID="${VID:-0x18D1}"
 PID="${PID:-0x4EE1}"
 MANUFACTURER="${MANUFACTURER:-VOT}"
 PRODUCT="${PRODUCT:-VOT X2000 Board}"
-SERIALNUMBER="${SERIALNUMBER:-0123456789}"
+# Serial number: Windows keys a device instance on it, and it has to differ per
+# board (two boards with the same serial share one driver binding, and Windows
+# would reuse a cached "this device has no Microsoft OS descriptors" answer).
+# Take the WiFi MAC when it is available, so it is unique and stable.
+SERIALNUMBER="${SERIALNUMBER:-}"
+if [ -z "$SERIALNUMBER" ]; then
+    WIFI_MAC_FILE=/sys/class/net/wlan0/address
+    if [ -r "$WIFI_MAC_FILE" ]; then
+        SERIALNUMBER="X2000-$(cat "$WIFI_MAC_FILE" | tr -d ':\n')"
+    else
+        SERIALNUMBER="X2000-0123456789"
+    fi
+fi
 
 # RNDIS network: the board takes this address, and (if a udhcpd config is
 # present) also serves a lease to the host so no manual IP setup is needed.
@@ -167,6 +179,33 @@ gadget_build() {
         esac
     done
 
+    # ------------------------------------------------------------------
+    # Microsoft OS descriptors. Without them Windows has no way of knowing
+    # that the interface group with class 0xE0/0x01/0x03 inside this class-0xEF
+    # composite device is RNDIS: it binds MTP (matched by its still-image
+    # class) and leaves the RNDIS interface without any driver. With the
+    # "RNDIS" / "5162001" compatible ID Windows loads its built-in RNDIS driver
+    # by itself, no INF file to install on the host.
+    #
+    # The kernel only serves these descriptors when the gadget sets
+    # use/b_vendor_code/qw_sign AND os_desc/ contains a symlink to the
+    # configuration (os_desc_link() in drivers/usb/gadget/configfs.c). All of
+    # them are copied into the composite device at bind time, so they must be
+    # in place before "$g/UDC" is written.
+    #
+    # Windows reads them once per device instance, so after changing anything
+    # here the cable has to be replugged; unique serial numbers (above) make
+    # Windows treat the board as a new device instead of reusing its cache.
+    # ------------------------------------------------------------------
+    echo 1        > "$g/os_desc/use"
+    echo 0xcd     > "$g/os_desc/b_vendor_code"
+    echo "MSFT100" > "$g/os_desc/qw_sign"
+    if [ -d "$g/functions/rndis.usb0/os_desc/interface.rndis" ]; then
+        echo "RNDIS"   > "$g/functions/rndis.usb0/os_desc/interface.rndis/compatible_id"
+        echo "5162001" > "$g/functions/rndis.usb0/os_desc/interface.rndis/sub_compatible_id"
+    fi
+    [ -e "$g/os_desc/c.1" ] || ln -s "$g/configs/c.1" "$g/os_desc/c.1"
+
     echo "$g"
 }
 # End-func gadget_build
@@ -257,6 +296,14 @@ status() {
     done
     echo "--- network ---"
     ifconfig usb0 2>/dev/null | head -3
+    echo "--- RNDIS ---"
+    if [ -d "$USB_GADGET/$GADGET_NAME/functions/rndis.usb0" ]; then
+        local d="$USB_GADGET/$GADGET_NAME"
+        echo "os_desc: use=$(cat "$d/os_desc/use" 2>/dev/null) sign=$(cat "$d/os_desc/qw_sign" 2>/dev/null) config-links=$(ls -1 "$d/os_desc/" 2>/dev/null | grep -c '^c\.')"
+        echo "compatible id: $(cat "$d/functions/rndis.usb0/os_desc/interface.rndis/compatible_id" 2>/dev/null)"
+        echo "host traffic on usb0: rx=$(cat /sys/class/net/usb0/statistics/rx_packets 2>/dev/null) tx=$(cat /sys/class/net/usb0/statistics/tx_packets 2>/dev/null) packets"
+        echo "(rx stays 0 until the host has bound its RNDIS driver and sent something)"
+    fi
     echo "--- processes ---"
     ps | grep -E "umtprd|udhcpd" | grep -v grep
 }

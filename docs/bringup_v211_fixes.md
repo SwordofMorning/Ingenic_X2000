@@ -291,3 +291,81 @@ S60WiFi {start|stop|restart|status|scan|connect <ssid> [pwd]|reconnect|ap <ssid>
    要不要改成 `getty`+`login`（同样的账号口令）属于取舍：改了更像"出场配置"，
    但一旦口令对不上就只能重新烧录；不改则拿得到串口就能进系统。等确认。
 
+## 14. 第六轮：Windows 认不出 RNDIS（MS OS 描述符）+ USB 口确认
+
+### 14.1 现象
+
+Windows 能读到 MTP（资源管理器里出现设备），但设备管理器/网络适配器里没有 RNDIS，
+板子上 `usb0` 的 rx/tx 包数一直是 0（主机一个包都没发过来）。
+
+### 14.2 根因：面描述符里没有 Microsoft OS 描述符
+
+gadget 是 class `0xEF/0x02/0x01`（IAD）的复合设备，两个功能对 Windows 的意义完全不同：
+
+- MTP 接口是 class `0x06/0x01/0x01`（Still Imaging）→ Windows 有自带驱动，仅凭类别就能绑定，
+  所以 MTP 一直是好的（这也解释了"只有 MTP 能用"）；
+- RNDIS 接口组是 class `0xE0/0x01/0x03` → 在**复合设备**里 Windows 不会只凭类别去挂 netrndis.inf，
+  必须由设备通过 Microsoft OS 描述符明确告诉它"这个接口就是 RNDIS"。
+
+板端实测（修改前）：`functions/rndis.usb0/os_desc/interface.rndis/compatible_id` 为空、
+gadget 的 `os_desc/{use,b_vendor_code,qw_sign}` 全 0、`os_desc/` 下没有指向配置的软链，
+也就是内核根本没有对外提供这些描述符。
+
+内核依据（`vendor/kernel/kernel/drivers/usb/gadget/`）：
+
+- `function/f_rndis.c` 调 `usb_os_desc_prepare_interf_dir()`，所以 configfs 里天然存在
+  `functions/rndis.usb0/os_desc/interface.rndis/`；但 compatible id 默认是全 0
+  （`rndis_ext_compat_id` 没有默认值），必须由用户写；
+- `configfs.c: os_desc_link()` 要求 `os_desc/` 里有一条指向某个 config 的软链，
+  且该 config 必须已经在 `cdev->configs` 里（`mkdir configs/c.1` 时就通过
+  `usb_add_config_only()` 注册了，所以顺序是：建 config → 建软链）；
+- `configfs_composite_bind()` 在 bind 时把 `use_os_string/b_vendor_code/qw_sign` 抄进
+  composite device，并把 RNDIS 的 compatible id 编进 Extended Compat ID 描述符，
+  所以这几项和软链必须在写 `UDC` **之前**就位。
+
+### 14.3 修法（都在 `fs_overlay/common/etc/init.d/S70USB`）
+
+```sh
+echo 1        > "$g/os_desc/use"
+echo 0xcd     > "$g/os_desc/b_vendor_code"
+echo "MSFT100" > "$g/os_desc/qw_sign"
+echo "RNDIS"   > "$g/functions/rndis.usb0/os_desc/interface.rndis/compatible_id"
+echo "5162001" > "$g/functions/rndis.usb0/os_desc/interface.rndis/sub_compatible_id"
+ln -s "$g/configs/c.1" "$g/os_desc/c.1"
+```
+
+顺带修掉两个同源问题：
+
+1. **序列号不再写死**：原来固定 `0123456789`。Windows 用序列号区分设备实例，写死会有两个后果：
+   两块板子互相顶掉同一个驱动绑定；以及 Windows 复用"这台设备没有 MS OS 描述符"的缓存，
+   于是描述符改了也不生效。现在用 `X2000-<wlan0 MAC>`（唯一且稳定，读不到时退回固定值）。
+2. **主机拿不到 IP**：`S70USB` 本来就会在 `usb0` 上起 udhcpd，但镜像里一直缺少
+   `/etc/udhcpd_usb.conf`，那个分支从没执行过，Windows 只能退到 169.254.x.x。
+   新增 `fs_overlay/common/etc/udhcpd_usb.conf`：板子仍是 `192.168.8.168/24`，
+   主机从 `192.168.8.100-149` 领地址（网段里刻意避开板子地址）。
+3. `S70USB status` 增加 RNDIS 段：os_desc 状态 / compatible id / usb0 的 rx·tx 包数，
+   用来一眼判断"主机到底有没有挂上 RNDIS 驱动"。rx 长期为 0 = 主机没挂驱动或没发包。
+
+### 14.4 Windows 侧验证与清理
+
+- 设备管理器 → 网络适配器：应出现 **Remote NDIS Compatible Device**；
+- `ipconfig`：RNDIS 网卡应拿到 `192.168.8.x`；`ping 192.168.8.168` 应通（板子）；
+- 若之前残留过"未知设备"或旧实例：设备管理器里勾选"显示隐藏的设备"，把该设备（含旧的
+  MTP 实例）卸载后重新插拔——换了序列号后 Windows 会当成新设备重新读描述符；
+- 兜底方案（不依赖 MS OS 描述符）：在 Windows 上手动安装内核自带的
+  `Documentation/usb/linux.inf`，或直接给 RNDIS 网卡配静态 IP `192.168.8.50/24`；
+- 板端自查：`/etc/init.d/S70USB status`。
+
+### 14.5 USB 口确认（"是烧录口还是 Type-C 供电口"）
+
+- 厂商《x2000H_Darwin_v2.0 开发板快速上手说明》第 5 节原文：
+  "上 **TYPE_C_USB_Power** 接口，给开发板供电。然后再使用 **Micro_USB&Download** 接口
+  接上 usb 数据线进行烧录使用"；进烧录模式是"按住 BOOT_KEY，再按 RST_KEY 松开"。
+  即：**Type-C 只供电，Micro-USB&Download 才是数据/烧录口**。
+- 结论：Windows 能认到 MTP，就说明数据线插在 **Micro-USB&Download** 口上——Type-C 口没有数据线，
+  插在那里什么都不会枚举（板子上也不会有任何 USB 设备控制器活动）。
+- 板端佐证：`/sys/class/udc/` 下只有一个 UDC `13500000.otg`（dwc2），它同时就是 ROM 下载用的那路 OTG；
+  本次操作时状态为 `configured`，dmesg 里有 `new device is high-speed` 与 `new address 21`，
+  说明是主机侧正常枚举的。
+
+

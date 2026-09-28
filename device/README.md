@@ -88,3 +88,20 @@ cat /etc/init.d/S4*wifi*         # 无线启动脚本
   仍失败就 `/usr/sbin/sshd -e -d` 前台运行看具体报错。
   第四轮（SSH 起不来）的排查过程见 `docs/bringup_v211_fixes.md` 第 12 节，口令实现见第 13 节。
 
+## 7. USB 直连：MTP 与 RNDIS
+
+- 两个 USB 口别插错：**Type-C = 只供电**，**Micro-USB&Download = 数据/烧录口**
+  （厂商《x2000H Darwin v2.0 快速上手》第 5 节）。进烧录模式：按住 BOOT_KEY，再按一下 RST_KEY 后松手。
+- **MTP**（插上即用）：Windows 资源管理器里出现设备（名字 `VOT X2000 Board`），存储就是可写的
+  `/usr/data`（ubi 数据分区）。不需要装驱动，也不需要 INF。
+- **RNDIS**（USB 网卡，板子是 `192.168.8.168/24`）：
+  - Windows 侧应出现 "Remote NDIS Compatible Device"（设备管理器 → 网络适配器）；
+    `ipconfig` 会拿到 `192.168.8.100-149`（板子的 udhcpd 分配），`ping 192.168.8.168` 应通。
+  - 认不到时：设备管理器勾"显示隐藏的设备"，卸载"未知设备"/旧实例后再插拔（换过序列号的板子
+    会被当成新设备重新读描述符）；兜底可给该网卡配静态 IP `192.168.8.50/24`，
+    或安装内核自带的 `Documentation/usb/linux.inf`。
+  - 板端自查：`/etc/init.d/S70USB status`（会打印 os_desc 状态、compatible id 与 usb0 的 rx/tx 包数；
+    rx 长期为 0 说明主机还没挂上 RNDIS 驱动）。
+- 为什么以前只有 MTP 能用、RNDIS 认不到：见 `docs/bringup_v211_fixes.md` 第 14 节（缺 Microsoft OS 描述符）。
+
+
