@@ -452,19 +452,11 @@ fs_overlay_apply() {
     load_product
     local target_dir="$BUILD_DIR/buildroot/buildroot/output/target"
     [ -d "$target_dir" ] || return 0
-    local ov n
-    for ov in $FS_OVERLAY; do
-        local d="$REPO_ROOT/$ov"
-        if [ -d "$d" ]; then
-            n="$(find "$d" -type f ! -name prune.txt ! -name extra-libs.txt | wc -l)"
-            info "fs overlay: $ov ($n files)"
-            rsync -a --exclude='prune.txt' --exclude='extra-libs.txt' "$d/" "$target_dir/"
-        else
-            echo "  [warn] overlay dir missing: $d"
-        fi
-    done
-
-    # Optional removal list per layer (fs_overlay/<layer>/prune.txt): paths,
+    # Stale paths first, then the overlay: buildroot never uninstalls anything,
+    # so a disabled option or package leaves its files behind in the persistent
+    # output/target (seen with awtk, adb, the vendor factory test and the vendor
+    # SSH layout). Removing them before the copy also means our own files win.
+    # Removal list per layer (fs_overlay/<layer>/prune.txt): paths,
     # relative to the rootfs, that must NOT be in the image. Needed because
     # buildroot never uninstalls anything: a package that is disabled in a new
     # configuration leaves its files behind in the persistent output/target
@@ -481,6 +473,18 @@ fs_overlay_apply() {
             fi
         done < "$pf"
     done
+    local ov n
+    for ov in $FS_OVERLAY; do
+        local d="$REPO_ROOT/$ov"
+        if [ -d "$d" ]; then
+            n="$(find "$d" -type f ! -name prune.txt ! -name extra-libs.txt | wc -l)"
+            info "fs overlay: $ov ($n files)"
+            rsync -a --exclude='prune.txt' --exclude='extra-libs.txt' "$d/" "$target_dir/"
+        else
+            echo "  [warn] overlay dir missing: $d"
+        fi
+    done
+
 }
 # End-func fs_overlay_apply
 
@@ -520,93 +524,38 @@ copy_extra_libs() {
 # End-func copy_extra_libs
 
 ##
- # @brief Build the UBIFS and UBI root filesystem images from the target tree.
+ # @brief Pack all root filesystem images from the current target tree.
  #
- # @note Same reasoning as repack_rootfs(): the vendor post-build script runs
- #       inside buildroot's target-finalize, so the overlay has to be merged
- #       after buildroot has finished and the images are then rebuilt here. The
- #       geometry and compression are read from the buildroot configuration, so
- #       this stays in sync when the NAND geometry changes.
+ # @note Runs under fakeroot, exactly like buildroot does it, because ownership
+ #       matters: the sshd/dbus accounts come from buildroot's users table and
+ #       daemons check ownership (openssh aborts when its privilege separation
+ #       directory is not root-owned). Packing without fakeroot produced images
+ #       where every file belonged to the build user and the sshd account was
+ #       missing entirely, which is why sshd never started on the board.
  #
-build_ubi_images() {
+ # @note The packing has to happen here rather than through buildroot's own
+ #       image targets: the vendor post-build script runs inside buildroot's
+ #       target-finalize and would remove the files we merge from fs_overlay/.
+ #
+pack_images() {
     local br="$BUILD_DIR/buildroot/buildroot"
-    local cfg="$br/.config" host="$br/output/host" tdir="$br/output/target" img="$br/output/images"
-    local leb minio maxleb peb comp ucfg
+    local script="$SCRIPTS_DIR/pack_images.sh"
+    local fake="$br/output/host/bin/fakeroot"
 
-    [ -f "$cfg" ] || return 0
-    grep -q '^BR2_TARGET_ROOTFS_UBIFS=y' "$cfg" || return 0
-    [ -x "$host/sbin/mkfs.ubifs" ] || { echo "  [warn] host mkfs.ubifs missing, skip UBIFS"; return 0; }
+    [ -x "$script" ] || die "packing script missing: $script"
+    [ -x "$fake" ] || fake="$(command -v fakeroot || true)"
+    [ -n "$fake" ] || die "fakeroot not available (needed for correct image ownership)"
 
-    leb="$(sed -n 's/^BR2_TARGET_ROOTFS_UBIFS_LEBSIZE=//p' "$cfg" | head -1)"
-    minio="$(sed -n 's/^BR2_TARGET_ROOTFS_UBIFS_MINIOSIZE=//p' "$cfg" | head -1)"
-    maxleb="$(sed -n 's/^BR2_TARGET_ROOTFS_UBIFS_MAXLEBCNT=//p' "$cfg" | head -1)"
-    peb="$(sed -n 's/^BR2_TARGET_ROOTFS_UBI_PEBSIZE=//p' "$cfg" | head -1)"
-    comp="lzo"
-    grep -q '^BR2_TARGET_ROOTFS_UBIFS_RT_LZO=y' "$cfg" || comp="zlib"
+    info "packing root filesystem images under fakeroot"
+    env BR_DIR="$br" JOBS="$JOBS" "$fake" -- /bin/sh "$script"
 
-    info "building rootfs.ubifs (leb=$leb minio=$minio maxleb=$maxleb comp=$comp)"
-    "$host/sbin/mkfs.ubifs" -d "$tdir" -e "$leb" -c "$maxleb" -m "$minio" -x "$comp" \
-        -o "$img/rootfs.ubifs" >/dev/null || { echo "  [warn] mkfs.ubifs failed"; return 0; }
-
-    if grep -q '^BR2_TARGET_ROOTFS_UBI=y' "$cfg" && [ -x "$host/sbin/ubinize" ]; then
-        ucfg="$BUILD_DIR/ubinize.cfg"
-        {
-            echo "[ubifs]"
-            echo "mode=ubi"
-            echo "vol_id=0"
-            echo "vol_type=dynamic"
-            echo "vol_name=rootfs"
-            echo "vol_alignment=1"
-            echo "vol_flags=autoresize"
-            echo "image=$img/rootfs.ubifs"
-        } > "$ucfg"
-        info "building rootfs.ubi (peb=$peb)"
-        "$host/sbin/ubinize" -o "$img/rootfs.ubi" -m "$minio" -p "$peb" "$ucfg" >/dev/null \
-            || echo "  [warn] ubinize failed"
-    fi
-
-    cp -f "$img/rootfs.ubifs" "$BUILD_DIR/build/output/" 2>/dev/null
-    [ -f "$img/rootfs.ubi" ] && cp -f "$img/rootfs.ubi" "$BUILD_DIR/build/output/" 2>/dev/null
-    info "rootfs images refreshed: $(du -h "$img/rootfs.ubifs" | cut -f1) ubifs$([ -f "$img/rootfs.ubi" ] && echo ", $(du -h "$img/rootfs.ubi" | cut -f1) ubi")"
+    local f
+    for f in rootfs.squashfs rootfs.ubifs rootfs.ubi; do
+        [ -f "$br/output/images/$f" ] && cp -f "$br/output/images/$f" "$BUILD_DIR/build/output/"
+    done
+    info "images refreshed: $(du -h "$BUILD_DIR/build/output"/rootfs.* 2>/dev/null | awk '{printf "%s ", $1}')"
 }
-# End-func build_ubi_images
-
-##
- # @brief Pack the root filesystem image from the current target tree.
- #
- # @note Why we pack it ourselves: buildroot runs the vendor post-build script
- #       inside its target-finalize step, so a file we merge into output/target
- #       BEFORE the last buildroot pass can be deleted again by the vendor
- #       rootfs_config logic (this happened to our umtprd.conf). Therefore the
- #       overlay is merged after the last buildroot pass and the image is
- #       regenerated here with the same arguments buildroot itself would use.
- #
-repack_rootfs() {
-    local br="$BUILD_DIR/buildroot/buildroot"
-    local tdir="$br/output/target"
-    local images="$br/output/images"
-    local mk="$br/output/host/bin/mksquashfs"
-    local comp="lzo" extra=""
-
-    [ -d "$tdir" ] || { echo "  [warn] buildroot target dir missing, skip repack"; return 0; }
-    [ -x "$mk" ]   || { echo "  [warn] host mksquashfs missing, skip repack"; return 0; }
-
-    if [ -f "$br/.config" ]; then
-        if   grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_LZ4=y'  "$br/.config"; then comp="lz4"; extra="-Xhc"
-        elif grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_LZO=y'  "$br/.config"; then comp="lzo"
-        elif grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_LZMA=y' "$br/.config"; then comp="lzma"
-        elif grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_XZ=y'   "$br/.config"; then comp="xz"
-        elif grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_ZSTD=y' "$br/.config"; then comp="zstd"
-        else comp="gzip"; fi
-    fi
-
-    info "repacking rootfs.squashfs (-comp $comp)"
-    # shellcheck disable=SC2086
-    "$mk" "$tdir" "$images/rootfs.squashfs" -noappend -processors "$JOBS" -comp "$comp" $extra >/dev/null
-    cp -f "$images/rootfs.squashfs" "$BUILD_DIR/build/output/"
-    info "build/build/output/rootfs.squashfs refreshed ($(du -h "$images/rootfs.squashfs" | cut -f1))"
-}
-# End-func repack_rootfs
+# End-func pack_images
 
 ##
  # @brief Apply the product configuration inside the sandbox if needed.
@@ -638,14 +587,32 @@ ensure_config() {
 # End-func ensure_config
 
 ##
- # @brief Full build: sync, configure, prepare, vendor "make all", overlay, repack.
+ # @brief Rebuild the board root filesystem only (overlay + images).
  #
- # @note Phase 0 applies the product defconfig (idempotent), phase 1 builds u-boot
- #       and buildroot (the latter creates the host toolchain and the staging
- #       sysroot), phase 2 pre-builds packages whose headers later packages need,
- #       phase 3 runs the vendor "all" (kernel + apps + rootfs + images),
- #       phase 4 runs the final buildroot pass, merges the product filesystem
- #       overlay and repacks the rootfs image.
+ # @note Useful while iterating on fs_overlay/ content: it re-merges the overlay,
+ #       applies the removal list and extra libraries and repacks every image,
+ #       without touching u-boot, the kernel or the applications.
+ #
+do_fs() {
+    sync_sources
+    load_product
+    local target_dir="$BUILD_DIR/buildroot/buildroot/output/target"
+    [ -d "$target_dir" ] || die "buildroot target dir not found ($target_dir); run ./build.sh all first"
+    fs_overlay_apply
+    copy_extra_libs
+    pack_images
+}
+# End-func do_fs
+
+##
+ # @brief Full build: configure, build, overlay, pack.
+ #
+ # @note Phase 0 applies the product defconfig (idempotent), phase 1 builds
+ #       u-boot and buildroot (the latter creates the host toolchain and the
+ #       staging sysroot), phase 2 pre-builds packages whose headers later
+ #       packages need, phase 3 runs the vendor "all" (kernel + apps + rootfs +
+ #       images), phase 4 runs the final buildroot pass, merges the product
+ #       filesystem overlay and packs the images under fakeroot.
  #
 do_all() {
     sync_sources
@@ -659,29 +626,13 @@ do_all() {
     prebuild_staging_deps
     info "phase 3/4: vendor make all (kernel + apps + rootfs + images)"
     vendor_make_nosync all
-    info "phase 4/4: final buildroot pass, product overlay, rootfs repack"
+    info "phase 4/4: final buildroot pass, product overlay, image packing"
     vendor_make_nosync buildroot
     fs_overlay_apply
     copy_extra_libs
-    repack_rootfs
-    build_ubi_images
+    pack_images
 }
 # End-func do_all
-
-##
- # @brief Rebuild the board root filesystem with the product overlay applied.
- #
-do_fs() {
-    sync_sources
-    load_product
-    local target_dir="$BUILD_DIR/buildroot/buildroot/output/target"
-    [ -d "$target_dir" ] || die "buildroot target dir not found ($target_dir); run ./build.sh all first"
-    fs_overlay_apply
-    copy_extra_libs
-    repack_rootfs
-    build_ubi_images
-}
-# End-func do_fs
 
 ##
  # @brief Collect flashable artifacts into build/release/<product>/.

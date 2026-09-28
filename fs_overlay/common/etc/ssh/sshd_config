@@ -1,0 +1,37 @@
+# /etc/ssh/sshd_config - VOT X2000 board (Darwin_X2000_V2.1.1)
+#
+# Replaces the vendor's copy. The vendor ships this file inside /save and copies
+# it into place at boot (an adaptation for a read-only root filesystem). Our
+# root filesystem is writable UBIFS and the SSH layout is plain /etc/ssh, so no
+# indirection is needed - and the old scheme failed silently.
+#
+# Notes:
+#   - Host keys do not exist at build time; /etc/init.d/S50sshd generates them
+#     on first boot with "ssh-keygen -A".
+#   - The root account has no password in this image: log in with a public key
+#     (drop it at /usr/data/ssh/authorized_keys, e.g. over MTP) or set a password
+#     with "passwd" (the root filesystem is writable).
+#   - internal-sftp avoids spawning /usr/libexec/sftp-server for SFTP sessions.
+
+Port 22
+AddressFamily any
+
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+# Boards and clients in this project use older RSA keys
+HostKeyAlgorithms +ssh-rsa
+PubkeyAcceptedKeyTypes +ssh-rsa
+
+# root login is intentional on this development board
+PermitRootLogin yes
+PasswordAuthentication yes
+PermitEmptyPasswords no
+AuthorizedKeysFile .ssh/authorized_keys
+
+UseDNS no
+PrintMotd no
+PidFile /var/run/sshd.pid
+
+Subsystem sftp internal-sftp

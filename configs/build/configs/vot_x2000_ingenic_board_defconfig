@@ -24,7 +24,10 @@
 #   * vendor MTP gadget script (APP_usb_mtp_server) disabled: our own script
 #     "fs_overlay/common/etc/init.d/S70USB" sets up ONE composite gadget
 #     with MTP + RNDIS; umtprd itself still comes from APP_usb_mtp
-#   * SSH / sFTP kept (APP_br_ssh plus buildroot BR2_PACKAGE_OPENSSH)
+#   * SSH / sFTP kept, but configured plainly: buildroot's OpenSSH package plus
+#     our own sshd config and S50sshd under fs_overlay/common. The vendor's
+#     APP_br_ssh adaptation is disabled because it fails silently on a writable
+#     root filesystem.
 # ---------------------------------------------------------------------------
 
 APP_br_toolchain_name=mips-linux-gnu-
@@ -563,8 +566,8 @@ APP_br_asound_conf_none=y
 # APP_br_wait_mcu_boot_animation is not set
 # APP_br_adc_set_voltage is not set
 # APP_br_third_party_awtk is not set
-APP_br_ssh=y
-APP_br_ssh_config_file="rootfs_config/file/ssh/sshd_config"
+# APP_br_ssh is not set
+# APP_br_ssh_config_file is not set
 # APP_system_overlay_bootfs is not set
 # APP_ota_updater is not set
 APP_libhardware2=y

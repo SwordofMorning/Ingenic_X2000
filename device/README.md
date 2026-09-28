@@ -62,6 +62,22 @@ cat /etc/init.d/S4*wifi*         # 无线启动脚本
 ## 5. 已知注意事项
 
 - 本仓库使用**厂商默认分区**，未启用君正 A/B OTA（`OTA=n`，见 `products/darwin_v211.conf`）。
-- 出厂镜像里还有 `userdata.ubifs`（data 分区镜像）；当前构建只产出 `rootfs.squashfs`，
+- 出厂镜像里还有 `userdata.ubifs`（data 分区镜像）；当前构建产出 `rootfs.squashfs`（只读回退）
+  与 `rootfs.ubifs` + `rootfs.ubi`（**烧录用后者**），`userdata.ubifs` 尚未生成，
   若需要可写数据分区的镜像，再按厂商 `ubi` 相关配置生成（`APP_br_ubi_*`）。
 - 若烧录后只能看到 u-boot 打印：八成是把 `uImage` 当 `xImage` 烧了，或 kernel 偏移设错。
+- 只改了 rootfs 时**只烧 `rootfs.ubi` 即可**（u-boot 与内核未变）；全量重烧见第 0 节的三个文件。
+
+## 6. 登录板端
+
+- 串口：见第 3 节（3000000 8N1）。串口是唯一的"救砖"入口，建议先接好再烧录。
+- 网络：`wlan0` 用 `S60WiFi connect <ssid> [pwd]` 联网（见 `docs/bringup_v211_fixes.md` 第 11 节），
+  或 USB RNDIS（`usb0`）直连。板子能 ping 通说明网络层没问题。
+- SSH：镜像内是 buildroot 的 **OpenSSH**（`sshd` + `ssh-keygen`），开机由 `S50sshd` 启动。
+  **root 没有密码**，两种登录方式：
+  1. 公钥（推荐）：把 `id_rsa.pub` 拷到可写分区的 `/usr/data/ssh/authorized_keys`
+     （该路径也正是 MTP 导出的存储位置，插 USB 复制即可），重新插拔电源或
+     `/etc/init.d/S50sshd restart`；`S50sshd` 会自动装到 `/root/.ssh/authorized_keys`。
+  2. 设密码：串口上执行 `passwd`（rootfs 可写），随后 `ssh root@<板子IP>`。
+- 排错：`/etc/init.d/S50sshd status`；仍失败就 `/usr/sbin/sshd -e -d` 前台运行看具体报错。
+  第四轮排查过程见 `docs/bringup_v211_fixes.md` 第 12 节。

@@ -3,9 +3,8 @@
 # Why this file exists: buildroot never uninstalls a package. When a package or
 # a rootfs_config option is disabled in a new product configuration, the files it
 # installed earlier stay in buildroot's persistent output/target and would end up
-# in the shipped image. This list removes them explicitly, so a configuration
-# change does not silently keep dead services around (a full "clean" rebuild
-# would also work, but costs 30-60 minutes and hides the intent).
+# in the shipped image. This list removes them (before the overlay is merged), so
+# a configuration change does not silently keep dead files around.
 #
 # One path per line; lines starting with # are comments.
 # This file and extra-libs.txt are excluded from the overlay copy by build.sh.
@@ -26,3 +25,11 @@ etc/factory_test
 # S41 (BT firmware download) and S43 (MAC address setup) are kept: S60WiFi calls
 # S43 for the MAC and leaves Bluetooth to the vendor scripts.
 etc/init.d/S44wifi_bcm_up
+
+# vendor SSH adaptation for a read-only root filesystem (APP_br_ssh is not set):
+# etc/ssh was a symlink into the data partition and /save held the real config
+# which S30cp_ssh copied at boot. This product uses a plain, writable /etc/ssh
+# (see fs_overlay/common/etc/ssh/sshd_config and etc/init.d/S50sshd).
+etc/ssh
+save
+etc/init.d/S30cp_ssh

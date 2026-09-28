@@ -1,0 +1,79 @@
+#!/bin/sh
+##
+ # @file S50sshd
+ # @date 2026/09/28
+ #
+ # @brief Start the OpenSSH server on the VOT X2000 board.
+ #
+ # @note Replaces buildroot's S50sshd, which starts sshd without checking its
+ #       exit status: when sshd aborted ("Privilege separation user sshd does
+ #       not exist") the script still printed OK, which made the failure hard to
+ #       see. Here a failed start is reported as FAILED.
+ #
+ # @note The root filesystem is writable UBIFS, so /etc/ssh is a real directory
+ #       and host keys persist across reboots.
+ #
+ # Usage: S50sshd {start|stop|restart|status}
+ #
+
+SSH_DIR=/etc/ssh
+HOST_KEY="$SSH_DIR/ssh_host_rsa_key"
+AUTH_KEYS_SRC=/usr/data/ssh/authorized_keys
+AUTH_KEYS_DST=/root/.ssh/authorized_keys
+
+Func_start() {
+    # host keys on first boot (or when they were wiped by a reflash)
+    if [ ! -f "$HOST_KEY" ]; then
+        echo "[S50sshd] generating host keys (first boot)"
+        /usr/bin/ssh-keygen -A
+    fi
+
+    # optional public keys dropped on the writable data partition
+    if [ -f "$AUTH_KEYS_SRC" ]; then
+        mkdir -p /root/.ssh
+        chmod 700 /root/.ssh
+        cp -f "$AUTH_KEYS_SRC" "$AUTH_KEYS_DST"
+        chmod 600 "$AUTH_KEYS_DST"
+        echo "[S50sshd] authorized_keys installed from $AUTH_KEYS_SRC"
+    fi
+
+    mkdir -p /run/sshd
+
+    printf "Starting sshd: "
+    # -e keeps the error messages on the console instead of syslog
+    if /usr/sbin/sshd -e; then
+        echo "OK"
+        return 0
+    fi
+    echo "FAILED (see the messages above)"
+    return 1
+}
+
+Func_stop() {
+    printf "Stopping sshd: "
+    killall sshd 2>/dev/null
+    echo "OK"
+    return 0
+}
+
+Func_status() {
+    if pgrep -x sshd >/dev/null 2>&1; then
+        echo "sshd: running"
+        echo "host keys: $(ls -1 "$SSH_DIR"/ssh_host_*_key 2>/dev/null | wc -l)"
+        [ -f "$AUTH_KEYS_DST" ] && echo "authorized_keys: present"
+    else
+        echo "sshd: not running"
+        echo "hint: run /usr/sbin/sshd -e -d in the foreground to see the error"
+        return 1
+    fi
+}
+
+case "$1" in
+    start)   Func_start ;;
+    stop)    Func_stop ;;
+    restart) Func_stop; Func_start ;;
+    status)  Func_status ;;
+    *)       echo "Usage: $0 {start|stop|restart|status}"; exit 1 ;;
+esac
+
+exit $?

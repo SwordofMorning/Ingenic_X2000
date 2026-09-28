@@ -181,3 +181,48 @@ S60WiFi {start|stop|restart|status|scan|connect <ssid> [pwd]|reconnect|ap <ssid>
 - 移除厂商的 `S44wifi_bcm_up`（WiFi 自动启动改由 S60WiFi 负责），保留 `S41`（蓝牙固件下载）与
   `S43`（MAC 初始化）；
 - 站点/热点配置保存在可写分区 `/usr/data/wifi/`，与新的可写 rootfs 配合。
+
+## 12. 第四轮：SSH 修复（2026-09-28）
+
+### 12.1 现象与两个根因
+
+现象：能 ping 通板子，但 SSH 连不上；板上 `ps` 里没有 sshd 进程，控制台也没有明显报错（只有一行 OK）。
+
+1. **镜像里缺 `sshd` / `dbus` 系统账号**。buildroot 的用户表（`output/build/buildroot-fs/full_users_table.txt`，内容就是 `dbus` 与 `sshd` 两条）是在**生成文件系统镜像那一步**用 fakeroot 应用到 target 上的；我们的流程为了绕开厂商 post-build 的干扰而**自己打包镜像**，恰好跳过了这一步。结果镜像里没有 `sshd` 用户，OpenSSH 启动即退出
+   （`Privilege separation user sshd does not exist`）；而 buildroot 的 `S50sshd` 不检查 sshd 的退出码，照样打印 `OK`，所以表面上"看不出错误"。
+2. **厂商的"只读系统 SSH 适配"在可写系统上是负担**。构建期脚本把 `etc/ssh` 改成指向 `usr/data/ssh/` 的软链接，真正的 `sshd_config` 放在 `save/`，靠 `S30cp_ssh` 开机拷进去；任一环失败都静默。
+
+连带发现并修掉的两个问题：
+
+3. **镜像内文件属主**：我们自己打包时没有用 fakeroot，所有文件属主都变成构建用户（设备上 uid 1000 = dbus）。openssh 对此有硬检查：
+   `/etc/ssh/sshd_config` 必须 root 所有且不可组/其他可写，否则 `Bad owner or permissions`；
+   `/var/empty` 必须 root 所有，否则 `%s must be owned by root and not group or world-writable` 直接 fatal。
+4. **overlay 文件权限**：从仓库检出的文件带 775（组可写），会直接踩中上面那条配置检查；现统一为脚本 755 / 配置 644。
+
+### 12.2 修法
+
+- 新增 `scripts/pack_images.sh`（**必须在 fakeroot 下运行**，由 `build.sh` 调用）：
+  1. 把 target 全树 `chown -h -R 0:0`；
+  2. 用 buildroot 自带的 `support/scripts/mkusers` + 用户表，补上 `sshd`/`dbus` 等账号；
+  3. 按守护进程要求修正特例：`/var/empty` 归 root（openssh 要求）、`/var/run/dbus` 归 dbus（套接字目录）；
+  4. 按 buildroot 配置里的参数重新打包 `rootfs.squashfs` / `rootfs.ubifs` / `rootfs.ubi`。
+- `build.sh` 的 phase 4/4 与 `fs` 目标改为调用 `pack_images`；并把"残留清理（prune）"移动到"覆盖（overlay）"**之前**，这样能安全清掉旧的 `etc/ssh` 软链与 `save/` 目录。
+- 关闭厂商的 `APP_br_ssh`，改成我们自己的 SSH 方案：
+  - `fs_overlay/common/etc/ssh/sshd_config`：允许 root 登录、密码认证、`Subsystem sftp internal-sftp`、`PidFile /var/run/sshd.pid`；
+  - `fs_overlay/common/etc/init.d/S50sshd`：首次启动生成主机密钥、把 `/usr/data/ssh/authorized_keys` 安装到 `/root/.ssh/`、用 `sshd -e` 启动并**如实报告 FAILED**；
+  - prune 掉 `etc/ssh`(软链)、`save/`、`etc/init.d/S30cp_ssh`。
+- **只需重烧 `rootfs.ubi`**：u-boot 与内核未变（cmdline 一致）。
+
+### 12.3 登录方式（root 在镜像里没有密码）
+
+1. **公钥（推荐）**：把 `id_rsa.pub` 写到可写分区 `/usr/data/ssh/authorized_keys`
+   （该分区正是 MTP 导出的存储位置，插 USB 复制即可），下次启动 `S50sshd` 会自动装到 `/root/.ssh/authorized_keys`；
+   也可立即生效：`/etc/init.d/S50sshd restart`。
+2. **设密码**：直接 `passwd` 修改（rootfs 现在可写），随后 `ssh root@<板子IP>` 用密码登录。
+
+排查命令：`/etc/init.d/S50sshd status`；若仍失败，用 `/usr/sbin/sshd -e -d` 前台运行看具体报错。
+
+### 12.4 顺带收益
+
+用户表补齐后，之前日志里的 `dbus-daemon: ... Could not get UID and GID for username "dbus"`、
+`Starting NFS statd: rpc.nfsd: Unable to access /proc/fs/nfsd` 之类的"账号不存在"类报错也会消失。
