@@ -23,8 +23,11 @@
  #       daemon user, which is wrong for /var/empty, so it is corrected here.
  #
  # @note Inputs (environment):
- #         BR_DIR   buildroot directory (contains .config and output/)
- #         JOBS     parallelism for mksquashfs
+ #         BR_DIR              buildroot directory (contains .config and output/)
+ #         JOBS                parallelism for mksquashfs
+ #         ROOT_PASSWORD_HASH  crypt(3) SHA-512 hash of the factory root password
+ #                             (build.sh computes it from products/<product>.conf);
+ #                             installed as field 2 of the root line in /etc/shadow
  #
 set -e
 
@@ -71,7 +74,30 @@ if [ -f "$USERS_TABLE" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 2) rootfs.squashfs (read-only fallback image)
+# 2) factory root password: products/<product>.conf -> /etc/shadow field 2
+#    Must run after mkusers (which owns the account list) and only ever touches
+#    the root line, so the daemon accounts keep their locked passwords.
+#    Mode 0600 root:root: only the daemons and login/passwd (all root) read it.
+# ---------------------------------------------------------------------------
+if [ -n "${ROOT_PASSWORD_HASH:-}" ]; then
+    SHADOW="$TARGET/etc/shadow"
+    if [ -f "$SHADOW" ]; then
+        tmp="${SHADOW}.new"
+        awk -F: -v h="$ROOT_PASSWORD_HASH" 'BEGIN { OFS = ":" } $1 == "root" { $2 = h } { print }' \
+            "$SHADOW" > "$tmp"
+        grep -q '^root:' "$tmp" || printf 'root:%s:::::::\n' "$ROOT_PASSWORD_HASH" >> "$tmp"
+        cat "$tmp" > "$SHADOW"      # keep the inode (hard links, if any)
+        rm -f "$tmp"
+        chown -h 0:0 "$SHADOW"
+        chmod 600 "$SHADOW"
+        log "root password installed (shadow, mode 600)"
+    else
+        echo "  [warn] no /etc/shadow in the target tree: root password not installed" >&2
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# 3) rootfs.squashfs (read-only fallback image)
 # ---------------------------------------------------------------------------
 if [ "$(cfg BR2_TARGET_ROOTFS_SQUASHFS)" = "y" ] && [ -x "$HOST/bin/mksquashfs" ]; then
     comp="gzip"
@@ -86,7 +112,7 @@ if [ "$(cfg BR2_TARGET_ROOTFS_SQUASHFS)" = "y" ] && [ -x "$HOST/bin/mksquashfs" 
 fi
 
 # ---------------------------------------------------------------------------
-# 3) rootfs.ubifs + rootfs.ubi (the writable root filesystem)
+# 4) rootfs.ubifs + rootfs.ubi (the writable root filesystem)
 # ---------------------------------------------------------------------------
 if [ "$(cfg BR2_TARGET_ROOTFS_UBIFS)" = "y" ] && [ -x "$HOST/sbin/mkfs.ubifs" ]; then
     leb="$(cfg BR2_TARGET_ROOTFS_UBIFS_LEBSIZE)"

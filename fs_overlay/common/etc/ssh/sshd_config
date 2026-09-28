@@ -8,9 +8,14 @@
 # Notes:
 #   - Host keys do not exist at build time; /etc/init.d/S50sshd generates them
 #     on first boot with "ssh-keygen -A".
-#   - The root account has no password in this image: log in with a public key
-#     (drop it at /usr/data/ssh/authorized_keys, e.g. over MTP) or set a password
-#     with "passwd" (the root filesystem is writable).
+#   - Authentication is the factory account from products/<product>.conf:
+#     user root, password installed as a SHA-512 crypt hash into /etc/shadow by
+#     scripts/pack_images.sh (products/darwin_v211.conf, section "factory login").
+#     The serial console uses the same account (busybox login reads /etc/shadow).
+#   - Public keys are switched OFF on purpose: a factory image should not need
+#     anyone to provision a key on the board. To use keys instead, set
+#     "PubkeyAuthentication yes" and copy the key to /root/.ssh/authorized_keys
+#     (the root filesystem is writable, so it survives a reboot).
 #   - internal-sftp avoids spawning /usr/libexec/sftp-server for SFTP sessions.
 
 Port 22
@@ -24,9 +29,10 @@ HostKey /etc/ssh/ssh_host_ed25519_key
 HostKeyAlgorithms +ssh-rsa
 PubkeyAcceptedKeyTypes +ssh-rsa
 
-# root login is intentional on this development board
+# factory account: password authentication only
 PermitRootLogin yes
 PasswordAuthentication yes
+PubkeyAuthentication no
 PermitEmptyPasswords no
 AuthorizedKeysFile .ssh/authorized_keys
 

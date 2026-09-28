@@ -68,16 +68,23 @@ cat /etc/init.d/S4*wifi*         # 无线启动脚本
 - 若烧录后只能看到 u-boot 打印：八成是把 `uImage` 当 `xImage` 烧了，或 kernel 偏移设错。
 - 只改了 rootfs 时**只烧 `rootfs.ubi` 即可**（u-boot 与内核未变）；全量重烧见第 0 节的三个文件。
 
-## 6. 登录板端
+## 6. 登录板端（出厂账号 root / cdjp123）
 
+- 出厂账号：**用户名 `root`，口令 `cdjp123`**。真源是 `products/darwin_v211.conf` 的
+  `ROOT_PASSWORD`；改完重新 `./build.sh fs` 并重烧 `rootfs.ubi` 即可。
+  镜像里存的是 SHA-512 哈希（`/etc/shadow`，`0600 root:root`），**串口与 SSH 共用同一套账号**。
 - 串口：见第 3 节（3000000 8N1）。串口是唯一的"救砖"入口，建议先接好再烧录。
+  注意当前 `etc/inittab` 的串口是 `respawn:-/bin/sh`，**不要求登录**（直接就是 root shell）。
 - 网络：`wlan0` 用 `S60WiFi connect <ssid> [pwd]` 联网（见 `docs/bringup_v211_fixes.md` 第 11 节），
   或 USB RNDIS（`usb0`）直连。板子能 ping 通说明网络层没问题。
-- SSH：镜像内是 buildroot 的 **OpenSSH**（`sshd` + `ssh-keygen`），开机由 `S50sshd` 启动。
-  **root 没有密码**，两种登录方式：
-  1. 公钥（推荐）：把 `id_rsa.pub` 拷到可写分区的 `/usr/data/ssh/authorized_keys`
-     （该路径也正是 MTP 导出的存储位置，插 USB 复制即可），重新插拔电源或
-     `/etc/init.d/S50sshd restart`；`S50sshd` 会自动装到 `/root/.ssh/authorized_keys`。
-  2. 设密码：串口上执行 `passwd`（rootfs 可写），随后 `ssh root@<板子IP>`。
-- 排错：`/etc/init.d/S50sshd status`；仍失败就 `/usr/sbin/sshd -e -d` 前台运行看具体报错。
-  第四轮排查过程见 `docs/bringup_v211_fixes.md` 第 12 节。
+- SSH：镜像内是 buildroot 的 **OpenSSH**（`sshd` + `ssh-keygen`），开机由 `S50sshd` 启动；
+  认证方式为**口令**（`PubkeyAuthentication no`，板上不需要放任何密钥）：
+
+  ```sh
+  ssh root@<板子IP>        # 口令 cdjp123
+  ```
+
+- 排错：`/etc/init.d/S50sshd status` 会报告 sshd 是否在跑、主机密钥数量、root 口令是否已设置；
+  仍失败就 `/usr/sbin/sshd -e -d` 前台运行看具体报错。
+  第四轮（SSH 起不来）的排查过程见 `docs/bringup_v211_fixes.md` 第 12 节，口令实现见第 13 节。
+

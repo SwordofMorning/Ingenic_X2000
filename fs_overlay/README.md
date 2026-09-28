@@ -23,3 +23,7 @@ buildroot/output/target                     ← buildroot 原生 + 厂商 rootfs
 - 只放**文本与小文件**；二进制可执行文件请走 Git LFS（根 `.gitattributes` 已配置 `*.bin/*.so/...`）。
 - 与厂商既有机制的分工：厂商的 `rootfs_config/file/<feature>/` 由 IConfigTool/Kconfig 开关驱动（我们不修改）；
   属于"我们产品自己的文件"一律放这里，便于一眼看清我们改了什么。
+- 特例：**出厂口令不在这一层**。root 口令由 `products/<product>.conf` 的 `ROOT_PASSWORD` 声明，
+  打包时算成 SHA-512 哈希写进 `etc/shadow` 的 root 行（串口与 SSH 共用；见
+  `docs/bringup_v211_fixes.md` 第 13 节）。这样换产品/换口令只改一个配置项，
+  不必在 overlay 里维护哈希与盐值。

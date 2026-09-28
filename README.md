@@ -89,11 +89,14 @@ build/               [不进 git] 构建沙箱（vendor 副本 + 我们的覆盖
 ```text
 products/darwin_v211.conf           ← 产品真源（改这一个文件就能换 defconfig / 介质 / 工具链 / 覆盖层）
         │
-        ├─ APP_CONFIG      = x2000_darwin_v20_5.10_nand_factory_defconfig   (厂商主配置：APP_*/MD_* 数百项)
+        ├─ APP_CONFIG      = vot_x2000_ingenic_board_defconfig              (我们的产品主配置: configs/build/configs/)
         ├─ KERNEL_CONFIG   = x2000_module_base_linux_sfc_nand_defconfig     (+ configs/kernel 覆盖)
         ├─ UBOOT_CONFIG    = x2000_base_xImage_sfc_nand                     (+ configs/uboot 覆盖 LPJ)
-        └─ ROOTFS_CONFIG   = buildroot_x2000_510_wifi_common_defconfig
+        └─ ROOTFS_CONFIG   = vot_x2000_ingenic_board_defconfig              (buildroot: 可写 UBIFS + hostapd/iw)
 ```
+
+出厂登录（统一出场配置）：账号 `root`，口令来自 `products/darwin_v211.conf` 的
+`ROOT_PASSWORD`（构建时算成 SHA-512 哈希写进镜像的 `/etc/shadow`，串口与 SSH 共用一套账号）。
 
 ## 7. 当前状态与已知事项
 

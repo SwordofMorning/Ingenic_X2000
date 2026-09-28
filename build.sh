@@ -115,6 +115,8 @@ load_product() {
     : "${FS_OVERLAY:=fs_overlay/common}"
     : "${OTA:=n}"
     : "${OUTPUT_NAME:=$PRODUCT}"
+    : "${ROOT_PASSWORD:=}"
+    : "${ROOT_PASSWORD_SALT:=$PRODUCT}"
 
 }
 # End-func load_product
@@ -135,6 +137,11 @@ do_env() {
     echo "buildroot cfg   : $ROOTFS_CONFIG"
     echo "fs overlay      : $FS_OVERLAY"
     echo "OTA             : $OTA"
+    if [ -n "${ROOT_PASSWORD:-}" ]; then
+        echo "root login      : root + password from products/$PRODUCT.conf (SHA-512, salt=$ROOT_PASSWORD_SALT)"
+    else
+        echo "root login      : root without password (set ROOT_PASSWORD in products/$PRODUCT.conf)"
+    fi
     echo "toolchains dir  : $TOOLCHAINS_DIR"
     echo "toolchains need : $TOOLCHAINS"
     echo "jobs            : $JOBS"
@@ -524,6 +531,40 @@ copy_extra_libs() {
 # End-func copy_extra_libs
 
 ##
+ # @brief Hash the product's factory root password for /etc/shadow.
+ #
+ # @note The plaintext lives in products/<product>.conf (single source of truth)
+ #       and never reaches the image: what is installed is a crypt(3) SHA-512
+ #       hash ($6$) with the fixed salt from the same file, so the image is
+ #       reproducible. openssl and python3 produce byte-identical hashes; they
+ #       are tried in that order so the build works on a plain Ubuntu host.
+ #
+ # @return the hash on stdout; empty when the product sets no ROOT_PASSWORD
+ #
+root_password_hash() {
+    load_product
+    [ -n "$ROOT_PASSWORD" ] || return 0
+
+    local salt="$ROOT_PASSWORD_SALT" h=""
+    case "$salt" in
+        *[!./0-9A-Za-z]*) die "ROOT_PASSWORD_SALT may only use [./0-9A-Za-z]: '$salt'" ;;
+    esac
+    [ "${#salt}" -le 16 ] || die "ROOT_PASSWORD_SALT is limited to 16 characters: '$salt'"
+
+    if command -v openssl >/dev/null 2>&1; then
+        h="$(openssl passwd -6 -salt "$salt" "$ROOT_PASSWORD" 2>/dev/null || true)"
+    fi
+    if [ -z "$h" ] && command -v python3 >/dev/null 2>&1; then
+        h="$(python3 -c 'import crypt, sys; print(crypt.crypt(sys.argv[1], "$6$" + sys.argv[2]))' \
+             "$ROOT_PASSWORD" "$salt" 2>/dev/null || true)"
+    fi
+    [ -n "$h" ] || die "cannot hash ROOT_PASSWORD: install openssl or python3"
+
+    printf '%s' "$h"
+}
+# End-func root_password_hash
+
+##
  # @brief Pack all root filesystem images from the current target tree.
  #
  # @note Runs under fakeroot, exactly like buildroot does it, because ownership
@@ -537,17 +578,26 @@ copy_extra_libs() {
  #       image targets: the vendor post-build script runs inside buildroot's
  #       target-finalize and would remove the files we merge from fs_overlay/.
  #
+ # @note The factory root password (products/<product>.conf) is installed by the
+ #       packing script as well: it must happen after buildroot's users table is
+ #       applied and it needs the fakeroot context to set /etc/shadow root:root
+ #       0600.
+ #
 pack_images() {
     local br="$BUILD_DIR/buildroot/buildroot"
     local script="$SCRIPTS_DIR/pack_images.sh"
     local fake="$br/output/host/bin/fakeroot"
+    local pw_hash=""
 
     [ -x "$script" ] || die "packing script missing: $script"
     [ -x "$fake" ] || fake="$(command -v fakeroot || true)"
     [ -n "$fake" ] || die "fakeroot not available (needed for correct image ownership)"
 
+    pw_hash="$(root_password_hash)"
+    [ -n "$pw_hash" ] && info "factory root password: from products/$PRODUCT.conf (SHA-512, salt=$ROOT_PASSWORD_SALT)"
+
     info "packing root filesystem images under fakeroot"
-    env BR_DIR="$br" JOBS="$JOBS" "$fake" -- /bin/sh "$script"
+    env BR_DIR="$br" JOBS="$JOBS" ROOT_PASSWORD_HASH="$pw_hash" "$fake" -- /bin/sh "$script"
 
     local f
     for f in rootfs.squashfs rootfs.ubifs rootfs.ubi; do
@@ -687,6 +737,30 @@ do_check() {
         echo "         kernel=$KERNEL_CONFIG uboot=$UBOOT_CONFIG buildroot=$ROOTFS_CONFIG"
     else
         echo "  [FAIL] missing $PRODUCTS_DIR/$PRODUCT.conf"; rc=1
+    fi
+
+    echo "--- factory login ---"
+    if [ -n "${ROOT_PASSWORD:-}" ]; then
+        echo "  [ OK ] account root, password from products/$PRODUCT.conf (salt=$ROOT_PASSWORD_SALT)"
+        local pw_hash=""
+        pw_hash="$(root_password_hash 2>/dev/null || true)"
+        if [ -z "$pw_hash" ]; then
+            echo "  [FAIL] cannot hash ROOT_PASSWORD: install openssl or python3"; rc=1
+        else
+            echo "         hash $pw_hash"
+            local shadow="$BUILD_DIR/buildroot/buildroot/output/target/etc/shadow"
+            if [ -f "$shadow" ]; then
+                if [ "$(awk -F: '$1=="root"{print $2}' "$shadow")" = "$pw_hash" ]; then
+                    echo "  [ OK ] sandbox rootfs matches (shadow mode $(stat -c %a "$shadow"))"
+                else
+                    echo "  [warn] sandbox shadow differs from the config: run ./build.sh fs"
+                fi
+            else
+                echo "         [info] no sandbox target tree yet, nothing to compare"
+            fi
+        fi
+    else
+        echo "  [warn] ROOT_PASSWORD not set in products/$PRODUCT.conf: root has no password"
     fi
 
     echo "--- vendor tree ---"

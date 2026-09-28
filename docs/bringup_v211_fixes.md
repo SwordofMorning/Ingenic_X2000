@@ -215,6 +215,9 @@ S60WiFi {start|stop|restart|status|scan|connect <ssid> [pwd]|reconnect|ap <ssid>
 
 ### 12.3 登录方式（root 在镜像里没有密码）
 
+> 本节已被第 13 节取代：现在的出厂镜像自带 root 口令（`root` / `cdjp123`），不再需要放公钥。
+> 下面两种做法作为历史记录保留，改口令与改公钥的路径仍然有效。
+
 1. **公钥（推荐）**：把 `id_rsa.pub` 写到可写分区 `/usr/data/ssh/authorized_keys`
    （该分区正是 MTP 导出的存储位置，插 USB 复制即可），下次启动 `S50sshd` 会自动装到 `/root/.ssh/authorized_keys`；
    也可立即生效：`/etc/init.d/S50sshd restart`。
@@ -226,3 +229,65 @@ S60WiFi {start|stop|restart|status|scan|connect <ssid> [pwd]|reconnect|ap <ssid>
 
 用户表补齐后，之前日志里的 `dbus-daemon: ... Could not get UID and GID for username "dbus"`、
 `Starting NFS statd: rpc.nfsd: Unable to access /proc/fs/nfsd` 之类的"账号不存在"类报错也会消失。
+
+## 13. 第五轮：出厂登录（root + 口令，串口与 SSH 共用一套账号）
+
+### 13.1 目标
+
+出厂设备统一一个账号：**用户名 `root`，口令 `cdjp123`**；SSH 与串口都用它，
+不再使用"往板上放公钥"的方式（原 `authorized_keys` 流程已删除），板上不需要做任何准备。
+
+### 13.2 真源与实现
+
+- 真源是 `products/darwin_v211.conf`：
+
+  ```sh
+  ROOT_PASSWORD="cdjp123"
+  ROOT_PASSWORD_SALT="votX2000v211"    # 固定盐 => 哈希稳定 => 镜像可复现
+  ```
+
+- `build.sh` 的 `root_password_hash()` 用固定盐算出 `$6$`（SHA-512 crypt）哈希
+  （优先 `openssl passwd -6`，其次 `python3 crypt`；两者结果逐字节一致，实测过）；
+  `scripts/pack_images.sh` 在 **fakeroot 内、mkusers 之后**把哈希写进 `/etc/shadow`
+  root 行的字段 2，并把该文件置为 `0600 root:root`。**镜像里只有哈希，没有明文。**
+
+### 13.3 为什么这样能登录（三处都实测/查证过）
+
+1. **算法**：目标端 `libcrypt` 是 glibc 2.28（`sshd` 的 `NEEDED` 里有 `libcrypt.so.1`，
+   支持 `$1$/$5$/$6$`）；busybox 是 `CONFIG_USE_BB_CRYPT=y` + `CONFIG_USE_BB_CRYPT_SHA=y`
+   （内置 crypt 同样支持 SHA-256/512）。选 `$6$` 两边都认。
+2. **读 shadow**：OpenSSH 编译时带 shadow 支持（`config.h: HAVE_SHADOW_H`、`HAS_SHADOW_EXPIRE`），
+   `auth.c` 的 `shadow_pw()` 优先取 `getspnam()`；busybox 是 `CONFIG_FEATURE_SHADOWPASSWDS=y`
+   （`login`/`passwd`/`su` 都读 shadow）。所以口令只需放 shadow 一份，`/etc/passwd` 保持 `x`。
+3. **老化字段必须留空**（这一条最容易踩）：shadow 的 root 行是 `root:<hash>:::::::`。
+   空字段经 glibc 解析为 `-1`，sshd 的 `auth_shadow_pwexpired()` 命中 `sp_max == -1`
+   分支 → "password expiration disabled"，正常放行；反过来若写成 `sp_lstchg=0`，会被判成
+   `User root password has expired (root forced)` 而强制改密。本机用 glibc 的 `sgetspent()`
+   实测：`root:$6$..:::::::` → `lstchg=-1 max=-1 expire=-1`，与厂商/busybox 生成的 shadow 形态一致。
+
+### 13.4 SSH 侧改动
+
+- `fs_overlay/common/etc/ssh/sshd_config`：`PasswordAuthentication yes`、
+  **`PubkeyAuthentication no`**（出厂镜像不需要密钥准备）、`PermitRootLogin yes`、
+  `PermitEmptyPasswords no`。要恢复公钥登录，把 `PubkeyAuthentication` 改回 `yes`
+  并把公钥放到 `/root/.ssh/authorized_keys`（rootfs 可写，重启不丢）。
+- `fs_overlay/common/etc/init.d/S50sshd`：删除"从 `/usr/data/ssh/authorized_keys` 装公钥"的逻辑；
+  `status` 改为报告 root 口令是否已设置。
+
+### 13.5 自查与验证
+
+- `./build.sh env` 打印 root 登录来源（口令配置在哪个文件、盐值）；
+- `./build.sh check` 会算出哈希并与沙箱里的 `/etc/shadow` 比对，不一致会提示 `run ./build.sh fs`；
+- 镜像侧验证（本轮已做）：`unsquashfs` 看 `/etc/shadow` 是 `0600 root:root` 且 root 行有 `$6$` 哈希，
+  再用 `crypt.crypt('cdjp123', <hash>) == <hash>` 反算通过、错误口令不通过；
+- 板上验证：`./build.sh fs` 后只烧 `rootfs.ubi`，`ssh root@<板子IP>` 输入 `cdjp123`；
+  `cat /etc/shadow` 应见 `root:$6$...`，`/etc/init.d/S50sshd status` 应显示 `root password: set`。
+
+### 13.6 待确认 / 注意事项
+
+1. 出厂口令写在仓库里 = 任何拿到仓库或固件的人都知道它。量产前建议改 `ROOT_PASSWORD`，
+   或出厂后用 `passwd` 逐台改成不同口令。
+2. **串口目前不要求登录**：`etc/inittab` 是 `console::respawn:-/bin/sh`，串口直接给 root shell。
+   要不要改成 `getty`+`login`（同样的账号口令）属于取舍：改了更像"出场配置"，
+   但一旦口令对不上就只能重新烧录；不改则拿得到串口就能进系统。等确认。
+

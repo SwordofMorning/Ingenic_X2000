@@ -13,28 +13,23 @@
  # @note The root filesystem is writable UBIFS, so /etc/ssh is a real directory
  #       and host keys persist across reboots.
  #
+ # @note Authentication is the factory account (user root, password from
+ #       products/<product>.conf) installed into /etc/shadow at build time by
+ #       scripts/pack_images.sh. Nothing has to be provisioned on the board and
+ #       public-key authentication is off (see etc/ssh/sshd_config).
+ #
  # Usage: S50sshd {start|stop|restart|status}
  #
 
 SSH_DIR=/etc/ssh
 HOST_KEY="$SSH_DIR/ssh_host_rsa_key"
-AUTH_KEYS_SRC=/usr/data/ssh/authorized_keys
-AUTH_KEYS_DST=/root/.ssh/authorized_keys
+SHADOW=/etc/shadow
 
 Func_start() {
     # host keys on first boot (or when they were wiped by a reflash)
     if [ ! -f "$HOST_KEY" ]; then
         echo "[S50sshd] generating host keys (first boot)"
         /usr/bin/ssh-keygen -A
-    fi
-
-    # optional public keys dropped on the writable data partition
-    if [ -f "$AUTH_KEYS_SRC" ]; then
-        mkdir -p /root/.ssh
-        chmod 700 /root/.ssh
-        cp -f "$AUTH_KEYS_SRC" "$AUTH_KEYS_DST"
-        chmod 600 "$AUTH_KEYS_DST"
-        echo "[S50sshd] authorized_keys installed from $AUTH_KEYS_SRC"
     fi
 
     mkdir -p /run/sshd
@@ -60,7 +55,12 @@ Func_status() {
     if pgrep -x sshd >/dev/null 2>&1; then
         echo "sshd: running"
         echo "host keys: $(ls -1 "$SSH_DIR"/ssh_host_*_key 2>/dev/null | wc -l)"
-        [ -f "$AUTH_KEYS_DST" ] && echo "authorized_keys: present"
+        case "$(awk -F: '$1=="root"{print $2}' "$SHADOW" 2>/dev/null)" in
+            ''|'x'|'*'|'!'*)
+                echo "root password: NOT set (password login is impossible)" ;;
+            *)
+                echo "root password: set (factory default, see products/*.conf)" ;;
+        esac
     else
         echo "sshd: not running"
         echo "hint: run /usr/sbin/sshd -e -d in the foreground to see the error"
