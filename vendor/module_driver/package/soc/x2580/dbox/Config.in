@@ -1,0 +1,3 @@
+config MD_X2580_DBOX
+    bool "DBOX 绘制矩形框和线条驱动"
+    default n

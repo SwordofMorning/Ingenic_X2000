@@ -1,0 +1,390 @@
+#!/bin/sh
+
+#####################################################################
+# 升级的代码在文件末尾 [用户的升级代码] 那里
+# 前面都是需要用到的函数
+#####################################################################
+
+
+# 本脚本的功能:
+#    1 默认升级 uboot kernel rootfs 三个分区
+#    2 适用于 nand 和 nor 等 mtd 字符设备驱动的存储介质升级
+#    3 中文注释逻辑清晰,可以提供给用户做更改
+#    4 可以用于sd 烧录nand/nor flash
+#    5 如果头铁的话也可以用于 nand/nor flash 自身的升级
+#
+# 升级逻辑/步骤
+#    1 内核中需要有nand/nor驱动
+#    2 驱动中有且仅有uboot分区信息注册到mtd,
+#      否则将无法使用uboot.bin中自带的分区表
+#    3 uboot.bin使用烧录工具进行合并,以满足如下条件
+#         uboot.bin 自带ddr参数
+#         uboot.bin 自带分区表
+#         uboot.bin 自带flash时序参数(针对 nor flash)
+#    4 先写入uboot.bin,然后再探测uboot.bin中的分区表注册到mtd
+#    5 这样我们会得到用户自定义的 kernel rootfs 等分区的mtd设备
+#    6 如果目前内核中不止uboot一个分区,那么不做uboot.bin的分区表探测动作
+#    7 升级 kenrel
+#    8 升级 rootfs
+#    9 第4步写入的是不完整的uboot.bin,防止断电重启时启动到不完整的镜像
+#    10 写入完整的 uboot.bin
+#    11 升级成功
+#
+# 注意事项
+#    1 内核中自带的分区(主要是uboot)需要和uboot.bin中的分区大小对应
+#    2 本脚本主要用于 sd卡烧录 nand/nor,即使升级过程中断电,也可以重新上电升级
+#    3 你的内核版本的nand/nor驱动可能不带有探测uboot分区的功能.目前版本
+#        kernel4.4 x1600/x2000 可用
+#    4 如果需要频繁升级,那么注意将各分区大小留有余量,防止坏块导致容量不够
+#    5 升级之后目前未对升级之后的内容进行校验,所以暂不适合终端用户使用
+#
+#####################################################################
+
+# 检查应用是否存在
+check_app()
+{
+    local app=$1
+    which $app > /dev/null
+    if [ $? != 0 ]; then
+        echo "error: $app not installed\n" 1>&2
+        return 1
+    fi
+    return 0
+}
+
+# 获得字符串中的第几个word
+get_word()
+{
+    local str="$1"
+    local n=$2
+    local i=0
+
+    for word in $str
+    do
+        if [ $i = $n ]; then
+            echo $word
+            return 0
+        fi
+        let i=i+1
+    done
+
+    return 1
+}
+
+# 获得文件大小
+size_file()
+{
+    local file=$1
+    local result
+
+    result="`ls -l -n -L $file`"
+    if [ "$?" != "0" ]; then
+        echo "ls failed: $file"
+        return 1
+    fi
+
+    result=`get_word "$result" 4`
+    if [ "result" = "" ]; then
+        echo "ls failed 2: $file"
+        return 1
+    fi
+    echo $result
+}
+
+# 等待文件出现
+wait_file()
+{
+    local file=$1
+    local count=$2
+    local i=0
+
+    while true;
+    do
+        if [ -e $file ]; then
+            return 0
+        fi
+
+        if [ "$i" = "$count" ]; then
+            return 1
+        fi
+
+        let i=i+1
+        sleep 0.01
+    done
+}
+
+# 由mtd分区名获得mtd序号
+mtd_name_to_num()
+{
+    local partition_name=$1
+    local mtd_info=`cat /proc/mtd | grep -w \""$partition_name"\"`
+    if [ "$mtd_info" = "" ]; then
+        echo "mtd partition not find: $partition_name" 1>&2
+        return 1
+    fi
+
+    local mtd_n=${mtd_info%%:*}
+    if [ "$mtd_info" = "$mtd_n" ]; then
+        echo "mtd_info not ok: $mtd_info" 1>&2
+        return 1
+    fi
+
+    local n=${mtd_n#mtd}
+    if [ "$n" = "$mtd_n" ]; then
+        echo "mtd_info not ok2: $mtd_n" 1>&2
+        return 1
+    fi
+
+    echo $n
+}
+
+# 由mtd分区名获得mtd设备节点
+mtd_name_to_dev()
+{
+    local partition_name=$1
+    local num
+
+    num=`mtd_name_to_num $partition_name`
+    if [ $? != 0 ]; then
+        return 1
+    fi
+
+    local dev=/dev/mtd$num
+    if [ ! -e $dev ]; then
+        echo "why $dev not exist" 1>&2
+        return 1
+    fi
+
+    echo $dev
+}
+
+# 检查mtd 分区大小
+mtd_check_size()
+{
+    local dev_path=$1
+    local img_size=$2
+    local percent=$3
+    local mtd_info
+
+    mtd_info=`mtdinfo $dev_path`
+    if [ $? != 0 ]; then
+        echo "mtd get info failed: $dev_path" 1>&2
+        return 1
+    fi
+
+    mtd_info=`mtdinfo $dev_path | grep "Amount of eraseblocks"`
+    if [ $? != 0 ]; then
+        echo "mtd grep info failed: $dev_path" 1>&2
+        return 1
+    fi
+
+    if [ "$mtd_info" = "" ]; then
+        echo "why mtdinfo is empty: $dev_path" 1>&2
+        return 1
+    fi
+
+    local tmp=${mtd_info##*(}
+    if [ "$tmp" = "$mtd_info" ]; then
+        echo "mtdinfo format is change: $dev_path: $mtd_info" 1>&2
+        return 1
+    fi
+
+    local mtd_size=${tmp%% bytes*}
+    if [ "$mtd_size" = "" ] || [ "$mtd_size" = "$tmp" ]; then
+        echo "mtdinfo format is change: $dev_path: $mtd_info" 1>&2
+        return 1
+    fi
+
+    if [ $mtd_size -lt $img_size ]; then
+        echo "mtd size less than require size: $mtd_size $img_size" 1>&2
+        return 1
+    fi
+
+    if [ "$percent" = "" ]; then
+        return 0
+    fi
+
+    local mtd_size2
+    let mtd_size2=mtd_size/1000*percent/100
+    local img_size2
+    let img_size2=img_size/1000
+    if [ $mtd_size2 -lt $img_size2 ]; then
+        echo "mtd size2 less than require size: $mtd_size $img_size $mtd_size2 $percent" 1>&2
+        return 1
+    fi
+
+    return 0
+}
+
+# 检查升级所需要的应用
+mtd_check_apps()
+{
+    check_app nandwrite
+    check_app flash_erase
+    check_app mtdinfo
+}
+
+# 向mtd 分区中写入镜像
+mtd_write_image()
+{
+    local partition_name=$1
+    local file=$2
+    local file_size
+    local dev
+
+    file_size=`size_file $file`
+    if [ $? != 0 ]; then
+        return 1;
+    fi
+
+    dev=`mtd_name_to_dev $partition_name`
+    if [ $? != 0 ]; then
+        return 1;
+    fi
+
+    mtd_check_size $dev $file_size
+    if [ $? != 0 ]; then
+        return 1;
+    fi
+
+    echo "mtd erase $partition_name $dev"
+    flash_erase $dev 0 0 > /tmp/debug_$partition_name.info
+    if [ $? != 0 ]; then
+        echo "failed to erase $partition_name" 1>&2
+        return 1;
+    fi
+
+    echo "mtd write $partition_name $dev $file"
+    nandwrite $dev $file -s 0 -p >> /tmp/debug_$partition_name.info
+    if [ $? != 0 ]; then
+        echo "failed to erase $partition_name" 1>&2
+        return 1;
+    fi
+
+    return 0;
+}
+
+# 写入头部信息被破坏的uboot, 并且探测uboot中的分区信息
+# 生成其它的分区的设备节点
+mtd_detect_partitions()
+{
+    local uboot=$1
+    local sys_dect_mtd=
+
+    echo "detect mtd partitions"
+
+    if [ ! -e $uboot ]; then
+        echo "error: $uboot not exist" 1>&2
+        return 1;
+    fi
+
+    if [ -e /dev/mtd1 ]; then
+        echo "notice: /dev/mtd1 is exist, so do not detect mtd partitions" 1>&2
+        return 0;
+    fi
+
+    if [ -e /sys/module/ingenic_sfc_nand/parameters/detect_mtd_part ]; then
+        sys_dect_mtd=/sys/module/ingenic_sfc_nand/parameters/detect_mtd_part
+    fi
+
+    if [ -e /sys/module/ingenic_sfc_nor/parameters/detect_mtd_part ]; then
+        sys_dect_mtd=/sys/module/ingenic_sfc_nor/parameters/detect_mtd_part
+    fi
+
+    if [ "$sys_dect_mtd" == "" ]; then
+        echo "error: sys node detect_mtd_part not exist" 1>&2
+        echo "error: can't detect mtd partitions" 1>&2
+        return 1
+    fi
+
+    dd if=/dev/zero of=/tmp/uboot.bin.0 bs=1 count=20
+    dd if=$uboot skip=20 bs=1 of=/tmp/uboot.bin.1
+    cat /tmp/uboot.bin.0 /tmp/uboot.bin.1 > /tmp/uboot.bin.2
+
+    mtd_write_image uboot /tmp/uboot.bin.2
+    if [ $? != 0 ]; then
+        echo "failed to write uboot" 1>&2
+        retrun 1;
+    fi
+
+    echo 1 > $sys_dect_mtd
+
+    wait_file /dev/mtd1 100
+
+    if [ ! -e /dev/mtd1 ]; then
+        echo "error: /dev/mtd1 not exist, detect mtd partitions failed" 1>&2
+        return 1;
+    fi
+
+    return 0;
+}
+
+#####################################################################
+# [用户的升级代码]
+#####################################################################
+
+user_update_func()
+{
+    local uboot_file=/usr/data/sdcard_update/uboot.bin
+    local kernel_file=/usr/data/sdcard_update/xImage
+    local rootfs_file=/usr/data/sdcard_update/rootfs.squashfs
+
+    if [ ! -e /usr/data/sdcard_update/enable_update ]; then
+        echo "create /usr/data/sdcard_update/enable_update to enable update\n" 1>&2
+        exit 0;
+    fi
+
+    # 1 检查升级所需的工具
+    mtd_check_apps
+    if [ $? != 0 ]; then
+        echo "failed to check apps" 1>&2
+        exit 1;
+    fi
+
+    # 2 写入头部信息被破坏的uboot, 并且探测uboot中的分区信息
+    #   生成其它的分区的设备节点
+    mtd_detect_partitions $uboot_file
+    if [ $? != 0 ]; then
+        echo "failed to detect mtd partitions" 1>&2
+        exit 1
+    fi
+
+    # 3 写入 kernel 分区
+    mtd_write_image kernel $kernel_file
+    if [ $? != 0 ]; then
+        echo "failed to write kernel" 1>&2
+        exit 1;
+    fi
+
+    # 4 写入 rootfs 分区
+    mtd_write_image rootfs $rootfs_file
+    if [ $? != 0 ]; then
+        echo "failed to write rootfs" 1>&2
+        exit 1;
+    fi
+
+    # 5 写入完整的uboot,这样避免掉电之后进入uboot之后启动不成功
+    mtd_write_image uboot $uboot_file
+    if [ $? != 0 ]; then
+        echo "failed to write uboot" 1>&2
+        exit 1;
+    fi
+
+    # 6 升级成功
+    echo "mtd write image ok!"
+}
+
+case "$1" in
+  start)
+    user_update_func
+    ;;
+  stop)
+    ;;
+  restart|reload)
+    ;;
+  *)
+    echo  "Usage: $0 {start|stop|restart|reload}"
+    exit 1
+esac
+
+exit $?

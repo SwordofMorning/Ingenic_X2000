@@ -1,0 +1,5 @@
+menuconfig MD_WQ9001
+	bool "WQ9001 usb wireless cards support"
+	help
+	    This module adds support for a wireless adapter based on the usb interface for WQ9001.
+endmenu

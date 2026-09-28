@@ -1,0 +1,5 @@
+menu "第三方软件"
+
+source third_party/libcxx/Config.in
+
+endmenu

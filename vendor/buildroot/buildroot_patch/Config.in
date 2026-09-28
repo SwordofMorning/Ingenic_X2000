@@ -1,0 +1,38 @@
+menuconfig APP_br
+    bool "buidroot 相关配置"
+    default y
+
+menu "rootfs 相关配置"
+
+source rootfs_config/sh_utils.in
+source rootfs_config/log_in_tty.in
+source rootfs_config/adb_server.in
+source rootfs_config/ubi.in
+source rootfs_config/jffs2.in
+source rootfs_config/yaffs2.in
+source rootfs_config/mmc.in
+source rootfs_config/sdcard.in
+source rootfs_config/mass_storage.in
+source rootfs_config/h264_server.in
+source rootfs_config/usb_storage.in
+source rootfs_config/display_logo.in
+source rootfs_config/usb_mtp_server.in
+source rootfs_config/asound_conf.in
+source rootfs_config/sdcard_update.in
+source rootfs_config/third_party_lvgl.in
+source rootfs_config/boot_animation.in
+source rootfs_config/adc_set_voltage.in
+source rootfs_config/third_party_awtk.in
+source rootfs_config/ssh.in
+
+endmenu # "rootfs 相关配置"
+
+menu "软件包相关配置"
+
+endmenu
+
+menu "系统工具"
+source system/overlay_bootfs/Config.in
+endmenu
+
+endmenu # APP_br

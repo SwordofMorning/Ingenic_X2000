@@ -1,0 +1,4 @@
+menuconfig MD_KEYBOARD_MATRIX
+    bool "矩阵按键驱动"
+
+endmenu # MD_KEYBOARD_MATRIX

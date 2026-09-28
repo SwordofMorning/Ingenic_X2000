@@ -1,0 +1,39 @@
+APP_toolchain_dir=../tools/toolchains/mips-gcc520-glibc222
+APP_uboot_toolchain_dir=../tools/toolchains/mips-gcc520-glibc222
+APP_uboot_dir=../bootloader/uboot-x1021
+APP_uboot_config=x1021_new_xImage_mmc0
+APP_kernel_dir=../kernel/kernel-x1021
+APP_kernel_config=PD_x1021_emmc0_base_defconfig
+APP_br_dir=../buildroot/buildroot
+APP_br_config_file=configs/buildroot/buildroot_mini_adb_defconfig
+APP_compile_threads=8
+# APP_module_driver is not set
+APP_br=y
+APP_br_sh_utils_wait_file=y
+APP_br_sh_utils_mount_ubifs=y
+# APP_br_sh_utils_mount_jffs2 is not set
+# APP_br_sh_utils_mount_mmc_ext4 is not set
+APP_br_root_login=y
+APP_br_root_login_tty_port=console
+APP_br_adb_server=y
+APP_br_adb_server_start=y
+APP_br_adb_server_name="ingenic"
+APP_br_adb_server_add_mac=y
+APP_br_ubi_setting=y
+APP_br_ubi_mount_usr_data=y
+# APP_br_jffs2_setting is not set
+# APP_br_mmc_setting is not set
+# APP_br_sdcard_setting is not set
+# APP_br_mass_storage_setting is not set
+# APP_ota_updater is not set
+# APP_libhardware2 is not set
+# APP_libutils2 is not set
+# APP_libimpf is not set
+# APP_libisp is not set
+# APP_test_shell is not set
+# APP_wireless_bcm is not set
+# APP_wireless_realtek is not set
+# APP_wireless_quectel is not set
+# APP_wireless_luat is not set
+# APP_FaceApp is not set
+# APP_EVOL is not set

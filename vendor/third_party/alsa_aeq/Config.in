@@ -1,0 +1,5 @@
+menuconfig APP_alsa_aeq
+    bool "alsa aeq (调频工具)"
+    default n
+
+endmenu

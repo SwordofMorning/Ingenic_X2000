@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+
+case "$1" in
+  start)
+        adc_set_voltage.sh
+        ;;
+  *)
+        exit 1
+esac
+
+exit $?

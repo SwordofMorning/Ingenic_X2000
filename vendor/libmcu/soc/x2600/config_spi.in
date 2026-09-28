@@ -1,0 +1,105 @@
+menuconfig APP_libmcu_x2600_spi
+    bool "spi 总线"
+    select APP_libmcu_driver_spi
+    help
+        "依赖于 SPI 驱动"
+
+config APP_libmcu_x2600_spi_clk_rate
+    int "spi内部时钟源频率(单位Hz)"
+    default 100000000
+    help
+        SPI频率 = SPI内部时钟源频率 / (2 * (CGV + 1))
+        CGV范围: 0 ~ 255
+        当前SPI频率范围: 195312.5 ~ 50000000
+
+
+config APP_libmcu_x2600_spi0
+    bool "选择 spi0"
+
+config APP_libmcu_x2600_spi0_clk
+    string "        clk(时钟引脚)"
+    default GPIO_PB(3)
+    choice from APP_spi0_clk_pins
+    depends on APP_libmcu_x2600_spi0
+
+config APP_libmcu_x2600_spi0_miso
+    string "        miso(输入引脚)"
+    default GPIO_PB(1)
+    choice from APP_spi0_miso_pins
+    depends on APP_libmcu_x2600_spi0
+    help
+        "MISO= -1,表示不使用MISO引脚"
+
+config APP_libmcu_x2600_spi0_mosi
+    string "        mosi(输出引脚)"
+    default GPIO_PB(2)
+    choice from APP_spi0_mosi_pins
+    depends on APP_libmcu_x2600_spi0
+    help
+        "MOSI= -1,表示不使用MOSI引脚"
+
+
+config APP_libmcu_x2600_spi1
+    bool "选择 spi1"
+
+config APP_libmcu_x2600_spi1_clk
+    string "        clk(时钟引脚)"
+    default GPIO_PC(15)
+    choice from APP_spi1_clk_pins
+    depends on APP_libmcu_x2600_spi1
+
+config APP_libmcu_x2600_spi1_miso
+    string "        miso(输入引脚)"
+    default GPIO_PC(17)
+    choice from APP_spi1_miso_pins
+    depends on APP_libmcu_x2600_spi1
+    help
+        "MISO= -1,表示不使用MISO引脚"
+
+config APP_libmcu_x2600_spi1_mosi
+    string "        mosi(输出引脚)"
+    default GPIO_PC(16)
+    choice from APP_spi1_mosi_pins
+    depends on APP_libmcu_x2600_spi1
+    help
+        "MOSI= -1,表示不使用MOSI引脚"
+
+endmenu # SPI 总线
+
+
+array APP_spi0_clk_pins
+    string "SPI0 CLK 引脚"
+    item "GPIO_NULL  " -1
+    item "GPIO_PB(3)" GPIO_PB(3)
+    item "GPIO_PD(0)" GPIO_PD(0)
+
+array APP_spi0_miso_pins
+    string "SPI0 MISO(DR) 引脚"
+    item "GPIO_NULL  " -1
+    item "GPIO_PB(1)" GPIO_PB(1)
+    item "GPIO_PD(2)" GPIO_PD(2)
+
+array APP_spi0_mosi_pins
+    string "SPI0 MOSI(DT) 引脚"
+    item "GPIO_NULL  " -1
+    item "GPIO_PB(2)" GPIO_PB(2)
+    item "GPIO_PD(1)" GPIO_PD(1)
+
+
+array APP_spi1_clk_pins
+    string "SPI0 CLK 引脚"
+    item "GPIO_NULL  " -1
+    item "GPIO_PC(15)" GPIO_PC(15)
+    item "GPIO_PC(25)" GPIO_PC(25)
+
+array APP_spi1_miso_pins
+    string "SPI0 MISO(DR) 引脚"
+    item "GPIO_NULL  " -1
+    item "GPIO_PC(17)" GPIO_PC(17)
+    item "GPIO_PC(27)" GPIO_PC(27)
+
+array APP_spi1_mosi_pins
+    string "SPI0 MOSI(DT) 引脚"
+    item "GPIO_NULL  " -1
+    item "GPIO_PC(16)" GPIO_PC(16)
+    item "GPIO_PC(26)" GPIO_PC(26)

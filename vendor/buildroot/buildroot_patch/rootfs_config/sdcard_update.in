@@ -1,0 +1,10 @@
+menuconfig APP_br_sdcard_update
+    bool "开机启动升级/烧录程序 (一般是sd卡烧录 nand/nor)"
+
+config APP_br_sdcard_update_file_path
+    string "    升级脚本路径(用户可以自行拷贝默认脚本,更改,然后设置成此选项)"
+    default rootfs_config/file/sdcard_update/S99sdcard_update
+    help
+        "升级脚本路径,例如: rootfs_config/file/sdcard_update/S99sdcard_update"
+
+endmenu

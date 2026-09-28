@@ -1,0 +1,44 @@
+menuconfig APP_libmcu_driver
+    bool "驱动(软件/接口)"
+    default y
+
+source drivers/console/Config.in
+source drivers/hrtimer/Config.in
+
+config APP_libmcu_driver_irq
+    bool
+
+config APP_libmcu_driver_clk
+    bool
+
+config APP_libmcu_driver_gpio
+    bool
+
+config APP_libmcu_driver_uart
+    bool
+
+config APP_libmcu_driver_systick
+    bool
+
+config APP_libmcu_driver_tcu
+    bool
+
+config APP_libmcu_driver_adc
+    bool
+
+config APP_libmcu_driver_i2c
+    bool
+
+config APP_libmcu_driver_pwm
+    bool
+
+config APP_libmcu_driver_dma
+    bool
+
+config APP_libmcu_driver_fb
+    bool
+
+config APP_libmcu_driver_spi
+    bool
+
+endmenu

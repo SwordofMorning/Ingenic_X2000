@@ -1,0 +1,82 @@
+menuconfig APP_libutils2
+    bool "libutils2 (实用程序接口/命令)"
+    default y
+
+config APP_libutils2_os
+    bool "os 相关api 封装"
+    default y
+
+config APP_libutils2_array
+    bool "array 指针数组"
+    default y
+
+config APP_libutils2_data_array
+    bool "data array 数据/结构体数组"
+    default y
+
+config APP_libutils2_listmap
+    bool "listmap 键值对数组"
+    default y
+
+config APP_libutils2_refer
+    bool "refer 引用计数器"
+    default y
+
+config APP_libutils2_event
+    bool "event 事件发送/分发/回调"
+    select APP_libutils2_refer
+    default y
+
+menuconfig APP_libutils2_udp
+    bool "udp 通信接口封装"
+    default y
+
+config APP_libutils2_udp_cmd
+    bool "udp 通信测试命令"
+    default n
+
+endmenu
+
+menuconfig APP_libutils2_boot_time
+    bool "boot time(获取系统当前启动/运行时间)"
+    default y
+
+config APP_libutils2_boot_time_cmd
+    bool "show_boot_time 命令"
+    default y
+
+endmenu
+
+config APP_libutils2_uevent_cmd
+    bool "uevent (uevent事件监听)"
+    default y
+
+config APP_libutils2_usb_device_state_cmd
+    bool "usb device模式 状态监听"
+    default y
+
+config APP_libutils2_image_format_conversion
+    bool "image_format_conversion (图像格式转换算法)"
+    default y
+
+config APP_libutils2_message_queue
+    bool "mesage queue (线程安全消息队列)"
+    default y
+
+config APP_libutils2_rotate_test
+    bool "任意角度旋转测试命令"
+    default n
+
+config APP_libutils2_nalu
+    bool "NALU 提取分包"
+    default n
+
+config APP_libutils2_cJSON
+    bool "cJSON 数据封装"
+    default n
+
+config APP_libutils2_nv12_rotate
+    bool "软件90°旋转 (仅nv12)"
+    default n
+
+endmenu

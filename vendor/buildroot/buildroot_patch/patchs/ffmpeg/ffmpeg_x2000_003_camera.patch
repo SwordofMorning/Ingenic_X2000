@@ -1,0 +1,691 @@
+diff -Naur ffmpeg-4.2.2/libavdevice/alldevices.c ffmpeg-4.2.2-2/libavdevice/alldevices.c
+--- ffmpeg-4.2.2/libavdevice/alldevices.c	2022-12-06 11:01:09.610728726 +0800
++++ ffmpeg-4.2.2-2/libavdevice/alldevices.c	2022-12-06 11:32:53.741424541 +0800
+@@ -53,6 +53,7 @@
+ extern AVInputFormat  ff_v4l2_demuxer;
+ extern AVOutputFormat ff_v4l2_muxer;
+ extern AVInputFormat ff_x2000_isp_demuxer;
++extern AVInputFormat ff_x2000_camera_demuxer;
+ extern AVInputFormat  ff_vfwcap_demuxer;
+ extern AVInputFormat  ff_xcbgrab_demuxer;
+ extern AVOutputFormat ff_xv_muxer;
+diff -Naur ffmpeg-4.2.2/libavdevice/Makefile ffmpeg-4.2.2-2/libavdevice/Makefile
+--- ffmpeg-4.2.2/libavdevice/Makefile	2022-12-06 11:01:09.610728726 +0800
++++ ffmpeg-4.2.2-2/libavdevice/Makefile	2022-12-06 11:32:23.728926077 +0800
+@@ -47,6 +47,7 @@
+ OBJS-$(CONFIG_V4L2_INDEV)                += v4l2.o v4l2-common.o timefilter.o
+ OBJS-$(CONFIG_V4L2_OUTDEV)               += v4l2enc.o v4l2-common.o
+ OBJS-$(CONFIG_V4L2_INDEV)                += x2000_isp_dec.o
++OBJS-$(CONFIG_V4L2_INDEV)                += x2000_camera_dec.o
+ OBJS-$(CONFIG_VFWCAP_INDEV)              += vfwcap.o
+ OBJS-$(CONFIG_XCBGRAB_INDEV)             += xcbgrab.o
+ OBJS-$(CONFIG_XV_OUTDEV)                 += xv.o
+diff -Naur ffmpeg-4.2.2/libavdevice/x2000_camera.c ffmpeg-4.2.2-2/libavdevice/x2000_camera.c
+--- ffmpeg-4.2.2/libavdevice/x2000_camera.c	1970-01-01 08:00:00.000000000 +0800
++++ ffmpeg-4.2.2-2/libavdevice/x2000_camera.c	2022-12-06 11:20:38.557258135 +0800
+@@ -0,0 +1,366 @@
++#include <stdio.h>
++#include <error.h>
++#include <dlfcn.h>
++
++#include "camera_common.h"
++
++/* 计算每个像素点所占字节数 */
++static unsigned int (*cam_bytes_per_pixel)(camera_pixel_fmt cam_fmt);
++
++/**
++ * @brief 获得camera设备句柄
++ * @param info 用于存放camera的信息,不能为NULL
++ * @param device_path 设备节点
++ * @return 成功返回设备句柄,失败返回-1
++ */
++static int (*camera_open)(struct camera_info *info, const char* device_path);
++
++/**
++ * @brief 关闭camera设备句柄
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param info camera的信息,由camera_open()函数初始化
++ * @return 成功返回0,失败返回-1
++ */
++static int (*camera_close)(int fd, struct camera_info *info);
++
++/**
++ * @brief 使能camera设备,上电
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_power_on)(int fd);
++
++/**
++ * @brief 关闭camera设备,掉电
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_power_off)(int fd);
++
++/**
++ * @brief 开始camera图像录制
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_stream_on)(int fd);
++
++/**
++ * @brief 结束camera图像录制
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_stream_off)(int fd);
++
++/**
++ * @brief 获取一帧录制的图像数据
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @return 成功返回图像缓冲区指针,失败返回NULL
++ */
++static void *(*camera_wait_frame)(int fd);
++
++/**
++ * @brief 获取一帧录制的图像数据
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @return 成功返回图像缓冲区指针,失败返回NULL
++ */
++static void *(*camera_get_frame)(int fd);
++
++/**
++ * @brief 释放一帧图像缓冲区
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param mem 缓冲区指针,由camera_wait_frame()函数获得
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_put_frame)(int fd, void *mem);
++
++/**
++ * @brief 获取一帧录制的图像数据(不等待)
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param frame 获取的帧信息指针
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_dqbuf)(int fd, struct frame_info *frame);
++
++/**
++ * @brief 获取一帧录制的图像数据(未获取有效数据继续等待3s)
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param frame 获取的帧信息指针
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_dqbuf_wait)(int fd, struct frame_info *frame);
++
++/**
++ * @brief 释放一帧图像缓冲区
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param frame 释放的帧信息指针
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_qbuf)(int fd, struct frame_info *frame);
++
++/**
++ * @brief 获取已录制的图像数据帧数
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @return 成功返回帧数,失败返回负数
++ */
++static int (*camera_get_avaliable_frame_count)(int fd);
++
++/**
++ * @brief 丢弃已录制的图像数据帧
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param frames 需要丢弃的帧数
++ * @return 成功返回帧数,失败返回负数
++ */
++static int (*camera_drop_frames)(int fd, unsigned int frames);
++
++/**
++ * @brief 获取sensor寄存器
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param reg sensor寄存器信息
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_get_sensor_reg)(int fd, struct sensor_dbg_register *reg);
++
++/**
++ * @brief 设置sensor寄存器
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param reg sensor寄存器信息
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_set_sensor_reg)(int fd, struct sensor_dbg_register *reg);
++
++/**
++ * @brief 获取sensor帧率
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param fps_num 帧率分子的指针
++ * @param fps_den 帧率分母的指针
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_get_fps)(int fd, unsigned int *fps_num, unsigned int *fps_den);
++
++/**
++ * @brief 设置sensor帧率
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param fps_num 帧率分子
++ * @param fps_den 帧率分母
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_set_fps)(int fd, unsigned int fps_num, unsigned int fps_den);
++
++/**
++ * camera功能开关
++ */
++typedef enum {
++    CAMERA_OPS_MODE_DISABLE = 0,    /* 不使能该模块功能 */
++    CAMERA_OPS_MODE_ENABLE,         /* 使能该模块功能 */
++} camera_ops_mode;
++
++/**
++ * @brief 获取sensor水平镜像使能模式
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param mode 使能模式
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_get_hflip)(int fd, camera_ops_mode *mode);
++
++/**
++ * @brief 设置sensor水平镜像使能模式
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param mode 使能模式
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_set_hflip)(int fd, camera_ops_mode mode);
++
++/**
++ * @brief 获取sensor垂直翻转使能模式
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param mode 使能模式
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_get_vflip)(int fd, camera_ops_mode *mode);
++
++/**
++ * @brief 设置sensor垂直翻转使能模式
++ * @param fd camera设备句柄,由camera_open()函数获得
++ * @param mode 使能模式
++ * @return 成功返回0,失败返回负数
++ */
++static int (*camera_set_vflip)(int fd, camera_ops_mode mode);
++
++/**
++ * @brief 重设camera格式
++ * @param info 用于存放camera的信息,是否能为NULL取决于sensor驱动
++ * @return 成功返回设备句柄,失败返回-1
++ */
++static int (*camera_reset_fmt)(int fd, struct camera_info *info);
++
++
++static void * load_x2000_camera_lib(void)
++{
++    void *handle;
++    char *error;
++    const char *func_name;
++
++    handle = dlopen("libhardware2.so", RTLD_LAZY);
++    if (!handle) {
++        fprintf(stderr, "Could not open libhardware2.so\n");
++        return NULL;
++    }
++    dlerror(); /* Clear any existing error */
++
++    func_name = "cam_bytes_per_pixel";
++    cam_bytes_per_pixel = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_open";
++    camera_open = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_close";
++    camera_close = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_power_on";
++    camera_power_on = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_power_off";
++    camera_power_off = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_stream_on";
++    camera_stream_on = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_stream_off";
++    camera_stream_off = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_wait_frame";
++    camera_wait_frame = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_get_frame";
++    camera_get_frame = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_put_frame";
++    camera_put_frame = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_dqbuf";
++    camera_dqbuf = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_dqbuf_wait";
++    camera_dqbuf_wait = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_qbuf";
++    camera_qbuf = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_get_avaliable_frame_count";
++    camera_get_avaliable_frame_count = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_drop_frames";
++    camera_drop_frames = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_get_sensor_reg";
++    camera_get_sensor_reg = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_set_sensor_reg";
++    camera_set_sensor_reg = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_get_fps";
++    camera_get_fps = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_set_fps";
++    camera_set_fps = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_get_hflip";
++    camera_get_hflip = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_set_hflip";
++    camera_set_hflip = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_get_vflip";
++    camera_get_vflip = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_set_vflip";
++    camera_set_vflip = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    func_name = "camera_reset_fmt";
++    camera_reset_fmt = dlsym(handle, func_name);
++    error = dlerror();
++    if (error)
++        goto dl_error;
++
++    return handle;
++
++dl_error:
++    dlclose(handle);
++    fprintf(stderr, "libhardware2.so not have %s function\n", func_name);
++    return NULL;
++}
++
++static void unload_x2000_camera_lib(void *handle)
++{
++    if (handle)
++        dlclose(handle);
++}
+\ No newline at end of file
+diff -Naur ffmpeg-4.2.2/libavdevice/x2000_camera_dec.c ffmpeg-4.2.2-2/libavdevice/x2000_camera_dec.c
+--- ffmpeg-4.2.2/libavdevice/x2000_camera_dec.c	1970-01-01 08:00:00.000000000 +0800
++++ ffmpeg-4.2.2-2/libavdevice/x2000_camera_dec.c	2022-12-06 11:33:00.013528723 +0800
+@@ -0,0 +1,294 @@
++#include <dirent.h>
++#include <unistd.h>
++#include <unistd.h>
++
++#include "libavutil/internal.h"
++#include "libavutil/log.h"
++#include "libavutil/mem.h"
++#include "libavutil/opt.h"
++#include "libavutil/time.h"
++#include "libavutil/parseutils.h"
++#include "libavutil/pixdesc.h"
++#include "libavformat/internal.h"
++#include "avdevice.h"
++
++#include "x2000_camera.c"
++struct x2000_camera_data {
++    AVClass *class;
++    int fd;
++
++    int frame_nums;
++    struct camera_info info;
++
++    int time_offset;
++
++    void *handle;           ///< dlopen handle
++};
++
++static int x2000_camera_read_header(AVFormatContext *ctx)
++{
++    struct x2000_camera_data *s = ctx->priv_data;
++    AVStream *st;
++    int res = 0;
++
++    s->handle = load_x2000_camera_lib();
++    if (!s->handle) {
++        av_log(ctx, AV_LOG_ERROR, "Could not open libhardware2.so\n");
++        return AVERROR(ENODEV);
++    }
++
++    st = avformat_new_stream(ctx, NULL);
++    if (!st) {
++        unload_x2000_camera_lib(s->handle);
++        return AVERROR(ENOMEM);
++    }
++
++    avpriv_set_pts_info(st, 64, 1, 1000000); /* 64 bits pts in us */
++
++    s->fd = camera_open(&s->info, ctx->url);
++    if (s->fd < 0) {
++        unload_x2000_camera_lib(s->handle);
++        av_log(ctx, AV_LOG_ERROR, "Could not open x2000 camera device\n");
++        return s->fd;
++    }
++
++    res = camera_power_on(s->fd);
++    if (res < 0) {
++        camera_close(s->fd, &s->info);
++        unload_x2000_camera_lib(s->handle);
++        return res;
++    }
++
++    res = camera_stream_on(s->fd);
++    if (res) {
++        camera_close(s->fd, &s->info);
++        unload_x2000_camera_lib(s->handle);
++        return res;
++    }
++
++    st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
++    st->codecpar->codec_id   = AV_CODEC_ID_RAWVIDEO;
++    st->codecpar->width      = s->info.width;
++    st->codecpar->height     = s->info.height;
++    st->codecpar->format     = AV_PIX_FMT_NV12;
++    st->avg_frame_rate.num       = s->info.fps;
++    st->avg_frame_rate.den       = 1;
++    st->codecpar->bit_rate   = s->info.line_length * s->info.height * 3 / 2 * s->info.fps * 8;
++
++    return 0;
++}
++
++static void yuyv_to_nv12(void *_dst, void *_src, int xres, int yres, int line_length)
++{
++    int len = xres * yres;
++    unsigned char *y = _dst;
++    unsigned char *uv = _dst + len;
++    unsigned char *start = _src;
++    unsigned char *s0 = _src + 1;
++    unsigned char *s1 = s0 + line_length;
++    int i, j;
++
++    /* 处理Y分量 */
++    for (i = 0; i < yres; i++) {
++        for (j = 0; j < xres * 2; j = j + 2) {
++            *(y++) = start[j];
++        }
++        start += line_length;
++    }
++
++    /* 处理UV分量 */
++    for (j = 0; j < yres; j = j + 2) {
++        for (i = 0; i < xres * 2; i = i + 4) {
++            uv[0] = (s0[0 + i] + s1[0 + i]) / 2;
++            uv[1] = (s0[2 + i] + s1[2 + i]) / 2;
++            uv += 2;
++        }
++        s0 += 2 * line_length;
++        s1 = s0 + line_length;
++    }
++}
++
++static void simple_bayer16_to_nv12(void *_dst, void *_src, int width, int height, int line_length)
++{
++    unsigned int len = line_length * height;
++    unsigned char *src = _src + 1;
++    unsigned char *dst = _dst;
++    int i, j;
++    for (i = 0; i < height; i++) {
++        for (j = 0; j < width * 2; j = j + 2) {
++            *(dst++) = src[j];
++        }
++        src += line_length;
++    }
++
++    memset(dst, 0x80, len / 4);
++
++}
++
++static void y8_to_nv12(void *_dst, void *_src, int width, int height, int line_length)
++{
++    unsigned char *src = _src;
++    unsigned char *dst = _dst;
++
++    for (int i = 0; i < height; i++) {
++        memcpy(dst, src, width);
++        src += line_length;
++        dst += width;
++    }
++    memset(dst, 0x80, width * (height / 2));
++}
++
++static int x2000_camera_read_packet(AVFormatContext *ctx, AVPacket *pkt)
++{
++    int res, height, width;
++    struct frame_info frame;
++    struct x2000_camera_data *s = ctx->priv_data;
++    int input_format = s->info.data_fmt;
++    int line_length = s->info.line_length;
++
++    res = camera_dqbuf_wait(s->fd, &frame);
++    if (res)
++        return AVERROR(EAGAIN);
++
++    height = frame.height;
++    width = frame.width;
++    res = av_new_packet(pkt, height * width * 3 / 2);
++    if (res == 0) {
++        switch (input_format) {
++        case CAMERA_PIX_FMT_YUYV:
++            yuyv_to_nv12(pkt->data, frame.vaddr, width, height, line_length);
++            break;
++        case CAMERA_PIX_FMT_Y16:
++        case CAMERA_PIX_FMT_SBGGR16:
++        case CAMERA_PIX_FMT_SGBRG16:
++        case CAMERA_PIX_FMT_SGRBG16:
++        case CAMERA_PIX_FMT_SRGGB16:
++            simple_bayer16_to_nv12(pkt->data, frame.vaddr, width, height, line_length);
++            break;
++        case CAMERA_PIX_FMT_GREY:
++            y8_to_nv12(pkt->data, frame.vaddr, width, height, line_length);
++            break;
++        case CAMERA_PIX_FMT_NV12:
++        case CAMERA_PIX_FMT_NV21:
++            memcpy(pkt->data, frame.vaddr, frame.size);
++            break;
++        default:
++            av_log(ctx, AV_LOG_ERROR, "Unsupport input format \n");
++            return AVERROR(ENOENT);
++    }
++        pkt->pts = av_gettime() + s->time_offset;
++        s->time_offset = 0;
++        res = frame.size;
++    }
++    camera_qbuf(s->fd, &frame);
++
++    return res;
++}
++
++static int x2000_camera_read_close(AVFormatContext *ctx)
++{
++    struct x2000_camera_data *s = ctx->priv_data;
++
++    camera_drop_frames(s->fd, s->info.frame_nums);
++
++    camera_stream_off(s->fd);
++
++    camera_power_off(s->fd);
++
++    camera_close(s->fd, &s->info);
++
++    unload_x2000_camera_lib(s->handle);
++    return 0;
++}
++
++static int is_x2000_camera_dev(const char *name)
++{
++    if (strncmp(name, "vic", 3) == 0 || strncmp(name, "cim", 3) == 0|| strncmp(name, "cam", 3) == 0)
++        return 1;
++
++    return 0;
++}
++
++static int x2000_camera_get_device_list(AVFormatContext *ctx, AVDeviceInfoList *device_list)
++{
++    DIR *dir;
++    struct dirent *entry;
++    AVDeviceInfo *device = NULL;
++    int ret = 0;
++
++    if (!device_list)
++        return AVERROR(EINVAL);
++
++    dir = opendir("/dev");
++    if (!dir) {
++        ret = AVERROR(errno);
++        av_log(ctx, AV_LOG_ERROR, "Couldn't open the directory: %s\n", av_err2str(ret));
++        return ret;
++    }
++    while ((entry = readdir(dir))) {
++        char device_name[256];
++
++        if (!is_x2000_camera_dev(entry->d_name))
++            continue;
++
++        device = av_mallocz(sizeof(AVDeviceInfo));
++        if (!device) {
++            ret = AVERROR(ENOMEM);
++            goto fail;
++        }
++
++        snprintf(device_name, sizeof(device_name), "/dev/%s", entry->d_name);
++        device->device_name = av_strdup(device_name);
++        device->device_description = av_strdup(entry->d_name);
++        if (!device->device_name || !device->device_description) {
++            ret = AVERROR(ENOMEM);
++            goto fail;
++        }
++
++        if ((ret = av_dynarray_add_nofree(&device_list->devices, &device_list->nb_devices, device)) < 0)
++            goto fail;
++
++        continue;
++
++      fail:
++        if (device) {
++            av_freep(&device->device_name);
++            av_freep(&device->device_description);
++            av_freep(&device);
++        }
++        break;
++    }
++    closedir(dir);
++    return ret;
++}
++
++#define OFFSET(x) offsetof(struct x2000_camera_data, x)
++#define DEC AV_OPT_FLAG_DECODING_PARAM
++
++static const AVOption options[] = {
++    { "frame_nums",      "set frame nums",               OFFSET(frame_nums),      AV_OPT_TYPE_INT,    {.i64 = 2 },  1, INT_MAX, DEC },
++
++    { "time_offset",      "first pts time offset [unit:us]",   OFFSET(time_offset),      AV_OPT_TYPE_INT,    {.i64 = 0 },  INT_MIN, INT_MAX, DEC },
++
++    { NULL },
++};
++
++static const AVClass x2000_camera_class = {
++    .class_name = "x2000 camera",
++    .item_name  = av_default_item_name,
++    .option     = options,
++    .version    = LIBAVUTIL_VERSION_INT,
++    .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT,
++};
++
++AVInputFormat ff_x2000_camera_demuxer = {
++    .name           = "x2000_camera",
++    .long_name      = NULL_IF_CONFIG_SMALL("x2000 camera"),
++    .priv_data_size = sizeof(struct x2000_camera_data),
++    .read_header    = x2000_camera_read_header,
++    .read_packet    = x2000_camera_read_packet,
++    .read_close     = x2000_camera_read_close,
++    .get_device_list = x2000_camera_get_device_list,
++    .flags          = AVFMT_NOFILE,
++    .priv_class     = &x2000_camera_class,
++};

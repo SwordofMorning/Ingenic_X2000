@@ -1,0 +1,29 @@
+menuconfig MD_X2580_AIC
+    bool "aic(i2s 接口)"
+
+config MD_X2580_AIC_SELECT_GPIO
+    int "i2s引脚选择(仅外部codec有效)"
+    choice from MD_x2580_AIC_GPIO_CHOICE_LIST
+    help
+        选用PB/PC引脚
+
+config MD_X2580_AIC_SELECT_CLOCK
+    int "选择rx和tx的时钟是否独立(仅外部codec有效)"
+    choice from MD_x2580_AIC_CLK_CHOICE_LIST
+    help
+        时钟完全独立指tx和rx的mclk、bclk、lrclk相互独立
+        时钟共享tx_mclk指i2s的tx和rx共享tx_mclk，但bclk和lrclk独立
+        时钟完全共享指tx和rx的mclk、bclk、lrclk相互共享
+
+endmenu # aic(i2s 接口)
+
+array MD_x2580_AIC_GPIO_CHOICE_LIST
+    int "i2s引脚选项"
+    item "PB: tx/rx: mclk:11/10, bclk:8/13, lrck:9/14, data:16/15" 0
+    item "PC: tx/rx: mclk:11/12, bclk:15/13, lrck:16/14, data:17/18" 1
+
+array MD_x2580_AIC_CLK_CHOICE_LIST
+    int "选择rx和tx的时钟选项"
+    item "i2s rx和tx的时钟完全独立" 0
+    item "i2s rx和tx共享tx_mclk" 1
+    item "i2s rx和tx共享所有的时钟" 2

@@ -1,0 +1,10 @@
+menuconfig MD_X2600_510_FB_LAYER_MIXER
+    bool "fb_layer_mixer"
+
+config MD_X2600_510_FB_LAYER_MIXER_INIT_BY_USER
+    bool "fb_layer_mixer驱动初始化由应用层触发"
+    default n
+    help
+        当riscv小核用到fb驱动时，xburst2大核等待小核释放资源再做初始化
+
+endmenu

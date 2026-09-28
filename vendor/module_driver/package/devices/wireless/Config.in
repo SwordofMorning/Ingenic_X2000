@@ -1,0 +1,43 @@
+menu "bt,wifi...无线设备"
+
+source package/devices/wireless/aic8800_usb/Config.in
+
+source package/devices/wireless/aic8800D80/Config.in
+
+source package/devices/wireless/atbm603x_linux/Config.in
+
+source package/devices/wireless/bcmdhd/Config.in
+
+source package/devices/wireless/bcmdhd_1.363.59.144/Config.in
+
+source package/devices/wireless/bcmdhd_1.363.125.7/Config.in
+
+source package/devices/wireless/bcmdhd_1.363.125.19_infineon/Config.in
+
+source package/devices/wireless/esp32_linux/Config.in
+
+source package/devices/wireless/esp8089_linux/Config.in
+
+source package/devices/wireless/fcs950uab/Config.in
+
+source package/devices/wireless/hi3861v032_linux/Config.in
+
+source package/devices/wireless/rtl8188FU_linux_v5.15.3/Config.in
+
+source package/devices/wireless/rtl8189FS_linux_v5.7.10/Config.in
+
+source package/devices/wireless/rtl8723DS_WiFi_linux_v5.10/Config.in
+
+source package/devices/wireless/rtl8733BS_WiFi_linux_v5.10/Config.in
+
+source package/devices/wireless/rtl8821CS_WiFi_linux/Config.in
+
+source package/devices/wireless/rtl8822CS_WiFi_linux/Config.in
+
+source package/devices/wireless/ssv6x5x_linux/Config.in
+
+source package/devices/wireless/ssv6x5x_linux_v60.20/Config.in
+
+source package/devices/wireless/wq9001/Config.in
+
+endmenu

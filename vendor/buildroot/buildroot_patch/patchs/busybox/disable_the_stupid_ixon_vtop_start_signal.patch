@@ -1,0 +1,13 @@
+diff -ru busybox-1.31.1/init/init.c busybox-1.31.1.2/init/init.c
+--- busybox-1.31.1/init/init.c	2019-06-10 18:50:53.000000000 +0800
++++ busybox-1.31.1.2/init/init.c	2023-10-26 10:27:36.780020789 +0800
+@@ -375,6 +375,9 @@
+ 	/* input modes */
+ 	tty.c_iflag = ICRNL | IXON | IXOFF;
+ 
++	/* disable the stupid ixon vtop/start signal */
++	tty.c_iflag &= (~IXON);
++
+ 	/* output modes */
+ 	tty.c_oflag = OPOST | ONLCR;
+ 

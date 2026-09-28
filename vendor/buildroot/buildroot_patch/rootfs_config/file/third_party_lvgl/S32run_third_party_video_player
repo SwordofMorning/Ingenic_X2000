@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+
+case "$1" in
+    start)
+        lv_widgets_player &
+
+    ;;
+    *)
+        exit 1
+esac
+
+exit 0

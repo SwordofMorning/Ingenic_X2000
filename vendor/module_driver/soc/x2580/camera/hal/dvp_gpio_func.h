@@ -1,0 +1,9 @@
+#ifndef _DVP_GPIO_FUNC_H_
+#define _DVP_GPIO_FUNC_H_
+
+char *dvp_gpio_func_array[] = {
+    "DVP_PA_10BIT",
+    "DVP_PA_8BIT",
+};
+
+#endif

@@ -1,0 +1,25 @@
+menuconfig MD_X2580_DMIC
+    bool "dmic(外接数字mic)"
+    select MD_X2580_AUDIO_DMA
+
+config MD_X2580_DMIC_SELECT_GPIO
+    int "dmic引脚选择"
+    choice from MD_x2580_DMIC_GPIO_CHOICE_LIST
+    default 1
+    help
+        选用PA/PB引脚
+
+config MD_X2580_DMIC_INT0
+    bool "使能dmic通道0,1"
+    default y
+
+config MD_X2580_DMIC_INT1
+    bool "使能dmic通道2,3"
+    default n
+
+endmenu
+
+array MD_x2580_DMIC_GPIO_CHOICE_LIST
+    int "dmic引脚选项"
+    item "(1.8v)clk, in0, in1:PA 14, 16, 17" 0
+    item "(3.3v)clk, in0, in1:PB 28, 29, 30" 1

@@ -1,0 +1,8 @@
+menuconfig APP_libmcu_device_lcd
+    bool "lcd设备列表"
+    default y
+
+source devices/lcd/x2600/lcd_fw050/Config.in
+source devices/lcd/x2600/lcd_kx070/Config.in
+
+endmenu

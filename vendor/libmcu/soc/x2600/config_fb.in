@@ -1,0 +1,314 @@
+array APP_libmcu_x2600_fb_rotator_angle_list
+    int "rotator 旋转角度"
+    item "旋转90°" 90
+    item "旋转180°" 180
+    item "旋转270°" 270
+
+menuconfig APP_libmcu_x2600_fb
+    bool "framebuffer 驱动(lcd/dpu控制器)"
+    select APP_libmcu_driver_fb
+    help
+        APP_libmcu_lib_malloc_heap_size 大小需要根据 屏尺寸 与 帧缓冲总数 等调整,
+        x2600.lds 中 sram_size 需要根据 屏尺寸 与 帧缓冲总数 等调整
+
+config APP_libmcu_x2600_fb_boot_logo_for_kernel
+    bool "已初始化过 lcd (此时无需再初始化)"
+    default n
+    help
+        已初始化过 lcd, 无需再初始化
+
+config APP_libmcu_x2600_fb_pan_display_sync
+    bool "pan_display 调用时等待帧刷新完成(单缓冲时选中)"
+    default y
+
+config APP_libmcu_x2600_fb_mipi_cmd_waittime_us
+    int "mipi write_cmd 等待时长 (单位为us)(快启时根据屏特性自行设定)"
+    default 1000
+
+menuconfig APP_libmcu_x2600_fb_cfg_mipi_swap
+    bool "mipi lane_P/N pin 交换"
+    default n
+
+config APP_libmcu_x2600_fb_mipi_swap_clk_pin
+    bool "将 clk 的 p脚 和 n脚 功能互换"
+    default n
+
+config APP_libmcu_x2600_fb_mipi_swap_lane0_pin
+    bool "将 lane0 的 p脚 和 n脚 功能互换"
+    default n
+
+config APP_libmcu_x2600_fb_mipi_swap_lane1_pin
+    bool "将 lane1 的 p脚 和 n脚 功能互换"
+    default n
+
+config APP_libmcu_x2600_fb_mipi_swap_lane2_pin
+    bool "将 lane2 的 p脚 和 n脚 功能互换"
+    default n
+
+config APP_libmcu_x2600_fb_mipi_swap_lane3_pin
+    bool "将 lane3 的 p脚 和 n脚 功能互换"
+    default n
+
+endmenu
+
+choice "选择数据通路(MIXER/SRDMA/LAYER)"
+    default APP_libmcu_x2600_fb_layer_enable
+config APP_libmcu_x2600_fb_mixer_enable
+    bool "mixer(多fb叠加到内存+srdma)输出"
+    select APP_libmcu_x2600_fb_use_mixer
+config APP_libmcu_x2600_fb_rotator_enable
+    bool "rotator(多fb叠加到内存+rotator)输出"
+    select APP_libmcu_x2600_fb_use_rotator
+config APP_libmcu_x2600_fb_srdma_enable
+    bool "srdma(单fb无叠加)输出"
+    select APP_libmcu_x2600_fb_use_srdma
+config APP_libmcu_x2600_fb_layer_enable
+    bool "layer(多fb叠加直通lcd)输出"
+    select APP_libmcu_x2600_fb_use_layer
+endchoice
+
+config APP_libmcu_x2600_fb_use_mixer
+    bool
+    select APP_libmcu_x2600_fb_use_srdma
+    select APP_libmcu_x2600_fb_use_layer
+
+config APP_libmcu_x2600_fb_use_rotator
+    bool
+    select APP_libmcu_x2600_fb_use_layer
+    select APP_libmcu_x2600_fb_cfg_rotator
+
+config APP_libmcu_x2600_fb_use_srdma
+    bool
+    select APP_libmcu_x2600_fb_srdma_config
+
+config APP_libmcu_x2600_fb_use_layer
+    bool
+    select APP_libmcu_x2600_fb_layer_config
+
+config APP_libmcu_x2600_fb_cfg_rotator
+    bool "旋转"
+    depends on APP_libmcu_x2600_fb_use_rotator
+
+config APP_libmcu_x2600_fb_rotator_angle
+    int "旋转角度"
+    default 90
+    choice from APP_libmcu_x2600_fb_rotator_angle_list
+    depends on APP_libmcu_x2600_fb_cfg_rotator
+
+config APP_libmcu_x2600_fb_rotator_frames
+    int "旋转帧缓冲数"
+    default 2
+    depends on APP_libmcu_x2600_fb_cfg_rotator
+
+config APP_libmcu_x2600_fb_srdma_config
+    bool "srdma配置"
+    depends on APP_libmcu_x2600_fb_use_srdma
+
+config APP_libmcu_x2600_fb_srdma_frames
+    int "srdma 的帧缓冲数(或mixer模式下叠加后输出的帧缓冲数)"
+    depends on APP_libmcu_x2600_fb_srdma_config
+    default 2
+
+menuconfig APP_libmcu_x2600_fb_layer_config
+    bool "layer/mixer/rotator(多层fb叠加)配置"
+    depends on APP_libmcu_x2600_fb_use_layer
+
+config APP_libmcu_x2600_fb_use_default_order
+    bool "强制使用默认的层级配置（fb0为最低层，fb3为最顶层，应用配置无效）"
+
+config APP_libmcu_x2600_fb_layer0_enable
+    bool "使能fb0"
+
+config APP_libmcu_x2600_fb_layer0_frames
+    int "fb0 的帧缓冲数"
+    default 1
+
+config APP_libmcu_x2600_fb_layer0_alpha
+    int "fb0 的透明度(0-255)"
+    default 128
+
+config APP_libmcu_x2600_fb_layer1_enable
+    bool "使能fb1"
+
+config APP_libmcu_x2600_fb_layer1_frames
+    int "fb1 的帧缓冲数"
+    default 1
+
+config APP_libmcu_x2600_fb_layer1_alpha
+    int "fb1 的透明度(0-255)"
+    default 128
+
+config APP_libmcu_x2600_fb_layer2_enable
+    bool "使能fb2"
+
+config APP_libmcu_x2600_fb_layer2_frames
+    int "fb2 的帧缓冲数"
+    default 1
+
+config APP_libmcu_x2600_fb_layer2_alpha
+    int "fb2 的透明度(0-255)"
+    default 128
+
+config APP_libmcu_x2600_fb_layer3_enable
+    bool "使能fb3"
+
+config APP_libmcu_x2600_fb_layer3_frames
+    int "fb3 的帧缓冲数"
+    default 1
+
+config APP_libmcu_x2600_fb_layer3_alpha
+    int "fb3 的透明度(0-255)"
+    default 128
+
+menuconfig APP_libmcu_x2600_fb_enable_user_config
+    bool "自定义fb的尺寸"
+
+menuconfig APP_libmcu_x2600_fb_layer0_user_enable
+    bool "使能fb0自定义"
+    default n
+
+config APP_libmcu_x2600_fb_layer0_user_width
+    int "fb0的宽"
+    default -1
+
+config APP_libmcu_x2600_fb_layer0_user_height
+    int "fb0的高"
+    default -1
+
+config APP_libmcu_x2600_fb_layer0_user_xpos
+    int "fb0的在lcd水平方向的偏移"
+    default 0
+
+config APP_libmcu_x2600_fb_layer0_user_ypos
+    int "fb0的在lcd垂直的偏移"
+    default 0
+
+config APP_libmcu_x2600_fb_layer0_user_scaling_enable
+    bool "使能缩放"
+    default n
+
+config APP_libmcu_x2600_fb_layer0_user_scaling_width
+    int "缩放后在lcd显示的宽度"
+    depends on APP_libmcu_x2600_fb_layer0_user_scaling_enable
+    default -1
+
+config APP_libmcu_x2600_fb_layer0_user_scaling_height
+    int "缩放后在lcd显示的长度"
+    depends on APP_libmcu_x2600_fb_layer0_user_scaling_enable
+    default -1
+
+endmenu
+
+menuconfig APP_libmcu_x2600_fb_layer1_user_enable
+    bool "使能fb1自定义"
+    default n
+
+config APP_libmcu_x2600_fb_layer1_user_width
+    int "fb1的宽"
+    default -1
+
+config APP_libmcu_x2600_fb_layer1_user_height
+    int "fb1的高"
+    default -1
+
+config APP_libmcu_x2600_fb_layer1_user_xpos
+    int "fb1的在lcd水平方向的偏移"
+    default 0
+
+config APP_libmcu_x2600_fb_layer1_user_ypos
+    int "fb1的在lcd垂直的偏移"
+    default 0
+
+config APP_libmcu_x2600_fb_layer1_user_scaling_enable
+    bool "使能缩放"
+    default n
+
+config APP_libmcu_x2600_fb_layer1_user_scaling_width
+    int "缩放后在lcd显示的宽度"
+    depends on APP_libmcu_x2600_fb_layer1_user_scaling_enable
+    default -1
+
+config APP_libmcu_x2600_fb_layer1_user_scaling_height
+    int "缩放后在lcd显示的长度"
+    depends on APP_libmcu_x2600_fb_layer1_user_scaling_enable
+    default -1
+
+endmenu
+
+menuconfig APP_libmcu_x2600_fb_layer2_user_enable
+    bool "使能fb2自定义"
+    default n
+
+config APP_libmcu_x2600_fb_layer2_user_width
+    int "fb2的宽"
+    default -1
+
+config APP_libmcu_x2600_fb_layer2_user_height
+    int "fb2的高"
+    default -1
+
+config APP_libmcu_x2600_fb_layer2_user_xpos
+    int "fb2的在lcd水平方向的偏移"
+    default 0
+
+config APP_libmcu_x2600_fb_layer2_user_ypos
+    int "fb2的在lcd垂直的偏移"
+    default 0
+
+config APP_libmcu_x2600_fb_layer2_user_scaling_enable
+    bool "使能缩放"
+    default n
+
+config APP_libmcu_x2600_fb_layer2_user_scaling_width
+    int "缩放后在lcd显示的宽度"
+    depends on APP_libmcu_x2600_fb_layer2_user_scaling_enable
+    default -1
+
+config APP_libmcu_x2600_fb_layer2_user_scaling_height
+    int "缩放后在lcd显示的长度"
+    depends on APP_libmcu_x2600_fb_layer2_user_scaling_enable
+    default -1
+
+endmenu
+
+menuconfig APP_libmcu_x2600_fb_layer3_user_enable
+    bool "使能fb3自定义"
+    default n
+
+config APP_libmcu_x2600_fb_layer3_user_width
+    int "fb3的宽"
+    default -1
+
+config APP_libmcu_x2600_fb_layer3_user_height
+    int "fb3的高"
+    default -1
+
+config APP_libmcu_x2600_fb_layer3_user_xpos
+    int "fb3的在lcd水平方向的偏移"
+    default 0
+
+config APP_libmcu_x2600_fb_layer3_user_ypos
+    int "fb3的在lcd垂直的偏移"
+    default 0
+
+config APP_libmcu_x2600_fb_layer3_user_scaling_enable
+    bool "使能缩放"
+    default n
+
+config APP_libmcu_x2600_fb_layer3_user_scaling_width
+    int "缩放后在lcd显示的宽度"
+    depends on APP_libmcu_x2600_fb_layer3_user_scaling_enable
+    default -1
+
+config APP_libmcu_x2600_fb_layer3_user_scaling_height
+    int "缩放后在lcd显示的长度"
+    depends on APP_libmcu_x2600_fb_layer3_user_scaling_enable
+    default -1
+
+endmenu
+
+endmenu
+
+endmenu
+
+endmenu

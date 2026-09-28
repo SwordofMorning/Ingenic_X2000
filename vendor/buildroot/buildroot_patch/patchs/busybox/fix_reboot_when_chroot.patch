@@ -1,0 +1,12 @@
+diff -ru busybox-1.31.1/init/halt.c busybox-1.31.1.2/init/halt.c
+--- busybox-1.31.1/init/halt.c	2019-06-10 18:50:53.000000000 +0800
++++ busybox-1.31.1.2/init/halt.c	2023-10-17 17:52:58.336566435 +0800
+@@ -213,6 +213,8 @@
+ 			/* talk to linuxrc */
+ 			/* bbox init/linuxrc assumed */
+ 			pid_t *pidlist = find_pid_by_name("linuxrc");
++			if (pidlist[0] > 0 && pidlist[1] > 0)
++				rc = kill(pidlist[1], signals[which]);
+ 			if (pidlist[0] > 0)
+ 				rc = kill(pidlist[0], signals[which]);
+ 			if (ENABLE_FEATURE_CLEAN_UP)

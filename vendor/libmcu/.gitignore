@@ -1,0 +1,10 @@
+*.o
+libmcu-bare.bin
+libmcu-bare.elf
+libmcu-bare.S
+libmcu-bare.map
+.config.in
+config.h
+*.lds.in
+.objs/
+.vscode

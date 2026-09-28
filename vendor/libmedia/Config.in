@@ -1,0 +1,245 @@
+menuconfig APP_libmedia
+    bool "libmedia (多媒体:编码,解码,合成...)"
+    default n
+
+config APP_libmedia_static
+    bool "静态编译 libmedia 库"
+    default n
+
+config APP_libmedia_msa_enable
+    bool "使能msa优化（优化视频格式转换速度）"
+    default n
+
+config APP_libmedia_rmem
+    bool "libhardware2 rmem 物理内存分配/映射"
+    default y
+
+config APP_libmedia_signal_handler
+    bool "signal_handler API 把收到的信号和当时的栈信息打印出来 (依赖glibc)"
+    default n
+
+config APP_libmedia_alsa
+    bool "libhardware2 alsa 音频 播放/采集"
+    default y
+
+config APP_libmedia_speex_echo
+    bool "third_party speexdsp 回声消除(录音+音频数据模式)"
+    default n
+
+config APP_libmedia_speex_echo_cc
+    bool "third_party speexdsp 回声消除(录音+硬件回采模式)"
+    default n
+
+config APP_libmedia_hw_rotater
+    bool "libhardware2 硬件旋转"
+    default n
+
+config APP_libmedia_2d_rotator
+    bool "lib2d 硬件旋转"
+    default n
+
+config APP_libmedia_hw_encoder
+    bool "libhardware2 x2000 h264硬件编码"
+    default n
+
+config APP_libmedia_hw_decoder
+    bool "libhardware2 x2000/x2600 h264硬件解码"
+    default n
+
+config APP_libmedia_x2000_hw_jpeg_decoder
+    bool "libhardware2 x2000 jpeg硬件解码"
+    default n
+
+config APP_libmedia_x2600_hw_jpeg_decoder
+    bool "libhardware2 x2600 jpeg硬件解码"
+    default n
+
+config APP_libmedia_fb
+    bool "libhardware2 fb 显示"
+    default y
+
+config APP_libmedia_simple_fb
+    bool "libhardware2 simple fb(仅支持mmap的方式刷数据 x1600)"
+    default n
+
+config APP_libmedia_uvc
+    bool "uvc 摄像头 视频采集"
+    default n
+
+config APP_libmedia_libisp
+    bool "libisp 摄像头 视频采集"
+    default n
+
+config APP_libmedia_vic
+    bool "vic 摄像头 视频采集"
+    default n
+
+config APP_libmedia_ffmpeg
+    bool "ffmpeg 相关组件: 格式,编码,解码,效果"
+    default n
+
+config APP_libmedia_stb
+    bool "stb 相关组件: 字体"
+    default n
+
+config APP_libmedia_turbo_jpeg
+    bool "turbo jpeg相关组件: 解码"
+    default n
+
+config APP_libmedia_test_audio
+    bool "audio 播放测试"
+    select APP_libmedia_ffmpeg
+    select APP_libmedia_alsa
+    default n
+
+config APP_libmedia_test_previewer
+    bool "预览测试"
+    select APP_libmedia_alsa
+    select APP_libmedia_libisp
+    default n
+
+config APP_libmedia_test_secs_previewer
+    bool "带秒表预览测试(可用于测试摄像头数据采集时间)"
+    select APP_libmedia_libisp
+    default n
+
+config APP_libmedia_test_player
+    bool "播放器测试"
+    select APP_libmedia_ffmpeg
+    select APP_libmedia_alsa
+    select APP_libmedia_fb
+    select APP_libmedia_hw_decoder
+    select APP_libmedia_hw_rotater
+    default n
+
+config APP_libmedia_test_recorder
+    bool "x2000 录像测试"
+    select APP_libmedia_ffmpeg
+    select APP_libmedia_alsa
+    select APP_libmedia_libisp
+    select APP_libmedia_vic
+    select APP_libmedia_hw_encoder
+    default n
+
+config APP_libmedia_test_font
+    bool " 字体测试"
+    select APP_libmedia_stb
+    default n
+
+config APP_libmedia_test_jpeg_decode
+    bool " jpeg解码测试"
+    select APP_libmedia_turbo_jpeg
+    default n
+
+config APP_libmedia_test_camera_app
+    bool "x2000 相机APP"
+    select APP_libmedia_ffmpeg
+    select APP_libmedia_alsa
+    select APP_libmedia_libisp
+    select APP_libmedia_fb
+    select APP_libmedia_hw_encoder
+    select APP_libmedia_hw_rotater
+    default n
+
+config APP_libmedia_test_rotate
+    bool "图片旋转测试"
+    select APP_libmedia_hw_rotater
+    select APP_libmedia_fb
+    select APP_libmedia_libisp
+    default n
+
+config APP_libmedia_test_overlayer
+    bool "图片叠加视频测试"
+    select APP_libmedia_turbo_jpeg
+    default n
+
+config APP_libmedia_test_scale
+    bool "图片放大缩小测试"
+    select APP_libmedia_turbo_jpeg
+    select APP_libmedia_fb
+    select APP_libmedia_libisp
+    default n
+
+config APP_libmedia_test_convert
+    bool "图片格式转化测试"
+    select APP_libmedia_fb
+    select APP_libmedia_libisp
+    default n
+
+config APP_libmedia_test_uvc_reader
+    bool "uvc摄像头测试"
+    select APP_libmedia_fb
+    select APP_libmedia_x2000_hw_jpeg_decoder
+    select APP_libmedia_uvc
+    default n
+
+config APP_libmedia_test_uvc_jpeg_to_nv12
+    bool "uvc摄像头jpeg转nv12测试"
+    select APP_libmedia_uvc
+    select APP_libmedia_x2000_hw_jpeg_decoder
+    select APP_libmedia_fb
+    default n
+
+config APP_libmedia_test_uvc_h264_to_mp4
+    bool "uvc摄像头h264音视频存储测试"
+    select APP_libmedia_uvc
+    select APP_libmedia_alsa
+    select APP_libmedia_ffmpeg
+    default n
+
+config APP_libmedia_test_uvc_h264_preview
+    bool "uvc摄像头h264预览测试(x2600平台)"
+    select APP_libmedia_hw_decoder
+    select APP_libmedia_uvc
+    default n
+
+config APP_libmedia_test_uvc_h264_rotator_preview
+    bool "uvc摄像头h264旋转预览测试(x2600平台)"
+    select APP_libmedia_hw_decoder
+    select APP_libmedia_uvc
+    select APP_libmedia_2d_rotator
+    default n
+
+config APP_libmedia_test_uvc_jpeg_preview
+    bool "uvc摄像头jpeg预览测试(x2600平台)"
+    select APP_libmedia_uvc
+    select APP_libmedia_x2600_hw_jpeg_decoder
+    default n
+
+config APP_libmedia_test_uvc_jpeg_rotator_preview
+    bool "uvc摄像头jpeg旋转预览测试(x2600平台)"
+    select APP_libmedia_uvc
+    select APP_libmedia_x2600_hw_jpeg_decoder
+    select APP_libmedia_2d_rotator
+    default n
+
+config APP_libmedia_test_hw_h264_decoder
+    bool "硬件h264解码测试"
+    select APP_libmedia_hw_decoder
+    select APP_libmedia_fb
+    select APP_libmedia_ffmpeg
+    default n
+
+config APP_libmedia_test_aac_encode
+    bool "aac 编码测试"
+    select APP_libmedia_ffmpeg
+    select APP_libmedia_alsa
+    default n
+
+config APP_libmedia_test_aac_decode
+    bool "aac 解码测试"
+    select APP_libmedia_ffmpeg
+    select APP_libmedia_alsa
+    default n
+
+config APP_libmedia_test_speex_aec
+    bool "speex amic录音与音频文件的回声消除测试"
+    select APP_libmedia_speex_echo
+    default n
+
+config APP_libmedia_test_speex_cc_aec
+    bool "speex amic与dmic回采进行回声消除测试"
+    select APP_libmedia_speex_echo_cc
+    default n
+
+endmenu # APP_libmedia

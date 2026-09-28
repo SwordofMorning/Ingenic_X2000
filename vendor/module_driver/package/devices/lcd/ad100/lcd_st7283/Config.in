@@ -1,0 +1,21 @@
+menuconfig MD_AD100_LCD_ST7283
+    bool "TFT ST7283 (480x272) (AD100) (tft 8bit serial接口)"
+    select MD_AD100_510_FB
+    depends on MD_SOC_AD100_BASE
+
+config MD_AD100_ST7283_POWER_EN
+    string "gpio power enable(lcd power使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_AD100_ST7283_DISPLAY_EN
+    string "gpio display enable(lcd display使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_AD100_ST7283_BACKLIGHT_EN
+    string "gpio backlight enable(lcd backlight背光使能)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+endmenu # MD_AD100_LCD_ST7283

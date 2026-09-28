@@ -1,0 +1,6 @@
+menuconfig APP_br_wait_mcu_boot_animation
+    bool "开机等待riscv小核播放开机动画"
+    default n
+    help
+        "需要等待小核释放相应资源后再初始化对应的驱动(fb、felix驱动)"
+endmenu

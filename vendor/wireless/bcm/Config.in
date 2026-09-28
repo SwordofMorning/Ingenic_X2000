@@ -1,0 +1,70 @@
+menuconfig APP_wireless_bcm
+    bool "bcm bt/wifi"
+
+config MD_WIFI_BCM_BOOT_UP
+    bool "开机自启wifi"
+
+choice "    选择相应的wifi固件拷贝到文件系统(目录为/lib/firmware/wifi_bcm/)"
+    default MD_WIFI_FIRMWARE_43438
+
+config MD_WIFI_FIRMWARE_43438
+    bool "bcm43438的wifi固件"
+
+config MD_WIFI_FIRMWARE_43438_INFINEON
+    bool "infineon bcm43438的wifi固件"
+
+config MD_WIFI_FIRMWARE_AP6212
+    bool "ap6212的wifi固件"
+
+config MD_WIFI_FIRMWARE_43456C5
+    bool "bcm43456C5的wifi固件"
+
+config MD_WIFI_FIRMWARE_43455C0
+    bool "bcm43455C0的wifi固件"
+
+config MD_WIFI_FIRMWARE_43362
+    bool "bcm43362的wifi固件"
+
+endchoice
+
+config MD_BT_BSA_BOOT_UP
+    bool "开机自启蓝牙，并加载蓝牙固件"
+
+config MD_BT_UART_DEV_PATH
+    string "uart dev path(串口设备路径)"
+    default /dev/ttyS0
+    help
+        用来下载固件的串口设备路径
+
+choice "    bt firmware(选择蓝牙固件)"
+    default MD_BT_FIRMWARE_43438
+
+config MD_BT_FIRMWARE_43438
+    bool "bcm43438的bt固件"
+
+config MD_BT_FIRMWARE_43438_INFINEON
+    bool "infineon bcm43438的bt固件"
+
+config MD_BT_FIRMWARE_AP6212
+    bool "ap6212的bt固件"
+
+config MD_BT_FIRMWARE_43455C0
+    bool "bcm43455C0的bt固件"
+
+config MD_BT_FIRMWARE_43456C5
+    bool "bcm43456C5的bt固件"
+
+endchoice
+
+choice "    选择对应平台的bsa工具包"
+    default MD_BT_BSA_XBURST1
+
+config MD_BT_BSA_XBURST2
+    bool "xburst2 (x2000, m300等)"
+
+config MD_BT_BSA_XBURST1
+    bool "xburst1(x1000, x1021, 1830等)"
+
+endchoice
+
+endmenu

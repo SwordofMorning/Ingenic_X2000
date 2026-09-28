@@ -1,0 +1,25 @@
+menuconfig MD_AD100_510_DMIC
+    bool "dmic(外接数字mic)"
+    select MD_AD100_510_AUDIO_DMA
+
+config MD_AD100_510_DMIC_INT0
+    bool "使能dmic通道0,1（PC05）"
+    default y
+
+config MD_AD100_510_CLK_SELECT
+    bool "dmic 工作频率"
+    default y
+
+choice "dmic 工作频率"
+    default MD_AD100_510_CLK_2400KHz
+    depends on  MD_AD100_510_CLK_SELECT
+
+config MD_AD100_510_CLK_2400KHz
+    bool "选择dmic的工作频率为2.4MHz"
+
+config MD_AD100_510_CLK_3072KHz
+    bool "选择dmic的工作频率为3.072MHz"
+
+endchoice
+
+endmenu #MD_AD100_510_DMIC

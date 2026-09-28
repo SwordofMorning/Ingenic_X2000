@@ -1,0 +1,30 @@
+menuconfig MD_ESP32
+    bool "ESP32 wireless cards support"
+
+config MD_ESP32_MMC_NUM
+    int "wlan_mmc_num (mmc/sdio 总线号)"
+    default -1
+    help
+      wifi 挂接在哪个 mmc 总线,比如 0, 1
+
+config MD_ESP32_POWER_EN
+    string "gpio_power_en(wifi的供电引脚)"
+    default -1
+    choice from SOC_GPIO_PINS
+
+config MD_ESP32_WIFI_POWER_VALID_LEVEL
+	string "wifi_power_valid_level(wifi模块供电引脚的有效电平)"
+	default 0
+	choice from MD_GPIO_ACTIVE_LEVEL
+
+config MD_ESP32_WLAN_REG_ON
+    string "gpio_wlan_reg_on(wifi的使能引脚)"
+    default -1
+    choice from SOC_GPIO_PINS
+
+config MD_ESP32_DOWNLOAD_MODE
+    string "gpio_download_mode(wifi的系统下载模式设置)"
+    default -1
+    choice from SOC_GPIO_PINS
+
+endmenu

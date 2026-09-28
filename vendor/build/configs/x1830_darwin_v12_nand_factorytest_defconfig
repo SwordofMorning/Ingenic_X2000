@@ -1,0 +1,313 @@
+APP_toolchain_dir=../tools/toolchains/mips-gcc520-glibc222
+APP_uboot_toolchain_dir=../tools/toolchains/mips-gcc520-glibc222
+APP_uboot_dir=../bootloader/uboot-x1000
+APP_uboot_config=x1830_new_xImage_video_sfc_nand
+APP_kernel_dir=../kernel/kernel-x1000
+APP_kernel_config=PD_x1830_sfcnand_base_defconfig
+APP_br_dir=../buildroot/buildroot
+APP_br_config_file=configs/buildroot/buildroot_x1830_darwin_v12_defconfig
+APP_compile_threads=8
+APP_module_driver=y
+MD_INIT_ORDER_FILE=package/default_driver_init_order.mk
+MD_INIT_START_FILE=package/S11module_driver_default
+MD_KEYBOARD_GPIO=y
+MD_KEYBOARD_GPIO0=y
+MD_KEYBOARD_GPIO0_WAKEUP=y
+MD_KEYBOARD_GPIO0_GPIO=PA30
+MD_KEYBOARD_GPIO0_CODE=KEY_WAKEUP
+MD_KEYBOARD_GPIO0_ACTIVE_LEVEL=0
+MD_KEYBOARD_GPIO1=y
+MD_KEYBOARD_GPIO1_WAKEUP=y
+MD_KEYBOARD_GPIO1_GPIO=PC01
+MD_KEYBOARD_GPIO1_CODE=KEY_HOME
+MD_KEYBOARD_GPIO1_ACTIVE_LEVEL=0
+# MD_KEYBOARD_GPIO2 is not set
+# MD_KEYBOARD_GPIO2_WAKEUP is not set
+# MD_KEYBOARD_GPIO3 is not set
+# MD_KEYBOARD_GPIO3_WAKEUP is not set
+# MD_KEYBOARD_GPIO4 is not set
+# MD_KEYBOARD_GPIO4_WAKEUP is not set
+# MD_KEYBOARD_GPIO5 is not set
+# MD_KEYBOARD_GPIO5_WAKEUP is not set
+# MD_KEYBOARD_GPIO6 is not set
+# MD_KEYBOARD_GPIO6_WAKEUP is not set
+# MD_KEYBOARD_GPIO7 is not set
+# MD_KEYBOARD_GPIO7_WAKEUP is not set
+# MD_KEYBOARD_GPIO8 is not set
+# MD_KEYBOARD_GPIO8_WAKEUP is not set
+# MD_KEYBOARD_GPIO9 is not set
+# MD_KEYBOARD_GPIO9_WAKEUP is not set
+# MD_KEYBOARD_GPIO10 is not set
+# MD_KEYBOARD_GPIO10_WAKEUP is not set
+# MD_KEYBOARD_GPIO11 is not set
+# MD_KEYBOARD_GPIO11_WAKEUP is not set
+# MD_KEYBOARD_GPIO12 is not set
+# MD_KEYBOARD_GPIO12_WAKEUP is not set
+# MD_KEYBOARD_GPIO13 is not set
+# MD_KEYBOARD_GPIO13_WAKEUP is not set
+# MD_KEYBOARD_GPIO14 is not set
+# MD_KEYBOARD_GPIO14_WAKEUP is not set
+# MD_KEYBOARD_GPIO15 is not set
+# MD_KEYBOARD_GPIO15_WAKEUP is not set
+MD_KEYBOARD_ADC=y
+MD_ADC_DEVIATION=50
+MD_ADC_CHANNEL=0
+MD_ADC_INIT_VALUE=1800
+MD_ADC_KEY_DETECTIME=100
+MD_ADC_KEY_DEBUG=0
+MD_ADC_KEY1=y
+MD_ADC_KEY1_CODE=KEY_UP
+MD_ADC_KEY1_VALUE=0
+MD_ADC_KEY2=y
+MD_ADC_KEY2_CODE=KEY_DOWN
+MD_ADC_KEY2_VALUE=300
+MD_ADC_KEY3=y
+MD_ADC_KEY3_CODE=KEY_LEFT
+MD_ADC_KEY3_VALUE=600
+MD_ADC_KEY4=y
+MD_ADC_KEY4_CODE=KEY_RIGHT
+MD_ADC_KEY4_VALUE=900
+MD_ADC_KEY5=y
+MD_ADC_KEY5_CODE=KEY_MENU
+MD_ADC_KEY5_VALUE=1200
+MD_ADC_KEY6=y
+MD_ADC_KEY6_CODE=KEY_HOME
+MD_ADC_KEY6_VALUE=1500
+# MD_ADC_KEY7 is not set
+# MD_ADC_KEY8 is not set
+# MD_X1830_LCD_KWH035 is not set
+MD_X1830_LCD_ST7701=y
+MD_X1830_ST7701_RST=PB03
+MD_X1830_ST7701_POWER_EN=PB02
+MD_X1830_ST7701_SPI_BUS_NUM=5
+MD_X1830_ST7701_SPI_CS=PB00
+# MD_X1830_LCD_ST7701_9BIT_SPI is not set
+# MD_X1000_SLCD_TRULY240240 is not set
+# MD_X1021_SLCD_KWH035 is not set
+# MD_X2000_LCD_KWH035 is not set
+# MD_X2000_LCD_KD070D57 is not set
+# MD_X2000_LCD_MA0060 is not set
+MD_PWM_BACKLIGHT=y
+MD_PWM_BACKLIGHT0=y
+MD_PWM_BACKLIGHT_GPIO=PC09
+MD_PWM_BACKLIGHT_ACTIVE_LEVEL=1
+MD_PWM_BACKLIGHT_POWER_GPIO=-1
+MD_PWM_BACKLIGHT_POWER_GPIO_VAILD_LEVEL=1
+MD_PWM_BACKLIGHT0_FREQ=1000000
+MD_PWM_BACKLIGHT0_MAX_BRIGHTNESS=300
+MD_PWM_BACKLIGHT_DEFAULT_BRIGHTNESS=100
+MD_PWM_BACKLIGHT_DEV_NAME="backlight_pwm0"
+# MD_TOUCHSCREEN_FTS is not set
+# MD_TOUCHSCREEN_GT9XX is not set
+# MD_X2000_SENSOR_AR0230 is not set
+# MD_X2000_SENSOR_OV9281_MIPI is not set
+# MD_X2000_SENSOR_JXF37_MIPI is not set
+# MD_X2000_SENSOR_GC2375_MIPI is not set
+# MD_X2000_SENSOR_GC2053_MIPI is not set
+# MD_X2000_SENSOR_SC2310_MIPI is not set
+# MD_X1830_SENSOR_OV2735 is not set
+# MD_X1520_SENSOR_OV9732 is not set
+# MD_X1000_SENSOR_GC0308 is not set
+# MD_X1000_SENSOR_GC2155 is not set
+# MD_X1000_SENSOR_GC0328 is not set
+# MD_X1021_SENSOR_GC0328 is not set
+# MD_X1021_SENSOR_OV9732 is not set
+# MD_X1520_SENSOR_ISP_OV9281_MIPI is not set
+# MD_X1520_SENSOR_ISP_SC031 is not set
+# MD_X1520_SENSOR_ISP_OV9732 is not set
+# MD_X1520_SENSOR_ISP_OV5693 is not set
+# MD_X1520_SENSOR_ISP_SC132 is not set
+# MD_X1830_SENSOR_ISP_OV2735 is not set
+# MD_X1830_SENSOR_ISP_GC2375A is not set
+# MD_X1830_SENSOR_ISP_AR0230 is not set
+# MD_X1830_SENSOR_ISP_AR0522 is not set
+# MD_X1830_SENSOR_ISP_BF2253L is not set
+# MD_CODEC_AK4493 is not set
+# MD_BCMDHD_1_363_125_7 is not set
+# MD_BCMDHD is not set
+MD_RTL8723DS=y
+MD_RTL8723DS_MMC_NUM=1
+MD_RTL8723DS_WLAN_DIS_N=PB04
+MD_RTL8723DS_BT_DIS_N=PB25
+MD_RTL8723DS_BT_WIFI_POWER_EN=PB18
+# MD_RTL8189FS is not set
+# MD_AX88796C_SPI is not set
+# MD_X1000_ICODEC_SOUND_CARD is not set
+# MD_X1021_ICODEC_SOUND_CARD is not set
+# MD_X1520_ICODEC_SOUND_CARD is not set
+MD_X1830_ICODEC_SOUND_CARD=y
+# MD_X2000_ICODEC_SOUND_CARD is not set
+# MD_X2000_AK4493_SOUND_CARD is not set
+# MD_X2000_SPDIF_SOUND_CARD is not set
+# MD_PWM_BATTERY is not set
+MD_UTILS_STRING=y
+MD_UTILS_GPIO=y
+MD_UTILS_I2C=y
+MD_UTILS_SPI=y
+MD_UTILS_CLOCK=y
+MD_SPI_GPIO=y
+MD_SPI_GPIO0=y
+MD_SPI_GPIO0_BUS_NUM=5
+MD_SPI_GPIO0_SCK=PC27
+MD_SPI_GPIO0_MOSI=PC28
+MD_SPI_GPIO0_MISO=-1
+MD_SPI_GPIO0_NUM_CHIPSELECT=8
+# MD_SPI_GPIO1 is not set
+# MD_SPI_GPIO2 is not set
+# MD_SPI_GPIO3 is not set
+# MD_SPI_GPIO4 is not set
+# MD_SPI_GPIO5 is not set
+# MD_SPI_GPIO6 is not set
+# MD_SPI_GPIO7 is not set
+# MD_I2C_GPIO is not set
+MD_SPI_DEVICE_HELPER=y
+MD_SPI_DEVICE:=y
+# MD_BT_HCIUART_RTKH5_KERNEL_4_4_94 is not set
+MD_BT_HCIUART_RTKH5_KERNEL_3_10_14=y
+MD_CHOICE_SOC_X1830=y
+# MD_CHOICE_SOC_X1520 is not set
+# MD_CHOICE_SOC_X1021 is not set
+# MD_CHOICE_SOC_X1000 is not set
+# MD_CHOICE_SOC_X2000 is not set
+MD_SOC_X1830:=y
+MD_SOC_DIR=soc/x1830
+# MD_X1830_SPI is not set
+# MD_X1830_SPI0 is not set
+# MD_X1830_SPI1 is not set
+MD_X1830_ADC=y
+MD_X1830_ADC_VREF=1800
+MD_X1830_PWM=y
+MD_X1830_EFUSE=y
+MD_X1830_EFUSE_VDDQ=-1
+# MD_X1830_WATCHDOG is not set
+MD_X1830_I2C=y
+MD_X1830_I2C0_BUS=y
+MD_X1830_I2C0_PA=y
+MD_X1830_I2C0_RATE=400000
+# MD_X1830_I2C1_BUS is not set
+# MD_X1830_I2C2_BUS is not set
+MD_X1830_DMIC=y
+MD_X1830_UTILS=y
+# MD_X1830_UTILS_RTC32K is not set
+# MD_X1830_UTILS_RTC32K_INIT_ON is not set
+MD_X1830_FB:=y
+MD_X1830_FB_PAN_DISPLAY_SYNC=y
+MD_X1830_FB_LAYER0_FRAMES=2
+MD_X1830_FB_LAYER1_ENABLE=y
+MD_X1830_FB_LAYER1_FRAMES=1
+MD_X1830_FB_LAYER0_ALPHA=128
+MD_X1830_CAMERA=y
+MD_X1830_CAMERA_FRAME_NUMS=2
+# MD_X1830_MSCALER is not set
+MD_X1830_GPIO=y
+MD_X1830_MAC=y
+MD_X1830_PHY_PROBE_MASK=0x0
+MD_X1830_PHY_RESET_TIME_US=100000
+MD_X1830_PHY_RESET_GPIO=PC22
+MD_X1830_PHY_VALID_LEVEL=0
+MD_X1830_ICODEC=y
+# MD_X1830_ICODEC_BAIS_ON is not set
+MD_X1830_ICODEC_SPK_GPIO=-1
+MD_X1830_ICODEC_MAX_HPOUT_VAL=31
+MD_X1830_ICODEC_MIN_HPOUT_VAL=0
+MD_X1830_AIC:=y
+# MD_SOC_X1520 is not set
+# MD_SOC_X1021 is not set
+# MD_SOC_X1000 is not set
+# MD_SOC_X2000 is not set
+APP_br=y
+APP_br_sh_utils_wait_file=y
+APP_br_sh_utils_mount_ubifs=y
+# APP_br_sh_utils_mount_jffs2 is not set
+# APP_br_sh_utils_mount_mmc_ext4 is not set
+APP_br_root_login=y
+APP_br_root_login_tty_port=console
+APP_br_adb_server=y
+APP_br_adb_server_start=y
+APP_br_adb_server_name="ingenic"
+APP_br_adb_server_add_mac=y
+APP_br_ubi_setting=y
+APP_br_ubi_mount_usr_data=y
+# APP_br_jffs2_setting is not set
+# APP_br_mmc_setting is not set
+# APP_br_sdcard_setting is not set
+# APP_ota_updater is not set
+APP_libhardware2=y
+APP_libhardware2_fb=y
+APP_libhardware2_fb_cmd=y
+APP_libhardware2_fb_rector_play=y
+APP_libhardware2_camera=y
+APP_libhardware2_camera_cmd=y
+APP_libhardware2_camera_nv12_preview=y
+APP_libhardware2_pwm=y
+APP_libhardware2_pwm_cmd=y
+APP_libhardware2_pwm_battery=y
+APP_libhardware2_pwm_battery_cmd=y
+APP_libhardware2_adc=y
+APP_libhardware2_adc_cmd=y
+APP_libhardware2_i2c=y
+APP_libhardware2_i2c_cmd=y
+APP_libhardware2_efuse=y
+APP_libhardware2_efuse_cmd=y
+APP_libhardware2_watchdog=y
+APP_libhardware2_watchdog_cmd=y
+APP_libhardware2_dtrng=y
+APP_libhardware2_dtrng_cmd=y
+APP_libhardware2_keyboard=y
+APP_libhardware2_keyboard_cmd=y
+APP_libhardware2_spi=y
+APP_libhardware2_spi_cmd=y
+APP_libhardware2_gpio=y
+APP_libhardware2_gpio_cmd=y
+APP_libhardware2_gpio_sys=y
+APP_libhardware2_mscaler=y
+APP_libhardware2_mscaler_cmd=y
+APP_libhardware2_mcu=y
+APP_libhardware2_mcu_cmd=y
+APP_libhardware2_gpio_counter=y
+APP_libhardware2_gpio_counter_cmd=y
+APP_libutils2=y
+APP_libutils2_boot_time=y
+APP_libutils2_boot_time_cmd=y
+APP_libimpf=y
+# APP_libimpf_v120 is not set
+APP_libimpf_v130=y
+APP_libimpf_base_interface_cmd=y
+APP_libimpf_dec_jpeg_cmd=y
+APP_libimpf_enc_h264_jpeg_cmd=y
+APP_libimpf_fs_bgra_display_cmd=y
+APP_libimpf_fs_nv12_cmd=y
+APP_libimpf_fs_raw_cmd=y
+APP_libimpf_demo_isp_cmd=y
+APP_libimpf_demo_osd_enc_jpeg_cmd=y
+# APP_libimpf_demo_host_uvc_cmd is not set
+APP_libimpf_demo_device_uvc_cmd=y
+# APP_libisp is not set
+APP_test_shell=y
+APP_test_lcd=y
+APP_test_lcd_Backlight=pc09
+APP_test_lcd_dev=/dev/fb0
+# APP_test_camera is not set
+APP_test_wifi=y
+APP_test_wifi_ssid=Guest
+APP_test_wifi_psk=ingenic_guest
+APP_test_mac=y
+APP_test_mac_ip_addr=194.169.3.198
+APP_test_mac_mask=255.255.255.0
+APP_test_mac_gw=194.169.3.1
+APP_test_amic=y
+APP_test_amic_channel=1
+APP_test_dmic=y
+APP_test_dmic_channel=2
+APP_test_speak=y
+APP_test_bt=y
+APP_test_bt_select=REALTEK
+APP_test_bt_detect_time=10
+# APP_wireless_bcm is not set
+APP_wireless_realtek=y
+# MD_BT_RTK_BOOT_UP is not set
+# MD_WIFI_RTL_BOOT_UP is not set
+MD_BT_UART_DEV_PATH=/dev/ttyS0
+# APP_wireless_quectel is not set
+# APP_FaceApp is not set
+# APP_EVOL is not set

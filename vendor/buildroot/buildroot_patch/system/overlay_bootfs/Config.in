@@ -1,0 +1,15 @@
+menuconfig APP_system_overlay_bootfs
+    bool "overlay bootfs(用于引导只读文件系统的overlayfs)"
+
+choice "选择overlayfs挂载方式"
+    default APP_system_overlay_bootfs_ubi
+
+config APP_system_overlay_bootfs_ubi
+    bool "ubifs: mount_ubifs.sh userdata /usr/data/"
+
+config APP_system_overlay_bootfs_jffs2
+    bool "jffs2: mount_jffs2.sh userdata /usr/data/"
+
+endchoice
+
+endmenu

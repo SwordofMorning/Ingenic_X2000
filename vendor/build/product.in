@@ -1,0 +1,48 @@
+menu "工程/编译配置"
+
+config APP_br_toolchain_name
+    string "buildroot 工具链前缀"
+    default mips-linux-gnu-
+
+config APP_toolchain_dir
+    string "linux编译工具链 相对路径"
+
+config APP_uboot_toolchain_dir
+    string "uboot编译工具链 相对路径"
+
+config APP_uboot_dir
+    string "uboot 相对路径"
+
+config APP_uboot_config
+    string "uboot 默认配置"
+
+config APP_kernel_dir
+    string "内核 相对路径"
+
+config APP_kernel_config
+    string "kernel 默认配置"
+
+menuconfig Kernel_uImage_menu
+    bool "选择 kernel 类型为 uImage(只能选其中一个)"
+
+config APP_kernel_uImage
+    bool "编译 kernel 镜像为 uImage"
+    default n
+
+config APP_kernel_uImage_split
+    bool "编译 kernel 镜像为 uImage_split, 即使用拆分压缩的 uImage"
+    default n
+
+endmenu
+
+config APP_br_dir
+    string "buildroot 相对路径"
+
+config APP_br_config_file
+    string "buildroot 配置文件"
+
+config APP_compile_threads
+    int "编译时的线程数(make -j'num')"
+    default 8
+
+endmenu

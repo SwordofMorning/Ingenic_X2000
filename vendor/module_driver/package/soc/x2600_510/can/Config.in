@@ -1,0 +1,58 @@
+array SOC_X2600_510_CAN0_DR_IO
+    string "CAN0 DR 引脚"
+    item "GPIO_NULL  " -1
+    item "PC08" PC08
+
+array SOC_X2600_510_CAN0_DT_IO
+    string "CAN0 DT 引脚"
+    item "GPIO_NULL  " -1
+    item "PC07" PC07
+
+
+array SOC_X2600_510_CAN1_DR_IO
+    string "CAN1 DR 引脚"
+    item "GPIO_NULL  " -1
+    item "PC10" PC10
+
+array SOC_X2600_510_CAN1_DT_IO
+    string "CAN1 DT 引脚"
+    item "GPIO_NULL  " -1
+    item "PC09" PC09
+
+
+
+menuconfig MD_X2600_510_CAN
+    bool "can 总线"
+
+config MD_X2600_510_CAN0
+    bool "选择 CAN0"
+
+config MD_X2600_510_CAN0_RX
+    string "    DR(输入引脚)"
+    default PC08
+    choice from SOC_X2600_510_CAN0_DR_IO
+    depends on MD_X2600_510_CAN0
+
+config MD_X2600_510_CAN0_TX
+    string "    DT(输出引脚)"
+    default PC07
+    choice from SOC_X2600_510_CAN0_DT_IO
+    depends on MD_X2600_510_CAN0
+
+
+config MD_X2600_510_CAN1
+    bool "选择 CAN1"
+
+config MD_X2600_510_CAN1_RX
+    string "    DR(输入引脚)"
+    default PC10
+    choice from SOC_X2600_510_CAN1_DR_IO
+    depends on MD_X2600_510_CAN1
+
+config MD_X2600_510_CAN1_TX
+    string "    DT(输出引脚)"
+    default PC09
+    choice from SOC_X2600_510_CAN1_DT_IO
+    depends on MD_X2600_510_CAN1
+
+endmenu # CAN 总线

@@ -1,0 +1,38 @@
+menuconfig APP_libmcu_x1600
+    bool "x1600 小核配置"
+    depends on APP_libmcu_choice_x1600
+
+config APP_libmcu_x1600_irq
+    bool "irq 中断处理驱动"
+    select APP_libmcu_driver_irq
+    default y
+
+config APP_libmcu_x1600_clk
+    bool "clk 驱动"
+    select APP_libmcu_driver_clk
+    default y
+
+config APP_libmcu_x1600_gpio
+    bool "gpio 驱动"
+    select APP_libmcu_driver_gpio
+    default y
+    help
+        使用该驱动需要在 kernel 内勾选 CONFIG_INGENIC_DISABLE_GPIO_UAE_SHADOW
+
+config APP_libmcu_x1600_systick
+    bool "systick timer驱动"
+    select APP_libmcu_driver_systick
+
+config APP_libmcu_x1600_tcu
+    bool "tcu 驱动(gpio 时钟计数捕获)"
+    select APP_libmcu_driver_tcu
+    default y
+
+config APP_libmcu_x1600_adc
+    bool "adc 驱动"
+    select APP_libmcu_driver_adc
+    default n
+
+source soc/x1600/config_uart.in
+source soc/x1600/config_i2c.in
+endmenu

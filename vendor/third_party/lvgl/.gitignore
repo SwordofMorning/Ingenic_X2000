@@ -1,0 +1,9 @@
+lv_conf.h
+config.h
+*.o
+*.d
+.*.mk
+.*.h
+.config.in
+.vscode/
+*.so

@@ -1,0 +1,46 @@
+# X2000 SDK repository — ignore rules
+#
+# 1) build sandbox: the rsync copy of vendor/ where all compilation happens
+/build/
+
+# 2) cross toolchains: distributed as tar.xz archives next to the repo tree.
+#    The archives themselves are also not tracked (they are 228 MB + 1.5 GB and
+#    are delivered by file copy / internal share, not by git).
+/toolchains/*.tar.xz
+/toolchains/*.tar.bz2
+/toolchains/*.tar.gz
+/toolchains/mips-gcc*/
+
+# 3) original vendor material lives outside the repository
+/original_bsp/
+
+# 4) vendor build leftovers that must never enter git (belt and braces; the
+#    vendor tree ships its own .gitignore files which cover most of these)
+vendor/**/*.o
+vendor/**/*.ko
+vendor/**/*.cmd
+vendor/**/*.mod.c
+vendor/**/.tmp_versions/
+vendor/**/modules.order
+vendor/**/Module.symvers
+vendor/kernel/kernel/.config
+vendor/kernel/kernel/.config.save
+vendor/kernel/kernel/uImage
+vendor/kernel/kernel/uImage_split
+vendor/buildroot/buildroot/.config
+vendor/buildroot/buildroot/.config.old
+vendor/buildroot/buildroot/output/
+vendor/buildroot/buildroot_patch/.config.in
+vendor/module_driver/output/
+vendor/module_driver/.config.in
+vendor/module_driver/config.h
+vendor/ota_updater/ota/
+vendor/build/.config.in
+vendor/build/config.h
+vendor/build/output/
+
+# 5) editor / OS noise
+*.swp
+*~
+.DS_Store
+.vscode/

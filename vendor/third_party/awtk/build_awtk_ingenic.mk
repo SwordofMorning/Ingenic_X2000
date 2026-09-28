@@ -1,0 +1,14 @@
+CSRCS += $(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME)/lcd_linux/lcd_linux_fb.c
+CSRCS += $(wildcard $(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME)/input_thread/*.c)
+CSRCS += $(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME)/main_loop_linux.c
+CSRCS += $(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME)/ingenic_lib2d_g2d.c
+CSRCS += $(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME)/ingenic_msa_g2d.c
+
+CFLAGS += -I$(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME) 
+CFLAGS += -I$(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME)/input_thread
+CFLAGS += -I$(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME)/lcd_linux
+
+CXXFLAGS += -I$(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME) 
+CXXFLAGS += -I$(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME)/input_thread
+CXXFLAGS += -I$(AWTK_DIR)/$(AWTK_INGENIC_DIR_NAME)/lcd_linux
+

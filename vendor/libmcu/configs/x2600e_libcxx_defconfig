@@ -1,0 +1,91 @@
+APP_libmcu=y
+# APP_libmcu_choice_x2000 is not set
+# APP_libmcu_choice_x1600 is not set
+# APP_libmcu_choice_x1000 is not set
+# APP_libmcu_choice_x2580 is not set
+APP_libmcu_choice_x2600=y
+# APP_libmcu_x2000 is not set
+# APP_libmcu_x1600 is not set
+# APP_libmcu_x1000 is not set
+# APP_libmcu_x2580 is not set
+APP_libmcu_x2600:=y
+APP_libmcu_x2600_mem_start=0xf000000
+APP_libmcu_x2600_mem_size=0x1000000
+APP_libmcu_x2600_stack_size=8192
+APP_libmcu_x2600_stack_in_tcsm=y
+APP_libmcu_x2600_tcsm_data_size=16384
+APP_libmcu_x2600_tcsm_text_size=16384
+APP_libmcu_x2600_adc=y
+APP_libmcu_x2600_tcu=y
+APP_libmcu_x2600_gpio=y
+APP_libmcu_x2600_systick=y
+APP_libmcu_x2600_clk=y
+APP_libmcu_x2600_irq=y
+APP_libmcu_x2600_uncache_mem_size=4096
+# APP_libmcu_x2600_felix is not set
+APP_libmcu_x2600_dma=y
+APP_libmcu_x2600_pwm=y
+APP_libmcu_x2600_uart=y
+APP_libmcu_x2600_uart0=y
+APP_libmcu_x2600_uart0_rx=GPIO_PE(10),GPIO_FUNC_1
+APP_libmcu_x2600_uart0_tx=GPIO_PE(9),GPIO_FUNC_1
+APP_libmcu_x2600_uart0_cts=-1
+APP_libmcu_x2600_uart0_rts=-1
+# APP_libmcu_x2600_uart1 is not set
+# APP_libmcu_x2600_uart2 is not set
+# APP_libmcu_x2600_uart3 is not set
+# APP_libmcu_x2600_uart4 is not set
+# APP_libmcu_x2600_uart5 is not set
+# APP_libmcu_x2600_uart6 is not set
+# APP_libmcu_x2600_uart7 is not set
+# APP_libmcu_x2600_fb is not set
+# APP_libmcu_x2600_spi is not set
+APP_libmcu_version=0
+APP_libmcu_show_compile_time=y
+APP_libmcu_gcc_optimization=-Os
+APP_libmcu_gcc_function_sections=y
+APP_libmcu_gcc_data_sections=y
+APP_libmcu_gcc_gc_sections=y
+# APP_libmcu_simple_irq_handle is not set
+APP_libmcu_tcsm_text_section=y
+APP_libmcu_device=y
+# APP_libmcu_device_lcd is not set
+APP_libmcu_driver=y
+APP_libmcu_driver_console=y
+APP_libmcu_driver_console_uart=y
+# APP_libmcu_driver_console_none is not set
+APP_libmcu_driver_console_uart_index=2
+APP_libmcu_driver_console_buad_rate=3000000
+APP_libmcu_driver_console_no_need_to_init=y
+APP_libmcu_driver_hrtimer=y
+APP_libmcu_driver_irq:=y
+APP_libmcu_driver_clk:=y
+APP_libmcu_driver_gpio:=y
+APP_libmcu_driver_uart:=y
+APP_libmcu_driver_systick:=y
+APP_libmcu_driver_tcu:=y
+APP_libmcu_driver_adc:=y
+# APP_libmcu_driver_i2c is not set
+APP_libmcu_driver_pwm:=y
+APP_libmcu_driver_dma:=y
+# APP_libmcu_driver_fb is not set
+# APP_libmcu_driver_spi is not set
+APP_libmcu_lib=y
+APP_libmcu_lib_assert=y
+APP_libmcu_lib_assert_no_file_name=y
+APP_libmcu_lib_string=y
+APP_libmcu_lib_printf=y
+APP_libmcu_lib_printf_support_longlong=y
+# APP_libmcu_lib_printf_not_support_longlong is not set
+# APP_libmcu_lib_printf_support_float is not set
+# APP_libmcu_lib_simple_printf is not set
+APP_libmcu_lib_ring_mem=y
+# APP_libmcu_lib_malloc is not set
+APP_libmcu_lib_nalu=y
+APP_libmcu_newlib_simple_syscall=y
+APP_libmcu_newlib_malloc_sbrk:=y
+APP_libmcu_newlib_libm_fix_longdouble:=y
+APP_libmcu_libcxx=y
+# APP_libmcu_libcxx_rtti is not set
+# APP_libmcu_libcxx_thread is not set
+APP_libmcu_libcxx_x2600_libm_fix_longdouble=y

@@ -1,0 +1,35 @@
+menuconfig MD_X2580_SENSOR_OV9282_MIPI
+    bool "sensor ov9282 (mipi,raw8)"
+    select MD_X2580_CAMERA_VIC
+    depends on MD_SOC_X2580_BASE
+
+config MD_X2580_OV9282_GPIO_RESET
+    string "gpio reset(sensor 复位脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2580_OV9282_GPIO_PWDN
+    string "gpio pwdn(sensor 电源控制引脚, 低有效)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2580_OV9282_GPIO_POWER
+    string "gpio power(sensor 电源控制引脚, 高有效)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2580_OV9282_I2C_BUSNUM
+    int "i2c bus num (sensor 挂接的i2c总线号)"
+    default -1
+
+array SENSOR_RESOLUTION
+    string "sensor resolution"
+    item "1280*800 120fps" OV9282_1280_800_120FPS
+    item "1280*800 60fps"  OV9282_1280_800_60FPS
+
+config MD_X2580_OV9282_MIPI_RESOLUTION
+    string "resolution(ov9282分辨率配置)"
+    choice from SENSOR_RESOLUTION
+    default OV9282_1280_800_120FPS
+
+endmenu # MD_X2580_SENSOR_OV9282_MIPI

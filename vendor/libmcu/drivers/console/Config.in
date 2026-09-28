@@ -1,0 +1,32 @@
+
+menuconfig APP_libmcu_driver_console
+    bool "console 驱动(printf输出)"
+    default y
+
+choice "选择console设备类型"
+
+config APP_libmcu_driver_console_uart
+    bool "uart console"
+
+config APP_libmcu_driver_console_none
+    bool "不使用任何 console"
+
+endchoice
+
+config APP_libmcu_driver_console_uart_index
+    int "选择 uart console id"
+    depends on APP_libmcu_driver_console_uart
+    default -1
+    choice from APP_libmcu_soc_uart_devs
+
+config APP_libmcu_driver_console_buad_rate
+    int "串口波特率"
+    depends on APP_libmcu_driver_console_uart
+    default 3000000
+    choice from APP_libmcu_soc_uart_buad_rate
+
+config APP_libmcu_driver_console_no_need_to_init
+    bool "不uart初始化(kernel 已经初始化了)"
+    depends on APP_libmcu_driver_console_uart
+
+endmenu

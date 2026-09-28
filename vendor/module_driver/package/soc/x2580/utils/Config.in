@@ -1,0 +1,21 @@
+menuconfig MD_X2580_UTILS
+    bool "utils 驱动(芯片的一些小功能)"
+
+config MD_X2580_UTILS_RTC32K
+    bool "rtc32k 时钟bypas输出(PC16)"
+    default y
+
+config MD_X2580_UTILS_RTC32K_INIT_ON
+    bool "        初始化即使能rtc32k输出"
+    depends on MD_X2580_UTILS_RTC32K
+
+
+config MD_X2580_UTILS_CLK24M
+    bool "clk24m 时钟bypas输出(PC15)"
+    default y
+
+config MD_X2580_UTILS_CLK24M_INIT_ON
+    bool "        初始化即使能clk24m输出"
+    depends on MD_X2580_UTILS_CLK24M
+
+endmenu

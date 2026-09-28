@@ -1,0 +1,12 @@
+
+menuconfig APP_br_ssh
+    bool "sshd 适配只读文件系统 (buildroot需要选中openssh,设置root密码)"
+    default n
+
+config APP_br_ssh_config_file
+    string "sshd 默认配置文件"
+    default "rootfs_config/file/ssh/sshd_config"
+
+endmenu
+
+

@@ -1,0 +1,12 @@
+menuconfig APP_libmcu_x1000_uart
+    bool "uart 驱动"
+    select APP_libmcu_driver_uart
+
+endmenu
+
+array APP_libmcu_soc_uart_devs
+    int "soc uart 列表"
+    item "不使用 uart" -1
+    item "uart0" 0
+    item "uart1" 1
+    item "uart2" 2

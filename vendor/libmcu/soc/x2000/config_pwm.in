@@ -1,0 +1,101 @@
+menuconfig  APP_libmcu_x2000_pwm
+    bool "pwm 驱动"
+    select APP_libmcu_driver_pwm
+
+config APP_libmcu_x2000_pwm0_PC
+    bool "pwm0 pc00"
+    default y
+
+config APP_libmcu_x2000_pwm1_PC
+    bool "pwm1 pc01"
+    default y
+
+config APP_libmcu_x2000_pwm2_PC
+    bool "pwm2 pc02"
+    default y
+
+config APP_libmcu_x2000_pwm3_PC
+    bool "pwm3 pc03"
+    default y
+
+config APP_libmcu_x2000_pwm4_PC
+    bool "pwm4 pc04"
+    default y
+
+config APP_libmcu_x2000_pwm5_PC
+    bool "pwm5 pc05"
+    default y
+
+config APP_libmcu_x2000_pwm6_PC
+    bool "pwm6 pc06"
+    default y
+
+config APP_libmcu_x2000_pwm7_PC
+    bool "pwm7 pc07"
+    default y
+
+config APP_libmcu_x2000_pwm8
+    bool "pwm8 pc08"
+    default y
+
+config APP_libmcu_x2000_pwm9
+    bool "pwm9 pc09"
+    default y
+
+config APP_libmcu_x2000_pwm10
+    bool "pwm10 pc10"
+    default y
+
+config APP_libmcu_x2000_pwm11
+    bool "pwm11 pc11"
+    default y
+
+config APP_libmcu_x2000_pwm12
+    bool "pwm12 pc12"
+    default y
+
+config APP_libmcu_x2000_pwm13
+    bool "pwm13 pc13"
+    default y
+
+config APP_libmcu_x2000_pwm14
+    bool "pwm14 pc14"
+    default y
+
+config APP_libmcu_x2000_pwm15
+    bool "pwm15 pc15"
+    default y
+
+config APP_libmcu_x2000_pwm0_PD
+    bool "pwm0 pd30"
+    default y
+
+config APP_libmcu_x2000_pwm1_PD
+    bool "pwm1 pd31"
+    default y
+
+config APP_libmcu_x2000_pwm2_PE
+    bool "pwm2 pe00"
+    default y
+
+config APP_libmcu_x2000_pwm3_PE
+    bool "pwm3 pe01"
+    default y
+
+config APP_libmcu_x2000_pwm4_PE
+    bool "pwm4 pe02"
+    default y
+
+config APP_libmcu_x2000_pwm5_PE
+    bool "pwm5 pe03"
+    default y
+
+config APP_libmcu_x2000_pwm6_PE
+    bool "pwm6 pe04"
+    default y
+
+config APP_libmcu_x2000_pwm7_PE
+    bool "pwm7 pe05"
+    default y
+
+endmenu

@@ -1,0 +1,19 @@
+array SOC_X2600_510_CAMERA_MCLK_IO
+    string "X2600_510 MCLK 引脚"
+    item "PA11" PA11
+    item "PE(02)    24M晶振旁路,输出频率不可调整" PE02
+
+menuconfig MD_X2600_510_CAMERA
+    bool "camera 驱动(cim控制器)"
+
+
+config MD_X2600_510_CAMERA_MCLK
+    string "CIM MCLK管脚选择"
+    default PA11
+    choice from SOC_X2600_510_CAMERA_MCLK_IO
+
+config MD_X2600_510_CAMERA_CIM_FRAME_NUMS
+    int "CIM Camera 帧缓冲数 "
+    default 2
+
+endmenu

@@ -1,0 +1,29 @@
+choice "选择对应cpu平台"
+
+config APP_libmcu_choice_x2000
+    bool "x2000 片上小核"
+    select APP_libmcu_x2000
+
+config APP_libmcu_choice_x1600
+    bool "x1600 片上小核"
+    select APP_libmcu_x1600
+
+config APP_libmcu_choice_x1000
+    bool "x1000 片上小核"
+    select APP_libmcu_x1000
+
+config APP_libmcu_choice_x2580
+    bool "x2580 片上riscv小核"
+    select APP_libmcu_x2580
+
+config APP_libmcu_choice_x2600
+    bool "x2600 片上riscv小核"
+    select APP_libmcu_x2600
+
+endchoice
+
+source soc/x2000/Config.in
+source soc/x1600/Config.in
+source soc/x1000/Config.in
+source soc/x2580/Config.in
+source soc/x2600/Config.in

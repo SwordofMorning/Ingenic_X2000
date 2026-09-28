@@ -1,0 +1,21 @@
+diff -Naur bluez-5.54/profiles/audio/media.c bluez-5.54.2/profiles/audio/media.c
+--- bluez-5.54/profiles/audio/media.c	2019-09-20 02:51:03.000000000 +0800
++++ bluez-5.54.2/profiles/audio/media.c	2022-10-08 17:50:23.959025865 +0800
+@@ -1265,7 +1265,7 @@
+ 	return media_player_send(mp, "Stop");
+ }
+ 
+-static bool pause(void *user_data)
++static bool m_pause(void *user_data)
+ {
+ 	struct media_player *mp = user_data;
+ 
+@@ -1315,7 +1315,7 @@
+ 	.set_volume = set_volume,
+ 	.play = play,
+ 	.stop = stop,
+-	.pause = pause,
++	.pause = m_pause,
+ 	.next = next,
+ 	.previous = previous,
+ };

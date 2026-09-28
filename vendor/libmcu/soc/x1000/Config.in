@@ -1,0 +1,21 @@
+menuconfig APP_libmcu_x1000
+    bool "x1000 小核配置"
+    depends on APP_libmcu_choice_x1000
+
+config APP_libmcu_x1000_irq
+    bool "irq 中断处理驱动"
+    default y
+
+config APP_libmcu_x1000_clk
+    bool "clk 驱动"
+    select APP_libmcu_driver_clk
+    default y
+
+config APP_libmcu_x1000_gpio
+    bool "gpio 驱动"
+    select APP_libmcu_driver_gpio
+    default y
+
+source soc/x1000/config_uart.in
+
+endmenu

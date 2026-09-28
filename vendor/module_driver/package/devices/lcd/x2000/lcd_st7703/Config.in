@@ -1,0 +1,30 @@
+menuconfig MD_X2000_LCD_ST7703
+    bool "TFT ST7703 (640 x 960) (X2000) (mipi接口)"
+    select MD_X2000_FB
+    depends on MD_SOC_X2000_BASE
+
+config MD_X2000_ST7703_TE
+    string "gpio TE select"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2000_ST7703_RST
+    string "gpio reset(lcd 复位引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2000_ST7703_POWER_EN
+    string "gpio power enable(lcd power 使能引脚) "
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2000_ST7703_REGULATOR_NAME
+    string "regulator name(通过名字获取 lcd module 电源管理器)"
+    default -1
+
+config MD_X2000_ST7703_LCD_BACKLIGHT_ENABLE
+    string "gpio backlight enable(lcd backlight 背光使能)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+endmenu # MD_X2000_LCD_ST7703

@@ -1,0 +1,13 @@
+menuconfig MD_KEYBOARD_MULT_ADC
+    bool "多通道ADC按键驱动"
+
+config MD_MULT_ADC_KEY_DEBUG
+    bool "开启多通道ADC按鍵DEBUG打印"
+    default n
+
+source package/devices/keyboard/keyboard_mult_adc/keyboard_adc0.in
+source package/devices/keyboard/keyboard_mult_adc/keyboard_adc1.in
+source package/devices/keyboard/keyboard_mult_adc/keyboard_adc2.in
+source package/devices/keyboard/keyboard_mult_adc/keyboard_adc3.in
+
+endmenu # MD_KEYBOARD_MULT_ADC

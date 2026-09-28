@@ -1,0 +1,56 @@
+menuconfig APP_libimpf
+    bool "libimpf (X1830/X1520 isp接口/命令)"
+    default n
+
+choice "impf 版本选择"
+	default APP_libimpf_v120
+
+config APP_libimpf_v120
+	bool "for x1520"
+
+config APP_libimpf_v130
+	bool "for x1830"
+
+endchoice
+
+config APP_libimpf_base_interface_cmd
+    bool "base_interface(获取视频流)"
+    default n
+
+config APP_libimpf_dec_jpeg_cmd
+    bool "dec_jpeg(jpeg解码成nv12)"
+    default n
+
+config APP_libimpf_enc_h264_jpeg_cmd
+    bool "enc_h264_jpeg(nv12编码成h264和jpeg)"
+    default n
+
+config APP_libimpf_fs_bgra_display_cmd
+    bool "fs_bgra_display(nv12格式转换成bgra显示到屏上)"
+    default n
+
+config APP_libimpf_fs_nv12_cmd
+    bool "fs_nv12(输出经过isp处理的两种分辨率图像，通道0为原始分辨率，通道1为缩放后的分辨率)"
+    default n
+
+config APP_libimpf_fs_raw_cmd
+    bool "fs_raw(输出sensor未经isp加工数据)"
+    default n
+
+config APP_libimpf_demo_isp_cmd
+    bool "demo_isp(输出经过isp处理的一种分辨率图像，通道0为原始分辨率)"
+    default y
+
+config APP_libimpf_demo_osd_enc_jpeg_cmd
+    bool "osd_enc_jpeg(nv12经过osd叠加水印编码成jpeg)"
+    default n
+
+config APP_libimpf_demo_host_uvc_cmd
+    bool "host_uvc(获取设备端usb摄像头的图像)"
+    default n
+
+config APP_libimpf_demo_device_uvc_cmd
+    bool "device_uvc(输出yuv格式的图像通过usb输出到主机)"
+    default n
+
+endmenu

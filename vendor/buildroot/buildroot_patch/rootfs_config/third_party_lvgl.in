@@ -1,0 +1,21 @@
+menuconfig APP_br_third_party_lvgl
+    bool "开机运行lvgl"
+    default n
+
+choice "app "
+
+config APP_br_lvgl_demo_widgets
+    bool "lvgl_demo_widgets 应用"
+
+config APP_br_lvgl_video_player
+    bool "lvgl_video_player 应用"
+
+config APP_br_lvgl_demo_lock2
+    bool "lvgl_demo_ilock2 应用"
+
+config APP_br_lvgl_demo_lock_tuya
+    bool "lvgl_demo_ilock_tuya 应用"
+
+endchoice
+
+endmenu # APP_libmedia

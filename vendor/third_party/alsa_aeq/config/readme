@@ -1,0 +1,7 @@
+config.ini	说明
+	enable		是否使能equalizer
+	bands		调节equalizer的band数
+	freqX		调节的频点 单位:Hz
+	bandX		对应频点的增益 单位:dB
+	QX			对应band的Q值
+	preamp_band	基础增益 单位:dB

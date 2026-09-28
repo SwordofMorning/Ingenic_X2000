@@ -1,0 +1,477 @@
+menuconfig APP_libhardware2
+    bool "libhardware2 (片上外设的接口/命令)"
+    default y
+
+menuconfig APP_libhardware2_fb
+    bool "fb(framebuffer显示接口)"
+    default n
+
+config APP_libhardware2_fb_cmd
+    bool "fb shell命令"
+    default n
+
+config APP_libhardware2_fb_rector_play
+    bool "俄罗斯方块程序,基于adc按键"
+    default n
+
+config APP_libhardware2_fb_scale_cmd
+    bool "fb预览nv12图像格式缩放"
+    default n
+
+endmenu
+
+config APP_libhardware2_fb_layer_mixer
+    bool "fb_layer_mixer(fb图层叠加接口)"
+    default n
+
+menuconfig APP_libhardware2_v4l2
+    bool "vpu(x2000/x2600/ad100)"
+    default n
+
+menuconfig APP_libhardware2_v4l2_jpeg_encode
+    bool "x2000 jpeg 编码选项"
+    default n
+config APP_libhardware2_camera_jpeg_encode
+    bool "camera jpeg编码命令(通过v4l2将Camera输出的图像编码成jpeg格式)"
+    default n
+endmenu #"x2000 jpeg 编码选项"
+
+menuconfig APP_libhardware2_v4l2_jpeg_decode
+    bool "x2000 jpeg 解码选项"
+    default n
+config APP_libhardware2_jpeg_decode_cmd
+    bool "硬件jpeg解码命令 (x2000)"
+    default n
+endmenu #"x2000 jpeg 解码选项"
+
+menuconfig APP_libhardware2_v4l2_h264_encode
+    bool "x2000 h264 编码选项"
+    default n
+config APP_libhardware2_camera_h264_encode
+    bool "camera h264编码命令(通过v4l2将Camera输出的图像编码成h264格式)"
+    default n
+endmenu #"x2000 h264 编码选项"
+
+menuconfig APP_libhardware2_v4l2_h264_decode
+    bool "x2000/x2600/ad100 h264 解码选项"
+    default n
+config APP_libhardware2_h264_decode_cmd
+    bool "硬件h264解码命令 (输出后拷贝到rmem)"
+    default n
+config APP_libhardware2_h264_direct_decode_cmd
+    bool "硬件h264解码命令 (直通模式:指定输出地址)"
+    default n
+endmenu #"x2000/x2600/ad100 h264 解码选项"
+
+endmenu
+
+menuconfig APP_libhardware2_avpu
+    bool "avpu(EL-Serial) codec(x2580)"
+    default n
+
+config APP_libhardware2_avpu_jpeg_encode
+    bool "avpu jpeg 编码选项"
+    default n
+
+config APP_libhardware2_avpu_h264_encode
+    bool "avpu h264 编码选项"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_hw_jpeg_encode
+    bool "x2600/ad100 jpeg 编码选项"
+    default n
+
+config APP_libhardware2_jpege_encode_cmd
+    bool "硬件jpeg编码命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_hw_jpeg_decode
+    bool "x2600/ad100 jpeg 解码选项"
+    default n
+
+config APP_libhardware2_jpegd_decode_cmd
+    bool "硬件jpeg解码命令"
+    default n
+
+config APP_libhardware2_jpegd_decode_preview_cmd
+    bool "硬件jpeg解码fb显示预览"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_camera
+    bool "camera(摄像头接口)"
+    default n
+
+config APP_libhardware2_camera_cmd
+    bool "camera shell命令"
+    default n
+
+
+config APP_libhardware2_camera_nv12_preview
+    bool "camera nv12预览命令(通过/dev/fb1设置nv12格式)"
+    depends on APP_libhardware2_fb
+    default n
+
+config APP_libhardware2_camera_software_preview
+    bool "camera LCD预览命令(通过软件算法转换格式)"
+    depends on APP_libhardware2_fb
+    default n
+
+config APP_libhardware2_camera_avpu_jpeg_encode
+    bool "avpu jpeg编码命令(将Camera输出的图像(NV12)编码成jpeg格式)"
+    depends on APP_libhardware2_avpu_jpeg_encode
+    default n
+
+config APP_libhardware2_camera_avpu_h264_encode
+    bool "avpu h264编码命令(将Camera输出的图像(NV12)编码成h264格式)"
+    depends on APP_libhardware2_avpu_h264_encode
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_pwm
+    bool "pwm(脉宽调制)"
+    default n
+
+config APP_libhardware2_pwm_cmd
+    bool "pwm shell命令"
+    default n
+
+config APP_libhardware2_pwm_audio_cmd
+    bool "pwm 播放音乐"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_pwm_battery
+    bool "pwm_battery(pwm检测电压)"
+    default n
+
+config APP_libhardware2_pwm_battery_cmd
+    bool "pwm_battery shell命令"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_adc
+    bool "adc(电压采样)"
+    default n
+
+config APP_libhardware2_adc_cmd
+    bool "adc shell命令"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_i2c
+    bool "i2c(外设通讯协议)"
+    default n
+
+config APP_libhardware2_i2c_cmd
+    bool "i2c 测试命令"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_rtc
+    bool "rtc(基于dev/rtc的定时功能)"
+    default n
+
+config APP_libhardware2_rtc_cmd
+    bool "rtc shell命令"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_efuse
+    bool "efuse(芯片熔丝)"
+    default n
+
+config APP_libhardware2_efuse_cmd
+    bool "efuse shell命令"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_watchdog
+    bool "watchdog(看门狗)"
+    default n
+
+config APP_libhardware2_watchdog_cmd
+    bool "watchdog shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_dtrng
+    bool "dtrng(随机数)"
+    default n
+
+config APP_libhardware2_dtrng_cmd
+    bool "dtrng shell命令"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_keyboard
+    bool "keyboard(按键)"
+    default n
+
+config APP_libhardware2_keyboard_cmd
+    bool "keyboard shell命令"
+    default n
+
+config APP_libhardware2_keyboard_cmd_test
+    bool "keyboard 测试"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_spi
+    bool "spi(外设通讯协议)"
+    default n
+
+config APP_libhardware2_spi_cmd
+    bool "spi shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_sslv
+    bool "sslv(salve通讯协议)"
+    default n
+
+config APP_libhardware2_sslv_cmd
+    bool "sslv shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_can
+    bool "can"
+    default n
+
+config APP_libhardware2_can_cmd
+    bool "can shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_gpio
+    bool "gpio"
+    default y
+
+config APP_libhardware2_gpio_cmd
+    bool "gpio shell命令"
+    default y
+endmenu
+
+menuconfig APP_libhardware2_ps2
+    bool "gpio 模拟 PS2"
+    default n
+
+config APP_libhardware2_ps2_custom_keyboard
+    bool "gpio 模拟 PS2 应用(自定义键盘)"
+    default n
+
+endmenu
+
+
+menuconfig APP_libhardware2_gpio_sys
+    bool "sys 下 gpio 节点"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_mscaler
+    bool "mscaler(图像缩放)"
+    default n
+
+config APP_libhardware2_mscaler_cmd
+    bool "mscaler shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_mcu
+    bool "mcu(片上mcu)"
+    default n
+
+config APP_libhardware2_mcu_cmd
+    bool "mcu shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_wifi
+    bool "wifi"
+    default n
+
+config APP_libhardware2_wifi_cmd
+    bool "wifi shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_gpio_counter
+    bool "gpio_counter(时钟捕获)"
+    default n
+
+config APP_libhardware2_gpio_counter_cmd
+    bool "gpio_counter shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_jpeg_display
+    bool "jpeg 图片显示到 fb "
+    default n
+endmenu
+
+config APP_libhardware2_input_dev_listen
+    bool "输入设备信息监测"
+    default n
+
+menuconfig APP_libhardware2_alsa
+    bool "alsa pcm/ctl 接口封装(音频播放/录音,控制), 如系统没有libasound.so则不编译"
+    default n
+
+config APP_libhardware2_alsa_cmd
+    bool "alsa shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_rmem
+    bool "rmem (预留内存管理)"
+    default n
+
+config APP_libhardware2_rmem_extra_cmd
+    bool "扩展rmem内存命令"
+    default n
+
+config APP_libhardware2_rmem_start_extra_rtos_mem
+    bool "回收rtos_mem到rmem内存(上电自启动)"
+    depends on APP_libhardware2_rmem_extra_cmd
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_rotator
+    bool "rotator"
+    default n
+
+config APP_libhardware2_rotator_cmd
+    bool "cmd_rotator 命令"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_hash
+    bool "hash"
+    default n
+
+config APP_libhardware2_hash_cmd
+    bool "hash shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_aes
+    bool "aes"
+    default n
+
+config APP_libhardware2_aes_cmd
+    bool "aes shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_sc
+    bool "ingenic sc安全解密"
+    default n
+
+config APP_libhardware2_sc_cmd
+    bool "ingenic sc shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_rsa
+    bool "rsa"
+    default n
+
+config APP_libhardware2_rsa_cmd
+    bool "rsa shell命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_v4l2_camera
+    bool "v4l2 camera"
+    default n
+
+config APP_libhardware2_v4l2_camera_cmd
+    bool "v4l2 camera shell命令"
+    default n
+endmenu
+
+config APP_libhardware2_mdio_cmd
+    bool "网卡phy寄存器读写"
+    default n
+
+menuconfig APP_libhardware2_nemc
+    bool "nemc (外部总线接口)"
+    default n
+
+config APP_libhardware2_nemc_cmd
+    bool "nemc shell 命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_dbox
+    bool "dbox (硬件绘制线框)"
+    default n
+
+config APP_libhardware2_dbox_cmd
+    bool "dbox shell 命令"
+    default n
+endmenu
+
+menuconfig APP_libhardware2_ipu
+    bool "ipu (图像处理单元)"
+    default n
+
+config APP_libhardware2_ipu_osd_cmd
+    bool "ipu 图像叠加 shell 命令"
+    default n
+
+config APP_libhardware2_ipu_csc_cmd
+    bool "ipu 图像格式转化 shell 命令"
+    default n
+
+endmenu
+
+config APP_libhardware2_adc_set_voltage_cmd
+    bool "根据 adc 设置 VDDIO_CIM/VDDIO_SD 命令"
+    default n
+
+menuconfig APP_libhardware2_hw_timer
+    bool "hw timer(硬件定时器)"
+    default n
+
+config APP_libhardware2_hw_timer_cmd
+    bool "hw timer shell命令"
+    default n
+
+endmenu
+
+menuconfig APP_libhardware2_tpc
+    bool "tpc （热敏打印头）"
+    select APP_libhardware2_mcu
+    default n
+
+config APP_libhardware2_tpc_tx_shift_data
+    bool "tpc 打印数据传输到小核(需要配合小核固件使用)"
+    default n
+
+endmenu
+
+config APP_libhardware2_nemc_mcu_test_cmd
+    bool "测试用 mcu 进行 nemc 数据传输(需要配合小核固件使用)"
+    default n
+
+config APP_libhardware2_demo_get_mcu_spi_data
+    bool "获取 mcu 接收到的 spi 数据 并显示到屏幕(需要配合小核固件使用)"
+    default n
+
+endmenu

@@ -1,0 +1,33 @@
+menuconfig MD_SOC_AD100_510
+    bool "ad100驱动列表"
+    depends on MD_CHOICE_SOC_AD100_510_BASE
+
+config MD_SOC_DIR
+    string
+    default soc/ad100_510
+
+source package/soc/ad100_510/def_gpio_pins.in
+
+source package/soc/ad100_510/gpio/Config.in
+source package/soc/ad100_510/watchdog/Config.in
+source package/soc/ad100_510/watchdog1_timer/Config.in
+source package/soc/ad100_510/efuse/Config.in
+source package/soc/ad100_510/aes/Config.in
+source package/soc/ad100_510/dtrng/Config.in
+source package/soc/ad100_510/adc/Config.in
+source package/soc/ad100_510/audio_dma/Config.in
+source package/soc/ad100_510/icodec/Config.in
+source package/soc/ad100_510/dmic/Config.in
+source package/soc/ad100_510/hash/Config.in
+source package/soc/ad100_510/msc/Config.in
+source package/soc/ad100_510/pwm/Config.in
+source package/soc/ad100_510/spi/Config.in
+source package/soc/ad100_510/sslv/Config.in
+source package/soc/ad100_510/i2c/Config.in
+source package/soc/ad100_510/fb_layer_mixer/Config.in
+source package/soc/ad100_510/fb/Config.in
+source package/soc/ad100_510/aic/Config.in
+source package/soc/ad100_510/mac/Config.in
+source package/soc/ad100_510/utils/Config.in
+
+endmenu

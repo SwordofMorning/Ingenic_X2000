@@ -1,0 +1,77 @@
+APP_libmcu=y
+APP_libmcu_choice_x2000=y
+# APP_libmcu_choice_x1000 is not set
+APP_libmcu_x2000:=y
+APP_libmcu_x2000_irq=y
+APP_libmcu_x2000_clk=y
+APP_libmcu_x2000_gpio=y
+# APP_libmcu_x2000_systick is not set
+APP_libmcu_x2000_tcu=y
+# APP_libmcu_x2000_adc is not set
+APP_libmcu_x2000_uart=y
+# APP_libmcu_x2000_uart0 is not set
+# APP_libmcu_x2000_uart1 is not set
+# APP_libmcu_x2000_uart2 is not set
+# APP_libmcu_x2000_uart3 is not set
+# APP_libmcu_x2000_uart4 is not set
+# APP_libmcu_x2000_uart5 is not set
+# APP_libmcu_x2000_uart6 is not set
+# APP_libmcu_x2000_uart7 is not set
+# APP_libmcu_x2000_uart8 is not set
+# APP_libmcu_x2000_uart9 is not set
+APP_libmcu_x2000_pwm=y
+APP_libmcu_x2000_pwm0_PC=y
+APP_libmcu_x2000_pwm1_PC=y
+APP_libmcu_x2000_pwm2_PC=y
+APP_libmcu_x2000_pwm3_PC=y
+APP_libmcu_x2000_pwm4_PC=y
+APP_libmcu_x2000_pwm5_PC=y
+APP_libmcu_x2000_pwm6_PC=y
+APP_libmcu_x2000_pwm7_PC=y
+APP_libmcu_x2000_pwm8=y
+APP_libmcu_x2000_pwm9=y
+APP_libmcu_x2000_pwm10=y
+APP_libmcu_x2000_pwm11=y
+APP_libmcu_x2000_pwm12=y
+APP_libmcu_x2000_pwm13=y
+APP_libmcu_x2000_pwm14=y
+APP_libmcu_x2000_pwm15=y
+APP_libmcu_x2000_pwm0_PD=y
+APP_libmcu_x2000_pwm1_PD=y
+APP_libmcu_x2000_pwm2_PE=y
+APP_libmcu_x2000_pwm3_PE=y
+APP_libmcu_x2000_pwm4_PE=y
+APP_libmcu_x2000_pwm5_PE=y
+APP_libmcu_x2000_pwm6_PE=y
+APP_libmcu_x2000_pwm7_PE=y
+# APP_libmcu_x1000 is not set
+APP_libmcu_version=0
+APP_libmcu_show_compile_time=y
+APP_libmcu_gcc_optimization=-Os
+APP_libmcu_gcc_function_sections=y
+APP_libmcu_gcc_data_sections=y
+APP_libmcu_gcc_gc_sections=y
+APP_libmcu_driver=y
+APP_libmcu_driver_console=y
+APP_libmcu_driver_console_uart=y
+# APP_libmcu_driver_console_none is not set
+APP_libmcu_driver_console_uart_index=-1
+APP_libmcu_driver_console_buad_rate=3000000
+APP_libmcu_driver_hrtimer=y
+APP_libmcu_driver_irq:=y
+APP_libmcu_driver_clk:=y
+APP_libmcu_driver_gpio:=y
+APP_libmcu_driver_uart:=y
+# APP_libmcu_driver_systick is not set
+APP_libmcu_driver_tcu:=y
+# APP_libmcu_driver_adc is not set
+APP_libmcu_driver_pwm:=y
+APP_libmcu_lib=y
+APP_libmcu_lib_assert=y
+APP_libmcu_lib_assert_no_file_name=y
+APP_libmcu_lib_string=y
+APP_libmcu_lib_printf=y
+# APP_libmcu_lib_simple_printf is not set
+APP_libmcu_lib_ring_mem=y
+APP_libmcu_lib_malloc=y
+APP_libmcu_lib_malloc_heap_size=1024

@@ -1,0 +1,4 @@
+menu "电源管理设备列表"
+source /package/devices/pmu/axp-216/Config.in
+source /package/devices/pmu/eta6919/Config.in
+endmenu

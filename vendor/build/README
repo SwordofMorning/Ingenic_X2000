@@ -1,0 +1,87 @@
+
+1 工程的编译方法以及说明
+
+make 的时候加入 V=1:
+    可以查看编译流程运转的细节
+    如下所有make 的方法均可加入 V=1 查看细节
+
+make your_defconfig
+    使用 your_defconfig 作为配置文件
+    configs/ 目录保存了所有的配置
+
+make all:
+    编译所有添加的工程
+    buildroot kernel uboot module_driver libhardware2 ....
+    并且将生成的镜像拷贝到 output/ 目录下
+    uboot 每次都会重新编译
+    buildroot kernel 目录下如果存在.config文件则不会覆盖其配置
+
+make clean:
+    clean所有添加的工程
+    并且删除 output/ 目录
+    并且删除buildroot kernel 目录下的.config文件
+
+make apps:
+    编译所有应用工程
+    module_driver libhardware2 ....
+
+make clean_apps:
+    clean所有应用工程
+    会清除应用在buildroot/output/target buildroot/output/staging 的安装
+
+make buildroot:
+    编译buildroot
+    如果存在.config文件则不会覆盖其配置
+
+make clean_buildroot:
+    clean buildroot
+    并且删除buildroot目录下的.config文件
+
+make kernel:
+    编译kernel
+    如果存在.config文件则不会覆盖其配置
+
+make clean_kernel:
+    clean kernel
+    并且删除buildroot目录下的.config文件
+
+make uboot:
+    编译uboot
+    clean uboot
+    覆盖uboot的配置并且编译uboot
+
+make clean_uboot:
+    clean uboot
+
+2 文件介绍
+
+Config.in:
+    包含product.in
+    包含提供的软件的包的Config.in
+    .config.in 由此文件和对应的配置文件生成
+
+product.in:
+    包含此工程的一些配置
+    uboot kernel buildroot 的配置名等
+
+product.mk:
+    定义了软件包的编译方法，以及顺序
+
+Makefile:
+    定义工程的目标的编译方法
+    包含product.mk cmd_uboot.mk ...
+
+cmd_uboot.mk:
+    定义了uboot的编译方法
+
+cmd_kernel.mk:
+    定义了kernel的编译方法
+
+cmd_buildroot.mk:
+    定义了buildroot的编译方法
+
+cmd_module_driver.mk:
+    定义了module_driver的编译方法
+
+cmd_common.mk:
+    定义了通用的一些编译命令

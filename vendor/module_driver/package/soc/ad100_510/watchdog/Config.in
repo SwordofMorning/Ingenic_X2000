@@ -1,0 +1,12 @@
+menuconfig MD_AD100_510_WATCHDOG
+    bool "watchdog 驱动(看门狗)"
+
+config MD_AD100_510_WDT0_BUS
+    bool "选择watchdog0"
+    default n
+
+config MD_AD100_510_WDT1_BUS
+    bool "选择watchdog1"
+    default n
+
+endmenu

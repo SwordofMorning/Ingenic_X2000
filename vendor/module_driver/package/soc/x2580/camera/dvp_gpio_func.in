@@ -1,0 +1,4 @@
+array SENSOR_DVP_GPIO_FUNC
+    string "sensor_dvp_gpio_func"
+    item "DVP_PA_10BIT" DVP_PA_10BIT
+    item "DVP_PA_8BIT" DVP_PA_8BIT

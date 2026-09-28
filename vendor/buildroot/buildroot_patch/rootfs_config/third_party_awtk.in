@@ -1,0 +1,12 @@
+menuconfig APP_br_third_party_awtk
+    bool "开机运行awtk"
+    default n
+
+choice "app "
+
+config APP_br_awtk_demo_ui
+    bool "awtk demo ui 应用"
+
+endchoice
+
+endmenu

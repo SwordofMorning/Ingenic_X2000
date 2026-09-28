@@ -1,0 +1,8 @@
+menuconfig MD_X2600_510_MCU
+    bool "mcu(片内riscv mcu)"
+
+config MD_X2600_510_MCU_ENABLE_JTAG
+    bool "使能riscv 小核jtag 功能"
+    default y
+
+endmenu

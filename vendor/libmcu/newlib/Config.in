@@ -1,0 +1,13 @@
+menu "newlib 相关选项"
+
+config APP_libmcu_newlib_simple_syscall
+    bool "newlib syscall 简单实现"
+    default n
+
+config APP_libmcu_newlib_malloc_sbrk
+    bool "newlib sbrk 实现(malloc 扩张内存的回调)"
+    default n
+
+source newlib/libm_fix_longdouble/Config.in
+
+endmenu

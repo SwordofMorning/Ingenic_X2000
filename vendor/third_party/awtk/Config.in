@@ -1,0 +1,159 @@
+menuconfig APP_awtk
+    bool "awtk 平台支持"
+    default n
+
+menuconfig APP_awtk_config
+    bool "awtk 可配置宏"
+    default y
+
+config APP_awtk_FB_DEVICE_FILENAME
+    string "awtk 使用的 fb"
+    default "/dev/fb0"
+
+config APP_awtk_INPUT_DEVICE_NOSCAN
+    bool "是否指定输入设备节点"
+    default n
+
+config APP_awtk_INPUT_DEVICE_FILENAME
+    string "awtk 使用的输入节点（如果路径为目录，则扫描目录下所有的节点，如果路径为节点，则只扫描该节点）"
+    depends on APP_awtk_INPUT_DEVICE_NOSCAN
+    default "/dev/input/event0"
+
+config APP_awtk_USE_GUI_MAIN
+    bool "嵌入式系统有自己的main函数时"
+    default n
+
+config APP_awtk_WITH_BITMAP_FONT
+    bool "支持预先解码的位图字体"
+    default n
+
+config APP_awtk_WITH_STB_IMAGE
+    bool "支持png/jpeg图片"
+    default y
+
+config APP_awtk_WITH_STB_FONT
+    bool "用stb支持Truetype字体"
+    default y
+
+config APP_awtk_WITH_FT_FONT
+    bool "用freetype支持Truetype字体"
+    default n
+
+config APP_awtk_WITH_FS_RES
+    bool "支持从文件系统加载资源"
+    default y
+
+config APP_awtk_WITH_UNICODE_BREAK
+    bool "使用标准的UNICODE换行算法"
+    default y
+
+config APP_awtk_WITH_BITMAP_BGRA
+    bool "将图片解码成BGRA8888格式，否则解码成RGBA8888的格式"
+    default y
+
+config APP_awtk_WITH_BITMAP_BGR565
+    bool "将不透明的PNG图片解码成BGR565格式,如果LCD是此格式,则可以提高性能"
+    default n
+
+config APP_awtk_WITH_BITMAP_RGB565
+    bool "将不透明的PNG图片解码成RGB565格式,如果LCD是此格式,则可以提高性能"
+    default n
+
+config APP_awtk_WITH_NULL_IM
+    bool "不需输入法"
+    default n
+
+config APP_awtk_HAS_STD_MALLOC
+    bool "有标准的malloc/free/calloc等函数"
+    default y
+
+config APP_awtk_HAS_PTHREAD
+    bool "有标准的pthread等函数"
+    default y
+
+config APP_awtk_HAS_STDIO
+    bool "有标准的fopen/fclose等函数"
+    default y
+
+config APP_awtk_HAS_FAST_MEMCPY
+    bool "有优化版本的memcpy函数"
+    default y
+
+config APP_awtk_WITH_NANOVG_AGGE
+    bool "启用agge作为nanovg的后端(较agg作为后端：大(56KB编译后)，快，图形质量稍差)"
+    select APP_awtk_WITH_3RD_NANOVG
+    select APP_awtk_NANOVG_BACKEND_AGGE
+    default y
+
+config APP_awtk_WITH_NANOVG_AGG
+    bool "启用agg作为nanovg的后端(较agge作为后端：小，慢，图形质量好)"
+    default n
+    select APP_awtk_WITH_3RD_NANOVG
+    select APP_awtk_NANOVG_BACKEND_AGG
+
+config APP_awtk_ENABLE_CURSOR
+    bool "启用鼠标指针"
+    default y
+
+config APP_awtk_WITH_VGCANVAS_CAIRO
+    bool "启用cairo作为nanovg的后端"
+    default n
+    select APP_awtk_WITH_3RD_NANOVG
+    select APP_awtk_VGCANVAS_CAIRO
+
+config APP_awtk_WITHOUT_WIDGET_ANIMATORS
+    bool "不使用控件动画"
+    default n
+
+config APP_awtk_WITHOUT_WINDOW_ANIMATORS
+    bool "不使用窗口动画"
+    default n
+
+config APP_awtk_WITHOUT_DIALOG_HIGHLIGHTER
+    bool "不使用对话框高亮策略"
+    default n
+
+config APP_awtk_WITHOUT_EXT_WIDGETS
+    bool "不使用扩展控件"
+    default n
+
+config APP_awtk_WITH_WIDGET_TYPE_CHECK
+    bool "控件类型检查"
+    default y
+
+config APP_awtk_WITH_WCSXXX
+    bool "出现wcsxxx之类的函数没有定义时，请定义该宏"
+    default n
+
+config APP_awtk_WITH_INGENIC_LIB2D_G2D
+    bool "使用 lib2d 进行加速"
+    default n
+    select APP_awtk_WITH_G2D
+
+config APP_awtk_WITH_INGENIC_MSA_G2D
+    bool "使用 msa 进行加速"
+    default n
+    select APP_awtk_WITH_G2D
+
+config APP_awtk_WITH_3RD_NANOVG
+    bool
+
+config APP_awtk_VGCANVAS_CAIRO
+    bool
+
+config APP_awtk_NANOVG_BACKEND_AGG
+    bool
+
+config APP_awtk_NANOVG_BACKEND_AGGE
+    bool
+
+config APP_awtk_WITH_G2D
+    bool
+
+endmenu
+
+config APP_awtk_demoui
+    bool "demo ui"
+    default n
+
+endmenu # APP_awtk

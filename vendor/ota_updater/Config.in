@@ -1,0 +1,46 @@
+menuconfig APP_ota_updater
+    bool "ota updater (ota升级)"
+
+config APP_ota_updater_storage_medium
+    string "Storage medium(存储介质)"
+    choice from STORAGE_MEDIUM
+    default mtd
+
+config APP_ota_updater_version
+    string "当前系统的ota版本号(每次编译新的ota版本时都应该递增此值)"
+    default 0
+
+config App_ota_updater_site
+    string "ota 升级服务器的地址"
+    default http://192.168.43.52/ota/board_test
+
+config App_ota_updater_block_size
+    int "ota 分包大小"
+    default 1048576
+
+config App_ota_updater_kernel_img_path
+    string "ota kernel 镜像路径"
+    default ../linux_test/output/xImage
+
+config App_ota_updater_rootfs_img_path
+    string "ota rootfs 镜像路径"
+    default ../linux_test/output/rootfs.squashfs
+
+config App_ota_updater_rtos
+    bool "ota rtos 升级"
+    default n
+
+config App_ota_updater_rtos_img_path
+    string "ota rtos 镜像路径"
+    default ../linux_test/output/zero.bin
+    depends on App_ota_updater_rtos
+
+menu "ota uboot 不支持升级"
+endmenu
+
+endmenu
+
+array STORAGE_MEDIUM
+    string "storage_medium 存储介质"
+    item "nand/nor  (mtd操作)" mtd
+    item "mmc" mmc

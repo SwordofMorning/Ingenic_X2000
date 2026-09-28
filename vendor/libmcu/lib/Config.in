@@ -1,0 +1,59 @@
+menuconfig APP_libmcu_lib
+    bool "通用库函数"
+    default y
+
+config APP_libmcu_lib_assert
+    bool "断言函数(assert)"
+    default y
+
+config APP_libmcu_lib_assert_no_file_name
+    bool "    断言信息中不使用文件名"
+    default y
+
+config APP_libmcu_lib_string
+    bool "字符串处理函数(strlen,strcpy,,)"
+    default y
+
+config APP_libmcu_lib_printf
+    bool "printf函数"
+    default y
+
+choice "              是否支持long long类型"
+    default APP_libmcu_lib_printf_not_support_longlong
+    depends on APP_libmcu_lib_printf
+
+config APP_libmcu_lib_printf_support_longlong
+    bool "支持long long类型"
+
+config APP_libmcu_lib_printf_not_support_longlong
+    bool "不支持long long类型"
+
+endchoice
+
+config APP_libmcu_lib_printf_support_float
+    bool "              支持float类型"
+    depends on APP_libmcu_lib_printf
+    default n
+
+config APP_libmcu_lib_simple_printf
+    bool "简单的printf函数"
+    default n
+
+config APP_libmcu_lib_ring_mem
+    bool "ring_mem函数(循环缓冲区,适用于多核异构间通信)"
+    default y
+
+config APP_libmcu_lib_malloc
+    bool "malloc函数"
+    default y
+
+config APP_libmcu_lib_malloc_heap_size
+    int "heap size(堆空间大小)"
+    default 1024
+    depends on APP_libmcu_lib_malloc
+
+config APP_libmcu_lib_nalu
+    bool "h264码流解析(h264 分包)"
+    default y
+
+endmenu

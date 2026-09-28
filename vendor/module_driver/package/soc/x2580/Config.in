@@ -1,0 +1,33 @@
+menuconfig MD_SOC_X2580
+    bool "x2580驱动列表"
+    depends on MD_CHOICE_SOC_X2580
+
+config MD_SOC_DIR
+    string
+    default soc/x2580
+
+source package/soc/x2580/def_gpio_pins.in
+
+source package/soc/x2580/watchdog/Config.in
+source package/soc/x2580/gpio/Config.in
+source package/soc/x2580/efuse/Config.in
+source package/soc/x2580/i2c/Config.in
+source package/soc/x2580/adc/Config.in
+source package/soc/x2580/pwm/Config.in
+source package/soc/x2580/mac/Config.in
+source package/soc/x2580/aes/Config.in
+source package/soc/x2580/rsa/Config.in
+source package/soc/x2580/camera/Config.in
+source package/soc/x2580/camera-double/Config.in
+source package/soc/x2580/mcu_riscv/Config.in
+source package/soc/x2580/utils/Config.in
+source package/soc/x2580/msc/Config.in
+source package/soc/x2580/spi/Config.in
+source package/soc/x2580/dbox/Config.in
+source package/soc/x2580/aic/Config.in
+source package/soc/x2580/icodec/Config.in
+source package/soc/x2580/audio_dma/Config.in
+source package/soc/x2580/dmic/Config.in
+source package/soc/x2580/ipu/Config.in
+
+endmenu

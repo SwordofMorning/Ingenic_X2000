@@ -1,0 +1,17 @@
+menuconfig MD_X2000_EFUSE
+    bool "efuse 驱动(芯片熔丝功能)"
+
+config MD_X2000_EFUSE_VDDQ
+    string "efuse 写使能引脚"
+    choice from SOC_GPIO_PINS
+    default -1
+
+choice "选择读写efuse段的校验模式"
+    default MD_X2000_VERIFY_MODE_NONE
+config MD_X2000_VERIFY_MODE_HAMMING
+    bool "使用海明码对原始数据进行编码"
+config MD_X2000_VERIFY_MODE_NONE
+    bool "不使用编码校验功能，读写原始数据"
+endchoice
+
+endmenu

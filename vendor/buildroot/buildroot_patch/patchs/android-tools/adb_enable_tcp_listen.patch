@@ -1,0 +1,12 @@
+diff -ru android-tools-4.2.2+git20130218-2/core/adbd/adb.c android-tools-4.2.2+git20130218/core/adbd/adb.c
+--- android-tools-4.2.2+git20130218-2/core/adbd/adb.c	2024-01-02 15:58:24.655780476 +0800
++++ android-tools-4.2.2+git20130218/core/adbd/adb.c	2024-01-02 15:59:00.339781053 +0800
+@@ -1323,7 +1323,7 @@
+         // listen on TCP port specified by service.adb.tcp.port property
+     //    local_init(port);
+     //} else 
+-    if (!usb) {
++    if (!usb || getenv("ADB_ENABLE_TCP_LISTEN")) {
+         printf("Using USB\n");
+         // listen on default port
+         local_init(DEFAULT_ADB_LOCAL_TRANSPORT_PORT);

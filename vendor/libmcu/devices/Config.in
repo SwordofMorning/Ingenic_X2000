@@ -1,0 +1,7 @@
+menuconfig APP_libmcu_device
+    bool "外设"
+    default y
+
+source devices/lcd/Config.in
+
+endmenu

@@ -1,0 +1,8 @@
+.objs/
+.config.in
+output/hping3
+config.h
+.vscode/
+src/*.d
+init/tool/byteorder
+init/tool/gentables

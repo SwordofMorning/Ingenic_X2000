@@ -1,0 +1,33 @@
+APP_libmcu=y
+# APP_libmcu_choice_x2000 is not set
+APP_libmcu_choice_x1000=y
+# APP_libmcu_x2000 is not set
+APP_libmcu_x1000:=y
+APP_libmcu_x1000_irq=y
+APP_libmcu_x1000_clk=y
+APP_libmcu_x1000_gpio=y
+APP_libmcu_x1000_uart=y
+APP_libmcu_version=0
+APP_libmcu_show_compile_time=y
+APP_libmcu_gcc_optimization=-Os
+APP_libmcu_gcc_function_sections=y
+APP_libmcu_gcc_data_sections=y
+APP_libmcu_gcc_gc_sections=y
+APP_libmcu_driver=y
+APP_libmcu_driver_console=y
+APP_libmcu_driver_console_uart=y
+# APP_libmcu_driver_console_none is not set
+APP_libmcu_driver_console_uart_index=2
+# APP_libmcu_driver_irq is not set
+APP_libmcu_driver_clk:=y
+APP_libmcu_driver_gpio:=y
+APP_libmcu_driver_uart:=y
+# APP_libmcu_driver_systick is not set
+# APP_libmcu_driver_tcu is not set
+APP_libmcu_lib=y
+APP_libmcu_lib_assert=y
+APP_libmcu_lib_assert_no_file_name=y
+APP_libmcu_lib_string=y
+# APP_libmcu_lib_printf is not set
+APP_libmcu_lib_simple_printf=y
+APP_libmcu_lib_ring_mem=y

@@ -1,0 +1,54 @@
+source product.in
+
+menuconfig APP_module_driver
+    bool "模块化驱动"
+    default y
+sub_package ../module_driver/Config.in
+endmenu
+
+sub_package ../buildroot/buildroot_patch/Config.in
+sub_package ../ota_updater/Config.in
+sub_package ../libhardware2/Config.in
+sub_package ../libmedia/Config.in
+sub_package ../libutils2/Config.in
+sub_package ../libimpf/Config.in
+sub_package ../libisp/Config.in
+sub_package ../factory_test/Config.in
+
+sub_package ../lib2d/Config.in
+
+menu "wireless(无线设备)"
+sub_package ../wireless/aicsemi/aic8800d80/Config.in
+sub_package ../wireless/altobeam/atbm603x/Config.in
+sub_package ../wireless/bcm/Config.in
+sub_package ../wireless/espressif/esp32/Config.in
+sub_package ../wireless/espressif/esp8089/Config.in
+sub_package ../wireless/hisilicon/hi3861l/Config.in
+sub_package ../wireless/icommsemi/ssv6x5x/Config.in
+sub_package ../wireless/luat/Config.in
+sub_package ../wireless/quectel/4G/Config.in
+sub_package ../wireless/quectel/fcs950uab/Config.in
+sub_package ../wireless/realtek/Config.in
+sub_package ../wireless/realtek/rtl8733bs/Config.in
+endmenu
+
+menu "demos"
+sub_package ../demos/faceapp/Config.in
+sub_package ../demos/evol/porting/Config.in
+sub_package ../demos/ilockapp/Config.in
+sub_package ../demos/scancode/Config.in
+sub_package ../demos/ingenic_alg_lib/Config.in
+sub_package ../demos/tuya/Config.in
+sub_package ../demos/multi_decode_display/Config.in
+endmenu
+
+menu "third_party"
+sub_package ../third_party/lvgl/Config.in
+sub_package ../third_party/usb_mtp/Config.in
+sub_package ../third_party/libiniparser/Config.in
+sub_package ../third_party/alsa_aeq/Config.in
+sub_package ../third_party/speexdsp/Config.in
+sub_package ../third_party/hping3/Config.in
+sub_package ../third_party/awtk/Config.in
+endmenu
+

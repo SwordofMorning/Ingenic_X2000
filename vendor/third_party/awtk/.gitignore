@@ -1,0 +1,10 @@
+config.h
+*.o
+*.d
+.*.mk
+.*.h
+.config.in
+.vscode/
+output/
+awtk-1.7.1.tar.gz
+release/

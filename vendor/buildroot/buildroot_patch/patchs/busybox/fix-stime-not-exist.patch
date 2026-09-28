@@ -1,0 +1,50 @@
+diff -Naur busybox-1.31.1-2/coreutils/date.c busybox-1.31.1/coreutils/date.c
+--- busybox-1.31.1-2/coreutils/date.c	2022-10-08 16:39:02.946335521 +0800
++++ busybox-1.31.1/coreutils/date.c	2022-10-08 16:45:42.292007478 +0800
+@@ -178,6 +178,16 @@
+ 		putenv((char*)"TZ=UTC0");
+ }
+ 
++#if __GLIBC_MINOR__ >= 31
++static int stime(const time_t *t)
++{
++	struct timeval tv;
++	tv.tv_sec = *t;
++	tv.tv_usec = 0;
++	return settimeofday(&tv, NULL);
++}
++#endif
++
+ int date_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
+ int date_main(int argc UNUSED_PARAM, char **argv)
+ {
+diff -Naur busybox-1.31.1-2/util-linux/rdate.c busybox-1.31.1/util-linux/rdate.c
+--- busybox-1.31.1-2/util-linux/rdate.c	2022-10-08 16:39:02.942335464 +0800
++++ busybox-1.31.1/util-linux/rdate.c	2022-10-08 16:45:58.928242689 +0800
+@@ -75,6 +75,16 @@
+ 	return (time_t)nett;
+ }
+ 
++#if __GLIBC_MINOR__ >= 31
++static int stime(const time_t *t)
++{
++	struct timeval tv;
++	tv.tv_sec = *t;
++	tv.tv_usec = 0;
++	return settimeofday(&tv, NULL);
++}
++#endif
++
+ int rdate_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
+ int rdate_main(int argc UNUSED_PARAM, char **argv)
+ {
+diff -Naur busybox-1.31.1-2/.vscode/settings.json busybox-1.31.1/.vscode/settings.json
+--- busybox-1.31.1-2/.vscode/settings.json	1970-01-01 08:00:00.000000000 +0800
++++ busybox-1.31.1/.vscode/settings.json	2022-10-08 16:44:01.666583003 +0800
+@@ -0,0 +1,5 @@
++{
++    "files.associations": {
++        "libbb.h": "c"
++    }
++}
+\ No newline at end of file

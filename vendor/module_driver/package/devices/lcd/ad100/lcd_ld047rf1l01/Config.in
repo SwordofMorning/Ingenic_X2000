@@ -1,0 +1,25 @@
+menuconfig MD_AD100_LCD_LD047RF1L01
+    bool "TFT LD047RF1L01 (750x1334) (AD100) (mipi接口)"
+    select MD_AD100_510_FB
+    depends on MD_SOC_AD100_BASE
+
+config MD_AD100_LD047RF1L01_BACKLIGHT_EN
+    string "gpio backlight enable(lcd backlight使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_AD100_LD047RF1L01_RST
+    string "gpio reset(lcd 复位引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_AD100_LD047RF1L01_POWER_EN
+    string "gpio power(lcd power使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_AD100_LD047RF1L01_REGULATOR_NAME
+    string "regulator name(通过名字获取 lcd module 电源管理器)"
+    default -1
+
+endmenu # MD_AD100_LCD_LD047RF1L01

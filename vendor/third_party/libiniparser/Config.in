@@ -1,0 +1,5 @@
+menuconfig APP_iniparser
+    bool "iniparser(INI文件开源解析器)"
+    default n
+
+endmenu

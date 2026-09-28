@@ -1,0 +1,80 @@
+menuconfig APP_libmcu_x2580
+    bool "x2580 小核配置"
+    depends on APP_libmcu_choice_x2580
+    select APP_libmcu_newlib_simple_syscall
+    select APP_libmcu_newlib_malloc_sbrk
+
+config APP_libmcu_x2580_libm_fix_longdouble
+    bool
+    depends on APP_libmcu_libcxx
+    select APP_libmcu_newlib_libm_fix_longdouble
+    default y
+
+menu "memory 选项"
+config APP_libmcu_x2580_mem_start
+    int "memory 起始地址"
+    default 0x5c00000
+
+config APP_libmcu_x2580_mem_size
+    int "memory 大小(单位字节)"
+    default 0x100000
+
+config APP_libmcu_x2580_stack_size
+    int "main stack 栈大小(单位字节)"
+    default 8192
+
+config APP_libmcu_x2580_data_from_host_size
+    int "核间通信 大核到小核 ringbuffer的大小"
+    default 256
+
+config APP_libmcu_x2580_data_to_host_size
+    int "核间通信 小核到大核 ringbuffer的大小"
+    default 256
+
+endmenu
+
+menuconfig APP_libmcu_x2580_uart
+    bool "uart 驱动"
+    select APP_libmcu_driver_uart
+
+array APP_libmcu_soc_uart_devs
+    int "soc uart 列表"
+    item "不使用 uart" -1
+    item "uart0" 0
+    item "uart1" 1
+    item "uart2" 2
+    item "uart3" 3
+    item "uart4" 4
+    item "uart5" 5
+
+endmenu
+
+config APP_libmcu_x2580_gpio
+    bool "gpio驱动"
+    select APP_libmcu_driver_gpio
+    default y
+    help
+        使用该驱动需要在 kernel 内勾选 CONFIG_INGENIC_DISABLE_GPIO_UAE_SHADOW
+
+config APP_libmcu_x2580_systick
+    bool "systick timer驱动"
+    select APP_libmcu_driver_systick
+    default y
+
+config APP_libmcu_x2580_clk
+    bool "clk 驱动"
+    select APP_libmcu_driver_clk
+    default y
+
+config APP_libmcu_x2580_irq
+    bool "irq 中断处理驱动"
+    select APP_libmcu_driver_irq
+    default y
+
+config APP_libmcu_x2580_uncache_mem_size
+    int "uncache 内存大小(必须4k对齐，而且是2的幂次方)"
+    default 4096
+
+source soc/x2580/config_i2c.in
+
+endmenu # APP_libmcu_x2580

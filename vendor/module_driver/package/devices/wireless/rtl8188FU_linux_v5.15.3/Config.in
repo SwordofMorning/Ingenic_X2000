@@ -1,0 +1,9 @@
+menuconfig MD_RTL8188FU
+	bool "RTL8188FU USB wireless cards support"
+
+config MD_RTL8188FU_WLAN_POWER_ON
+	string "power_on (控制wifi的供电)"
+	default -1
+	choice from SOC_GPIO_PINS
+
+endmenu

@@ -1,0 +1,53 @@
+config COMMON_CLK_INGENIC_V1
+	bool
+	depends on MACH_XBURST || MACH_XBURST2
+	select MFD_SYSCON
+	select INGENIC_CLK_DEBUG_FS
+
+config INGENIC_CLK_DEBUG_FS
+	bool
+	depends on DEBUG_FS
+	help
+	  enable ingenic common clock debugfs
+
+config CLK_X1000_V1
+	bool "x1000 clk driver"
+	depends on SOC_X1000
+	select COMMON_CLK_INGENIC_V1
+	help
+	  build the ingenic x1000 soc clock driver.
+
+config CLK_X1800_V1
+	bool
+	depends on SOC_X1800
+	select COMMON_CLK_INGENIC_V1
+	help
+	  build the ingenic x1800 soc clock driver.
+
+config CLK_X1021_V1
+	bool
+	depends on SOC_X1021
+	select COMMON_CLK_INGENIC_V1
+	help
+	  build the ingenic x1021 soc clock driver.
+
+config CLK_X1520_V1
+	bool
+	depends on SOC_X1520
+	select COMMON_CLK_INGENIC_V1
+	help
+	  build the ingenic x1520 soc clock driver.
+
+config CLK_X1630_V1
+	bool
+	depends on SOC_X1630
+	select COMMON_CLK_INGENIC_V1
+	help
+	  build the ingenic x1630 soc clock driver.
+
+config CLK_X2000_V1
+	bool
+	depends on SOC_X2000
+	select COMMON_CLK_INGENIC_V1
+	help
+	  build the ingenic x2000 soc clock driver.

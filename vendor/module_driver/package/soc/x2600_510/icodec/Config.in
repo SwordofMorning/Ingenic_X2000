@@ -1,0 +1,68 @@
+menuconfig MD_X2600_510_ICODEC
+    bool "icodec(内部codec)"
+    select MD_X2600_510_AIC
+
+config MD_X2600_510_ICODEC_BAIS_ON
+    bool "开启偏置电压"
+    default y
+    help
+        对于外接的模拟电路,内部codec需要提前打开偏置电压
+
+config MD_X2600_510_ICODEC_BAIS_LEVEL
+    int "偏置电压的寄存器数值(范围[0,7])"
+    default 7
+    help
+        其中0代表1.6*VREF(VREF=AVDD/2),7代表1.95*VREF
+        每增加1,增加0.05*VREF
+        当启用回采电路一般置为0
+
+config MD_X2600_510_ICODEC_MIC_IN_GAIN
+    int "mic信号的增益(可填0,1,2,3)"
+    default 3
+    help
+        范围为0,1,2,3 对应0,6,20,30db
+        当启用回采电路一般置为0
+
+config MX_X2600_510_ICODEC_MENUAL_ALCL_GAIN
+    int "手动设置ALCL增益(范围[0,31])"
+    default 6
+    help
+        其中0代表-9db,6代表0db,31代表37.5db
+        增加1,音量增加1.5dB
+
+config MX_X2600_510_ICODEC_HPL_GAIN
+    int "输出信号的增益 HPOUTL(范围[26,31])"
+    default 26
+    help
+        其中0-25无效,26代表0db,30与31代表6db
+        增加1,音量增加1.5db，上限为6db
+
+config MD_X2600_510_ICODEC_SPK_GPIO
+    string "功放引脚"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2600_510_ICODEC_SPK_GPIO_LEVEL
+    string "功放引脚使能电平"
+    choice from MD_GPIO_ACTIVE_LEVEL
+    default 1
+
+config MD_X2600_510_ICODEC_SPK_NEED_DELAY_MS
+    int "功放引脚使能后需要的延时时间(ms)"
+    default 20
+    help
+        部分功放芯片的时序需要在使能功放引脚后加一定的延时
+
+config MD_X2600_510_ICODEC_MAX_DAC_VAL
+    int "外放音量最大值(对应寄存器DACDGR的[0,7],可填范围是0到255)"
+    default 255
+    help
+        其中0代表mute,1代表-121dB,243代表0dB,255代表6dB.增加1,音量增加0.5dB
+
+config MD_X2600_510_ICODEC_MIN_DAC_VAL
+    int "外放音量最小值(对应寄存器DACDGR的[0,7],可填范围是0到255)"
+    default 0
+    help
+        其中0代表mute,1代表-121dB,243代表0dB,255代表6dB.增加1,音量增加0.5dB
+
+endmenu

@@ -1,0 +1,3 @@
+config APP_libmcu_driver_hrtimer
+    bool "hrtimer 驱动(高精度定时器)"
+    default y

@@ -1,0 +1,123 @@
+#!/bin/sh
+#
+
+mtd_name_to_num()
+{
+    local partition_name=$1
+    local mtd_info=`cat /proc/mtd | grep -w \""$partition_name"\"`
+    if [ "$mtd_info" = "" ]; then
+        echo "mtd partition not find: $partition_name" 1>&2
+        return 1
+    fi
+
+    local mtd_n=${mtd_info%%:*}
+    if [ "$mtd_info" = "$mtd_n" ]; then
+        echo "mtd_info not ok: $mtd_info" 1>&2
+        return 1
+    fi
+
+    local n=${mtd_n#mtd}
+    if [ "$n" = "$mtd_n" ]; then
+        echo "mtd_info not ok2: $mtd_n" 1>&2
+        return 1
+    fi
+
+    echo $n
+}
+
+mtd_name_to_dev()
+{
+    local partition_name=$1
+    local num
+
+    num=`mtd_name_to_num $partition_name`
+    if [ $? != 0 ]; then
+        return 1
+    fi
+
+    local dev=/dev/mtd$num
+    if [ ! -e $dev ]; then
+        echo "why $dev not exist" 1>&2
+        return 1
+    fi
+
+    echo $dev
+}
+
+mtd_read_str()
+{
+    local partition_name=$1
+    local dev
+
+    dev=`mtd_name_to_dev "$partition_name"`
+    if [ $? != 0 ]; then
+        return 1
+    fi
+
+    nanddump -s 0 -l 256 /dev/mtd5 -a
+    if [ $? != 0 ]; then
+        return 1
+    fi
+
+    return 0
+}
+
+get_current_rootfs_dev()
+{
+    local name=rootfs
+	local tmp=
+
+    str=`mtd_read_str ota 2>/dev/null`
+    if [ $? == 0 ]; then
+		tmp=`echo "$str" | grep "ota:kernel2"`
+		if [ "$tmp" != "" ]; then
+			name=rootfs2
+		fi
+    fi
+
+	# echo "finding $name" 1>&2
+
+    mtd_num=`mtd_name_to_num $name`
+	if [ $? != 0 ] ; then
+		echo "use default mtd 3 to mount rootfs" 1>&2
+		mtd_num=3
+	fi
+
+	echo /dev/mtdblock_bbt_ro$mtd_num
+}
+
+case "$1" in
+  start)
+    m_mtd_dev=`get_current_rootfs_dev`
+	mount -t squashfs $m_mtd_dev /rootfs_ro/
+	if [ $? != 0 ];then
+		echo "mount rootfs failed"
+		sh
+	fi
+
+	mkdir -p /usr/data/overlay_upper
+	mkdir -p /usr/data/overlay_work
+	mount -t overlay /usr/data/ -o lowerdir=/rootfs_ro/,upperdir=/usr/data/overlay_upper/,workdir=/usr/data/overlay_work/ /rootfs
+
+	mkdir -p /rootfs/rootfs_ro
+	mount --move /rootfs_ro/ /rootfs/rootfs_ro
+	mount --move /usr/data/ /rootfs/usr/data/
+
+	# echo "chroot to /rootfs"
+	chroot /rootfs /linuxrc
+	sh
+	;;
+  stop)
+	echo "overlay bootfs stoping ........"
+	;;
+  restart|reload)
+	"$0" stop
+	"$0" start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+

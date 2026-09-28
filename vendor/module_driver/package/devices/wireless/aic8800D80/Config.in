@@ -1,0 +1,25 @@
+menuconfig MD_AIC8800D80
+	bool "AIC8800D80 wireless cards support"
+
+config MD_AIC8800D80_SDIO
+	bool "SDIO bus interface support"
+	default y
+
+config MD_AIC8800D80_MMC_NUM
+	int "wlan_mmc_num (mmc/sdio 总线号)"
+	default -1
+	help
+	  wifi 挂接在哪个 mmc 总线,比如 0, 1
+
+config MD_AIC8800D80_WLAN_REG_ON
+	string "gpio_wlan_reg_on(wifi的使能引脚)"
+	default -1
+	choice from SOC_GPIO_PINS
+
+config MD_AIC8800D80_WLAN_WAKE_HOST
+	string "gpio_wlan_wake_host(wifi 唤醒/中断 cpu 的引脚)"
+	default -1
+	choice from SOC_GPIO_PINS
+
+
+endmenu

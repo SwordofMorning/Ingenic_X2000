@@ -1,0 +1,12 @@
+menuconfig MD_X2600_510_TCU
+    bool "tcu 驱动(gpio 时钟计数捕获)"
+
+config MD_X2600_510_TCU0
+    bool "选择tcu0 (/dev/jz_tcu)"
+    default y
+
+config MD_X2600_510_TCU1
+    bool "选择tcu1 (/dev/jz_tcu1)"
+    default n
+
+endmenu

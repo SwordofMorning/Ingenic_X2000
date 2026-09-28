@@ -1,0 +1,354 @@
+
+config.font: id='font_normal' path='res/wqy-microhei.ttc' size=35 default=1
+config.font: id='font_big' path='res/wqy-microhei.ttc' size=50
+config.font: id='font_large' path='res/wqy-microhei.ttc' size=100
+
+obj: id='desktop' w=100% h=100% pad_left=0 pad_right=0 font='font_normal'
+      bg_img_src='./res/desktop_bg.png' border_w=0
+  flex_row: w=100% h=100% scroll_snap_x=1 bg_opa=0 pad_all=0 shadow_w=0 border_w=0
+    grid: w=100% h=100% pad_all=0 shadow_w=0 bg_opa=0 border_w=0
+          col_dsc=150,150,150,150 row_dsc=180,180,180,80 col_align=space_evenly row_align=align_end
+
+      # 第一行 ...................
+      flex_col: id='camera' cell=0,0,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=red_lighten1 pad_all=0 border_w=0 shadow_w=0
+        label: text='摄像头' align=center
+      flex_col: id='photo' cell=1,0,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=deep_purple pad_all=0 border_w=0 shadow_w=0 shortclick='app_photo'
+        label: text='相册' align=center
+      flex_col: id='monitor' cell=2,0,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=light_blue pad_all=0 border_w=0 shadow_w=0
+        label: text='监控' align=center
+      flex_col: id='file' cell=3,0,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=green pad_all=0 border_w=0 shadow_w=0
+        label: text='文件管理' align=center
+
+      # 第二行 ...................
+      flex_col: id='poweroff' cell=0,1,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=yellow pad_all=0 border_w=0 shadow_w=0
+        label: text='关机' align=center
+      flex_col: id='setting' cell=1,1,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=deep_orange pad_all=0 border_w=0 shadow_w=0
+        label: text='设置' align=center
+      flex_col: id='wifi' cell=2,1,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=grey pad_all=0 border_w=0 shadow_w=0
+        label: text='wifi' align=center
+      flex_col: id='brightness' cell=3,1,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=purple pad_all=0 border_w=0 shadow_w=0
+        label: text='亮度' align=center
+
+      # 第三行 ...................
+      flex_col: id='password' cell=0,2,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=blue pad_all=0 border_w=0 shadow_w=0
+        label: text='密码' align=center
+      flex_col: id='faceapp' cell=1,2,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=teal pad_all=0 border_w=0 shadow_w=0
+        label: text='人脸' align=center
+      flex_col: id='fingerprint' cell=2,2,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=lime pad_all=0 border_w=0 shadow_w=0
+        label: text='指纹' align=center
+      flex_col: id='date' cell=3,2,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+        obj: bg_color=orange pad_all=0 border_w=0 shadow_w=0 shortclick='app_date'
+        label: text='时间' align=center
+    obj: w=100% h=100% bg_color=brown border_w=0 bg_opa=250
+
+obj: id='app_camera' w=100% h=100% bg_opa=0 border_w=0 font='font_normal'
+  flex_col: w=100% h=content min_h=30% align=bottom_left bg_opa=0xbb pad_all=0 border_side=1 shadow_w=0
+    flex_col: w=100% h=content bg_opa=0 pad_all=10,10,100,0 border_side=1 shadow_w=0
+      flex_row: w=100% h=content bg_opa=0 pad_all=0 border_side=0 shadow_w=0
+        label: text='屏幕亮度'
+      slider: id='brightness' w=80% h=40 bg_opa=0xbb
+
+    flex_row: id='back' w=100% h=content bg_opa=0 pad_all=10,10,100,0 border_side=1 shadow_w=0
+      label: text='返回桌面'
+
+    flex_row: id='close' w=100% h=content bg_opa=0 pad_all=10,10,100,0 border_side=1 shadow_w=0
+      label: text='关闭'
+
+obj: id='app_date' w=100% h=100% border_w=0 pad_all=0 border_w=0 bg_color=brown font='font_normal'
+  analog_clock: w=600 h=600 pad_all=0 align=center
+    rotate_hour: src='res/hour.png' src_center=12,110 bilinear=1
+    rotate_minute: src='res/minute.png' src_center=12,150 bilinear=1
+    rotate_second: src='res/second.png' src_center=12,264  bilinear=1
+
+flex_row: id='app_photo' w=100% h=100% font='font_normal'
+  img: src='res/wifi_status4.png'
+  img: src='res/wifi_status3.png'
+  img: src='res/wifi_status1.png'
+  img: src='res/wifi_status0.png'
+  img: src='res/wifi_status2.png'
+  img: src='res/landscapes.png'
+  img: src='res/second.png'
+  img: src='res/hour.png'
+  img: src='res/minute.png'
+  img: src='res/Battery_full.png'
+  img: src='res/Battery_one.png'
+  img: src='res/Battery_two_level.png'
+  img: src='res/desktop_bg.png'
+
+#######################################################
+# 以下的是 ui 布局的例子, 和 ui_desktop 和 apps 没有关系
+#######################################################
+
+list: w=100% h=100% pad_left=0 pad_right=0 font='font_normal'
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='label:' w=150 text_align=right
+    label: text='你好 lvgl' x=200
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='btn:' w=150 text_align=right
+    btn: x=200 w=300
+    part=pressed bg_color=brown
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='switch:' w=150 text_align=right
+    switch: x=200 add_state=checked
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='textarea:' w=150 text_align=right
+    textarea: x=200 placeholder_text='请输入字符' oneline=1
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='slider:' w=150 text_align=right
+    slider: x=200
+      part=knob bg_color=brown
+      part=indicator arc_color=red
+      part=main arc_color=green
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='img:' w=150 text_align=right
+    img: x=200 src='res/landscapes.png'
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='rotate_img:' w=150 text_align=right
+    obj: x=200 w=400 h=240 pad_all=0
+      rotate_img: src='res/landscapes.png' angle=300 bilinear=1
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='arc:' w=150 text_align=right
+    arc: x=200
+      part=knob bg_color=brown
+      part=indicator arc_color=red
+      part=main arc_color=green
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='roller:' w=150 text_align=right
+    roller: x=200 options_infinite='blue 2',red,yellow,brown
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='dropdown:' w=150 text_align=right
+    dropdown: x=200 options='blue',red,yellow,brown font='lvgl_default' dir=1 highlight=0
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='list:' w=150 text_align=right
+    list: x=200 w=content h=content
+      label: text='item 0'
+      label: text='item 1'
+      label: text='item 2'
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='list:' w=150 text_align=right
+    list: x=200 flex_flow=row w=content h=content
+      label: text='item0 '
+      label: text='item1 '
+      label: text='item2 '
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='flex_col:' w=150 text_align=right
+    flex_col: x=200 h=content
+      label: text='item 0'
+      label: text='item 1'
+      label: text='item 2'
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='flex_row:' w=150 text_align=right
+    flex_row: x=200 w=content h=content
+      label: text='item0 '
+      label: text='item1 '
+      label: text='item2 '
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='grid:' w=150 text_align=right
+    grid: x=200 w=320 h=240 pad_all=0 pad_row=0 pad_column=0 bg_color=brown
+      col_dsc=60,60,60 row_dsc=60,60,60 col_align=space_evenly row_align=space_evenly
+      label: text='0,0' cell=0,0,center,center w=60 h=60 bg_opa=0xff
+      label: text='0,1' cell=0,1,center,center w=60 h=60 bg_opa=0xff
+      label: text='0,2' cell=0,2,center,center w=60 h=60 bg_opa=0xff
+
+      label: text='1,0' cell=1,0,center,center w=60 h=60 bg_opa=0xff
+      label: text='1,1' cell=1,1,center,center w=60 h=60 bg_opa=0xff
+      label: text='1,2' cell=1,2,center,center w=60 h=60 bg_opa=0xff
+
+      label: text='2,0' cell=2,0,center,center w=60 h=60 bg_opa=0xff
+      label: text='2,1' cell=2,1,center,center w=60 h=60 bg_opa=0xff
+      label: text='2,2' cell=2,2,center,center w=60 h=60 bg_opa=0xff
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    label: text='text_doing:' w=150 text_align=right
+    text_doing: x=200 w=300 h=200 text='正在进行中'
+
+  list: w=100% h=content border_w=0 pad_top=10 pad_bottom=20 flex_flow=row font='font_large'
+    digital_hour: 
+    label: text=":"
+    digital_minute:
+    label: text=" " 
+
+    digital_second:
+    label: text=":" 
+    digital_cmsec: 
+
+  list: w=100% h=content border_w=0 pad_top=10 pad_bottom=20 flex_flow=row
+    digital_year_full: 
+    label: text="年 "
+
+    digital_month: fill_zero=0
+    label: text="月"
+    digital_day: fill_zero=0
+    label: text="日 "
+
+    label: text="星期"
+    digital_weekday: chiness=1
+    label: text=" "
+
+  obj: w=100% h=640 border_w=0 pad_top=10 pad_bottom=20 bg_color=brown
+    analog_clock: w=600 h=600 pad_all=0 align=center
+      rotate_hour: src='res/hour.png' src_center=12,110 bilinear=1
+      rotate_minute: src='res/minute.png' src_center=12,150 bilinear=1
+      rotate_second: src='res/second.png' src_center=12,264  bilinear=1
+
+obj: w=100% h=content border_w=0
+       pad_top=10 pad_bottom=20 bg_color=blue
+    label: text='wifi' font='font_big'
+    btn: align=center
+      label: text='刷新'
+    switch: align=right_mid
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    img: x=20 path='res/wifi_status4.png'
+    label: x=100 text='test'
+    label: x=200 text='test2'
+    label: x=300 text='test4'
+    btn: x=400 id="btn1"
+      label: text='新的按键'
+    img: path='res/angle-right.png' align=right_mid
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    img: x=20 path='res/wifi_status4.png'
+    label: x=100 text='隔壁的wifi, 电话我'
+    img: path='res/angle-right.png' align=right_mid
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    img: x=20 path='res/wifi_status4.png'
+    label: x=100 text='中国移动'
+    img: path='res/angle-right.png' align=right_mid
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    img: x=20 path='res/wifi_status4.png'
+    label: x=100 text='6号会议室WI-FI'
+    img: path='res/angle-right.png' align=right_mid
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+    img: x=20 path='res/wifi_status4.png'
+    label: x=100 text='ingenic_商务5G'
+    img: path='res/angle-right.png' align=right_mid
+
+  obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=50
+
+  list: w=100% h=content
+    obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+      label: text='取消' align=left_mid color=blue
+      label: text='加入网络' align=center
+      label: text='连接' align=right_mid color=blue
+
+    obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+      label: text='请输入"test"的密码' align=left_mid color=grey
+
+    obj: w=100% h=content border_w=0 pad_top=10 pad_bottom=20
+      label: text='密码' align=left_mid
+      textarea: bg_text='输入密码' oneline=1 align=center
+
+  grid: w=100% h=700 border_w=0 pad_all=0 pad_top=10 pad_bottom=20 bg_color=brown
+        col_dsc=160,160,160,160 row_dsc=180,180,180 col_align=space_evenly row_align=align_end
+
+    # 第一行 ...................
+    flex_col: cell=0,0,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=red_lighten1 pad_all=0 border_w=0 shadow_w=0
+      label: text='摄像头' align=center
+    flex_col: cell=1,0,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=deep_purple pad_all=0 border_w=0 shadow_w=0
+      label: text='相册' align=center
+    flex_col: cell=2,0,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=light_blue pad_all=0 border_w=0 shadow_w=0
+      label: text='监控' align=center
+    flex_col: cell=3,0,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=green pad_all=0 border_w=0 shadow_w=0
+      label: text='文件管理' align=center
+
+    # 第二行 ...................
+    flex_col: cell=0,1,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=yellow pad_all=0 border_w=0 shadow_w=0
+      label: text='关机' align=center
+    flex_col: cell=1,1,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=deep_orange pad_all=0 border_w=0 shadow_w=0
+      label: text='设置' align=center
+    flex_col: cell=2,1,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=grey pad_all=0 border_w=0 shadow_w=0
+      label: text='wifi' align=center
+    flex_col: cell=3,1,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=purple pad_all=0 border_w=0 shadow_w=0
+      label: text='亮度' align=center
+
+    # 第三行 ...................
+    flex_col: cell=0,2,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=blue pad_all=0 border_w=0 shadow_w=0
+      label: text='密码' align=center
+    flex_col: cell=1,2,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=teal pad_all=0 border_w=0 shadow_w=0
+      label: text='人脸' align=center
+    flex_col: cell=2,2,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=lime pad_all=0 border_w=0 shadow_w=0
+      label: text='指纹' align=center
+    flex_col: cell=3,2,center,center bg_opa=0 pad_all=0 border_w=0 w=content h=content 
+      obj: bg_color=orange pad_all=0 border_w=0 shadow_w=0
+      label: text='时间' align=center
+
+  list: w=100% h=content border_w=0 pad_top=10 pad_bottom=20 flex_flow=row font='font_large'
+    digital_hour: 
+    label: text=":"
+    digital_minute:
+    label: text=" " 
+  
+    digital_second:
+    label: text=":" 
+    digital_cmsec: 
+
+  list: w=100% h=content border_w=0 pad_top=10 pad_bottom=20 flex_flow=row
+    digital_year_full: 
+    label: text="年 "
+
+    digital_month: fill_zero=0
+    label: text="月"
+    digital_day: fill_zero=0
+    label: text="日 "
+
+    label: text="星期"
+    digital_weekday: chiness=1
+    label: text=" "
+
+  obj: w=100% h=640 border_w=0 pad_top=10 pad_bottom=20 bg_color=brown
+    analog_clock: w=600 h=600 pad_all=0 align=center
+      rotate_hour: src='res/hour.png' src_center=12,110 bilinear=1
+      rotate_minute: src='res/minute.png' src_center=12,150 bilinear=1
+      rotate_second: src='res/second.png' src_center=12,264  bilinear=1
+
+  obj: w=100% h=300 border_w=0 pad_top=10 pad_bottom=20
+    text_doing: w=80% h=100% text='网络连接中' shadow_w=30 align=center timeout=5000
+
+  obj: w=100% h=300 border_w=0 pad_top=10 pad_bottom=20
+    text_doing: w=80% h=100% text='正在获取ip地址' shadow_w=30 align=center text_color=blue
+
+  obj: w=100% h=300 border_w=0 pad_top=10 pad_bottom=20
+    obj: w=80% h=100% shadow_w=30 align=center
+      label:  text='网络连接成功' align=center color=blue
+
+  img: src='res/desktop_bg.png'

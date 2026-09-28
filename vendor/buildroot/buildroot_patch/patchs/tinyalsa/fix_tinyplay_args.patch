@@ -1,0 +1,86 @@
+diff -rau tinyalsa-1.1.1/utils/tinyplay.c tinyalsa-1.1.1.2/utils/tinyplay.c
+--- tinyalsa-1.1.1/utils/tinyplay.c	2017-05-24 12:23:57.000000000 +0800
++++ tinyalsa-1.1.1.2/utils/tinyplay.c	2023-08-03 15:09:17.136942720 +0800
+@@ -45,20 +45,23 @@
+ 
+ void cmd_init(struct cmd *cmd)
+ {
++    memset(cmd, 0, sizeof(*cmd));
++
+     cmd->filename = NULL;
+     cmd->filetype = NULL;
+     cmd->card = 0;
+     cmd->device = 0;
+     cmd->flags = PCM_OUT;
+     cmd->config.period_size = 1024;
+-    cmd->config.period_count = 2;
+-    cmd->config.channels = 2;
+-    cmd->config.rate = 48000;
++    cmd->config.period_count = 4;
++    // chanels, rate, bits will init later
++    // cmd->config.channels = 2;
++    // cmd->config.rate = 48000;
+     cmd->config.format = PCM_FORMAT_S16_LE;
+     cmd->config.silence_threshold = 1024 * 2;
+     cmd->config.stop_threshold = 1024 * 2;
+     cmd->config.start_threshold = 1024;
+-    cmd->bits = 16;
++    // cmd->bits = 16;
+ }
+ 
+ int cmd_parse_arg(struct cmd *cmd, int argc, const char **argv)
+@@ -97,7 +100,7 @@
+             fprintf(stderr, "failed parsing period size '%s'\n", argv[1]);
+             return -1;
+         }
+-    } else if ((strcmp(argv[0], "-p") == 0) || (strcmp(argv[0], "--period-count") == 0)) {
++    } else if ((strcmp(argv[0], "-n") == 0) || (strcmp(argv[0], "--period-count") == 0)) {
+         if (sscanf(argv[1], "%u", &cmd->config.period_count) != 1) {
+             fprintf(stderr, "failed parsing period count '%s'\n", argv[1]);
+             return -1;
+@@ -112,6 +115,11 @@
+             fprintf(stderr, "failed parsing rate '%s'\n", argv[1]);
+             return -1;
+         }
++    } else if ((strcmp(argv[0], "-b") == 0) || (strcmp(argv[0], "--bits") == 0)) {
++        if (sscanf(argv[1], "%u", &cmd->bits) != 1) {
++            fprintf(stderr, "failed parsing bits '%s'\n", argv[1]);
++            return -1;
++        }
+     } else if ((strcmp(argv[0], "-i") == 0) || (strcmp(argv[0], "--file-type") == 0)) {
+         cmd->filetype = argv[1];
+     } else {
+@@ -233,10 +241,29 @@
+                 fseek(ctx->file, ctx->chunk_header.sz, SEEK_CUR);
+             }
+         } while (more_chunks);
+-        config.channels = ctx->chunk_fmt.num_channels;
+-        config.rate = ctx->chunk_fmt.sample_rate;
+-        bits = ctx->chunk_fmt.bits_per_sample;
+-    }
++        if (!config.channels)
++            config.channels = ctx->chunk_fmt.num_channels;
++        else if (config.channels != ctx->chunk_fmt.num_channels)
++            fprintf(stderr, "channels: use user arg:%u, not from wav:%u\n",
++                config.channels, ctx->chunk_fmt.num_channels);
++        if (!config.rate)
++            config.rate = ctx->chunk_fmt.sample_rate;
++        else if (config.rate != ctx->chunk_fmt.sample_rate)
++            fprintf(stderr, "rate: use user arg:%u, not from wav:%u\n",
++                config.rate, ctx->chunk_fmt.sample_rate);
++        if (!bits)
++            bits = ctx->chunk_fmt.bits_per_sample;
++        else if (bits != ctx->chunk_fmt.bits_per_sample)
++            fprintf(stderr, "bits: use user arg:%u, not from wav:%u\n",
++                bits, ctx->chunk_fmt.bits_per_sample);
++    }
++
++    if (!config.channels)
++        config.channels = 2;
++    if (!config.rate)
++        config.rate = 48000;
++    if (!bits)
++        bits = 16;
+ 
+     if (bits == 8) {
+         config.format = PCM_FORMAT_S8;

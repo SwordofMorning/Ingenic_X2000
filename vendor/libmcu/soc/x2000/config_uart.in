@@ -1,0 +1,496 @@
+
+menuconfig APP_libmcu_x2000_uart
+    bool "uart 驱动"
+    select APP_libmcu_driver_uart
+
+config APP_libmcu_x2000_uart0
+    bool "uart 0"
+
+config APP_libmcu_x2000_uart0_rx
+    string "    rx gpio"
+    choice from APP_uart0_rx_pins
+    depends on APP_libmcu_x2000_uart0
+
+config APP_libmcu_x2000_uart0_tx
+    string "    tx gpio"
+    choice from APP_uart0_tx_pins
+    depends on APP_libmcu_x2000_uart0
+
+config APP_libmcu_x2000_uart0_cts
+    string "    cts gpio"
+    choice from APP_uart0_cts_pins
+    depends on APP_libmcu_x2000_uart0
+
+config APP_libmcu_x2000_uart0_rts
+    string "    rts gpio"
+    choice from APP_uart0_rts_pins
+    depends on APP_libmcu_x2000_uart0
+
+config APP_libmcu_x2000_uart1
+    bool "uart 1"
+
+config APP_libmcu_x2000_uart1_rx
+    string "    rx gpio"
+    choice from APP_uart1_rx_pins
+    depends on APP_libmcu_x2000_uart1
+
+config APP_libmcu_x2000_uart1_tx
+    string "    tx gpio"
+    choice from APP_uart1_tx_pins
+    depends on APP_libmcu_x2000_uart1
+
+config APP_libmcu_x2000_uart1_cts
+    string "    cts gpio"
+    choice from APP_uart1_cts_pins
+    depends on APP_libmcu_x2000_uart1
+
+config APP_libmcu_x2000_uart1_rts
+    string "    rts gpio"
+    choice from APP_uart1_rts_pins
+    depends on APP_libmcu_x2000_uart1
+
+config APP_libmcu_x2000_uart2
+    bool "uart 2"
+
+config APP_libmcu_x2000_uart2_rx
+    string "    rx gpio"
+    choice from APP_uart2_rx_pins
+    depends on APP_libmcu_x2000_uart2
+
+config APP_libmcu_x2000_uart2_tx
+    string "    tx gpio"
+    choice from APP_uart2_tx_pins
+    depends on APP_libmcu_x2000_uart2
+
+config APP_libmcu_x2000_uart2_cts
+    string "    cts gpio"
+    choice from APP_uart2_cts_pins
+    depends on APP_libmcu_x2000_uart2
+
+config APP_libmcu_x2000_uart2_rts
+    string "    rts gpio"
+    choice from APP_uart2_rts_pins
+    depends on APP_libmcu_x2000_uart2
+
+
+config APP_libmcu_x2000_uart3
+    bool "uart 3"
+
+config APP_libmcu_x2000_uart3_rx
+    string "    rx gpio"
+    choice from APP_uart3_rx_pins
+    depends on APP_libmcu_x2000_uart3
+
+config APP_libmcu_x2000_uart3_tx
+    string "    tx gpio"
+    choice from APP_uart3_tx_pins
+    depends on APP_libmcu_x2000_uart3
+
+config APP_libmcu_x2000_uart3_cts
+    string "    cts gpio"
+    choice from APP_uart3_cts_pins
+    depends on APP_libmcu_x2000_uart3
+
+config APP_libmcu_x2000_uart3_rts
+    string "    rts gpio"
+    choice from APP_uart3_rts_pins
+    depends on APP_libmcu_x2000_uart3
+
+config APP_libmcu_x2000_uart4
+    bool "uart 4"
+
+config APP_libmcu_x2000_uart4_rx
+    string "    rx gpio"
+    choice from APP_uart4_rx_pins
+    depends on APP_libmcu_x2000_uart4
+
+config APP_libmcu_x2000_uart4_tx
+    string "    tx gpio"
+    choice from APP_uart4_tx_pins
+    depends on APP_libmcu_x2000_uart4
+
+config APP_libmcu_x2000_uart4_cts
+    string "    cts gpio"
+    choice from APP_uart4_cts_pins
+    depends on APP_libmcu_x2000_uart4
+
+config APP_libmcu_x2000_uart4_rts
+    string "    rts gpio"
+    choice from APP_uart4_rts_pins
+    depends on APP_libmcu_x2000_uart4
+
+config APP_libmcu_x2000_uart5
+    bool "uart 5"
+
+config APP_libmcu_x2000_uart5_rx
+    string "    rx gpio"
+    choice from APP_uart5_rx_pins
+    depends on APP_libmcu_x2000_uart5
+
+config APP_libmcu_x2000_uart5_tx
+    string "    tx gpio"
+    choice from APP_uart5_tx_pins
+    depends on APP_libmcu_x2000_uart5
+
+config APP_libmcu_x2000_uart5_cts
+    string "    cts gpio"
+    choice from APP_uart5_cts_pins
+    depends on APP_libmcu_x2000_uart5
+
+config APP_libmcu_x2000_uart5_rts
+    string "    rts gpio"
+    choice from APP_uart5_rts_pins
+    depends on APP_libmcu_x2000_uart5
+
+config APP_libmcu_x2000_uart6
+    bool "uart 6"
+
+config APP_libmcu_x2000_uart6_rx
+    string "    rx gpio"
+    choice from APP_uart6_rx_pins
+    depends on APP_libmcu_x2000_uart6
+
+config APP_libmcu_x2000_uart6_tx
+    string "    tx gpio"
+    choice from APP_uart6_tx_pins
+    depends on APP_libmcu_x2000_uart6
+
+config APP_libmcu_x2000_uart6_cts
+    string "    cts gpio"
+    choice from APP_uart6_cts_pins
+    depends on APP_libmcu_x2000_uart6
+
+config APP_libmcu_x2000_uart6_rts
+    string "    rts gpio"
+    choice from APP_uart6_rts_pins
+    depends on APP_libmcu_x2000_uart6
+
+
+config APP_libmcu_x2000_uart7
+    bool "uart 7"
+
+config APP_libmcu_x2000_uart7_rx
+    string "    rx gpio"
+    choice from APP_uart7_rx_pins
+    depends on APP_libmcu_x2000_uart7
+
+config APP_libmcu_x2000_uart7_tx
+    string "    tx gpio"
+    choice from APP_uart7_tx_pins
+    depends on APP_libmcu_x2000_uart7
+
+config APP_libmcu_x2000_uart7_cts
+    string "    cts gpio"
+    choice from APP_uart7_cts_pins
+    depends on APP_libmcu_x2000_uart7
+
+config APP_libmcu_x2000_uart7_rts
+    string "    rts gpio"
+    choice from APP_uart7_rts_pins
+    depends on APP_libmcu_x2000_uart7
+
+config APP_libmcu_x2000_uart8
+    bool "uart 8"
+
+config APP_libmcu_x2000_uart8_rx
+    string "    rx gpio"
+    choice from APP_uart8_rx_pins
+    depends on APP_libmcu_x2000_uart8
+
+config APP_libmcu_x2000_uart8_tx
+    string "    tx gpio"
+    choice from APP_uart8_tx_pins
+    depends on APP_libmcu_x2000_uart8
+
+config APP_libmcu_x2000_uart8_cts
+    string "    cts gpio"
+    choice from APP_uart8_cts_pins
+    depends on APP_libmcu_x2000_uart8
+
+config APP_libmcu_x2000_uart8_rts
+    string "    rts gpio"
+    choice from APP_uart8_rts_pins
+    depends on APP_libmcu_x2000_uart8
+
+config APP_libmcu_x2000_uart9
+    bool "uart 9"
+
+config APP_libmcu_x2000_uart9_rx
+    string "    rx gpio"
+    choice from APP_uart9_rx_pins
+    depends on APP_libmcu_x2000_uart9
+
+config APP_libmcu_x2000_uart9_tx
+    string "    tx gpio"
+    choice from APP_uart9_tx_pins
+    depends on APP_libmcu_x2000_uart9
+
+config APP_libmcu_x2000_uart9_cts
+    string "    cts gpio"
+    choice from APP_uart9_cts_pins
+    depends on APP_libmcu_x2000_uart9
+
+config APP_libmcu_x2000_uart9_rts
+    string "    rts gpio"
+    choice from APP_uart9_rts_pins
+    depends on APP_libmcu_x2000_uart9
+
+endmenu
+
+array APP_uart0_rx_pins
+    string "uart0 rx 引脚"
+    item "GPIO_PD(23) func2" GPIO_PD(23),GPIO_FUNC_2
+    item "GPIO_NULL  " -1
+
+array APP_uart0_tx_pins
+    string "uart0 tx 引脚"
+    item "GPIO_PD(24) func2" GPIO_PD(24),GPIO_FUNC_2
+    item "GPIO_NULL  " -1
+
+array APP_uart0_cts_pins
+    string "uart0 cts 引脚"
+    item "GPIO_PD(25) func2" GPIO_PD(25),GPIO_FUNC_2
+    item "GPIO_NULL  " -1
+
+array APP_uart0_rts_pins
+    string "uart0 rts 引脚"
+    item "GPIO_PD(26) func2" GPIO_PD(26),GPIO_FUNC_2
+    item "GPIO_NULL  " -1
+
+array APP_uart1_rx_pins
+    string "uart1 rx 引脚"
+    item "GPIO_PC(23) func1" GPIO_PC(23),GPIO_FUNC_1
+    item "GPIO_NULL  " -1
+
+array APP_uart1_tx_pins
+    string "uart1 tx 引脚"
+    item "GPIO_PC(24) func1" GPIO_PC(24),GPIO_FUNC_1
+    item "GPIO_NULL  " -1
+
+array APP_uart1_cts_pins
+    string "uart1 cts 引脚"
+    item "GPIO_PC(21) func1" GPIO_PC(21),GPIO_FUNC_1
+    item "GPIO_NULL  " -1
+
+array APP_uart1_rts_pins
+    string "uart1 rts 引脚"
+    item "GPIO_PC(22) func1" GPIO_PC(22),GPIO_FUNC_1
+    item "GPIO_NULL  " -1
+
+array APP_uart2_rx_pins
+    string "uart2 rx 引脚"
+    item "GPIO_PD(30) func0" GPIO_PD(30),GPIO_FUNC_0
+    item "GPIO_NULL  " -1
+
+array APP_uart2_tx_pins
+    string "uart2 tx 引脚"
+    item "GPIO_PD(31) func0" GPIO_PD(31),GPIO_FUNC_0
+    item "GPIO_NULL  " -1
+
+array APP_uart2_cts_pins
+    string "uart2 cts 引脚"
+    item "GPIO_NULL  " -1
+
+array APP_uart2_rts_pins
+    string "uart2 rts 引脚"
+    item "GPIO_NULL  " -1
+
+
+array APP_uart3_rx_pins
+    string "uart3 rx 引脚"
+    item "GPIO_PC(25) func0" GPIO_PC(25),GPIO_FUNC_0
+    item "GPIO_PD(02) func1" GPIO_PD(02),GPIO_FUNC_1
+    item "GPIO_NULL  " -1
+
+array APP_uart3_tx_pins
+    string "uart3 tx 引脚"
+    item "GPIO_PC(26) func0" GPIO_PC(26),GPIO_FUNC_0
+    item "GPIO_PD(03) func1" GPIO_PD(03),GPIO_FUNC_1
+    item "GPIO_NULL  " -1
+
+array APP_uart3_cts_pins
+    string "uart3 cts 引脚"
+    item "GPIO_PC(27) func0" GPIO_PC(27),GPIO_FUNC_0
+    item "GPIO_PD(00) func1" GPIO_PD(00),GPIO_FUNC_1
+    item "GPIO_NULL  " -1
+
+array APP_uart3_rts_pins
+    string "uart3 rts 引脚"
+    item "GPIO_PC(28) func0" GPIO_PC(28),GPIO_FUNC_0
+    item "GPIO_PD(01) func1" GPIO_PD(01),GPIO_FUNC_1
+    item "GPIO_NULL  " -1
+
+array APP_uart4_rx_pins
+    string "uart4 rx 引脚"
+    item "GPIO_PA(02) func1" GPIO_PA(02),GPIO_FUNC_1
+    item "GPIO_PC(11) func3" GPIO_PC(11),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart4_tx_pins
+    string "uart4 tx 引脚"
+    item "GPIO_PA(03) func1" GPIO_PA(03),GPIO_FUNC_1
+    item "GPIO_PC(12) func3" GPIO_PC(12),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart4_cts_pins
+    string "uart4 cts 引脚"
+    item "GPIO_PA(00) func1" GPIO_PA(00),GPIO_FUNC_1
+    item "GPIO_PC(09) func3" GPIO_PC(9),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart4_rts_pins
+    string "uart4 rts 引脚"
+    item "GPIO_PA(01) func1" GPIO_PA(01),GPIO_FUNC_1
+    item "GPIO_PC(10) func3" GPIO_PC(10),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart5_rx_pins
+    string "uart5 rx 引脚"
+    item "GPIO_PA(04) func1" GPIO_PA(04),GPIO_FUNC_1
+    item "GPIO_PC(05) func3" GPIO_PC(05),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart5_tx_pins
+    string "uart5 tx 引脚"
+    item "GPIO_PA(05) func1" GPIO_PA(05),GPIO_FUNC_1
+    item "GPIO_PC(06) func3" GPIO_PC(06),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart5_cts_pins
+    string "uart5 cts 引脚"
+    item "GPIO_NULL  " -1
+
+array APP_uart5_rts_pins
+    string "uart5 rts 引脚"
+    item "GPIO_NULL  " -1
+
+
+array APP_uart6_rx_pins
+    string "uart6 rx 引脚"
+    item "GPIO_PA(06) func1" GPIO_PA(06),GPIO_FUNC_1
+    item "GPIO_PC(07) func3" GPIO_PC(07),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart6_tx_pins
+    string "uart6 tx 引脚"
+    item "GPIO_PA(07) func1" GPIO_PA(07),GPIO_FUNC_1
+    item "GPIO_PC(08) func3" GPIO_PC(8),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart6_cts_pins
+    string "uart6 cts 引脚"
+    item "GPIO_NULL  " -1
+
+array APP_uart6_rts_pins
+    string "uart6 rts 引脚"
+    item "GPIO_NULL  " -1
+
+
+array APP_uart7_rx_pins
+    string "uart7 rx 引脚"
+    item "GPIO_PA(08) func1" GPIO_PA(8),GPIO_FUNC_1
+    item "GPIO_PC(01) func3" GPIO_PC(01),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart7_tx_pins
+    string "uart7 tx 引脚"
+    item "GPIO_PA(09) func1" GPIO_PA(9),GPIO_FUNC_1
+    item "GPIO_PC(02) func3" GPIO_PC(02),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart6_cts_pins
+    string "uart6 cts 引脚"
+    item "GPIO_NULL  " -1
+
+array APP_uart6_rts_pins
+    string "uart6 rts 引脚"
+    item "GPIO_NULL  " -1
+
+array APP_uart8_rx_pins
+    string "uart8 rx 引脚"
+    item "GPIO_PB(28) func3" GPIO_PB(28),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart8_tx_pins
+    string "uart8 tx 引脚"
+    item "GPIO_PB(29) func3" GPIO_PB(29),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart8_cts_pins
+    string "uart8 cts 引脚"
+    item "GPIO_NULL  " -1
+
+array APP_uart8_rts_pins
+    string "uart8 rts 引脚"
+    item "GPIO_NULL  " -1
+
+array APP_uart9_rx_pins
+    string "uart9 rx 引脚"
+    item "GPIO_PB(30) func3" GPIO_PB(30),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart9_tx_pins
+    string "uart9 tx 引脚"
+    item "GPIO_PB(31) func3" GPIO_PB(31),GPIO_FUNC_3
+    item "GPIO_NULL  " -1
+
+array APP_uart9_cts_pins
+    string "uart9 cts 引脚"
+    item "GPIO_NULL  " -1
+
+array APP_uart9_rts_pins
+    string "uart9 rts 引脚"
+    item "GPIO_NULL  " -1
+
+
+array APP_libmcu_soc_uart_devs
+    int "soc uart 列表"
+    item "不使用 uart" -1
+    item "uart0" 0
+    item "uart1" 1
+    item "uart2" 2
+    item "uart3" 3
+    item "uart4" 4
+    item "uart5" 5
+    item "uart6" 6
+    item "uart7" 7
+    item "uart8" 8
+    item "uart9" 9
+
+array APP_libmcu_soc_uart_buad_rate
+    int "soc uart 波特率"
+    item      "50" 50
+    item      "75" 75
+    item     "110" 110
+    item     "134" 134
+    item     "150" 150
+    item     "200" 200
+    item     "300" 300
+    item     "600" 600
+    item    "1200" 1200
+    item    "1800" 1800
+    item    "2400" 2400
+    item    "4800" 4800
+    item    "9600" 9600
+    item   "19200" 19200
+    item   "38400" 38400
+    item   "57600" 57600
+    item  "115200" 115200
+    item  "230400" 230400
+    item  "460800" 460800
+    item  "500000" 500000
+    item  "576000" 576000
+    item  "921600" 921600
+    item "1000000" 1000000
+    item "1152000" 1152000
+    item "1500000" 1500000
+    item "2000000" 2000000
+    item "2500000" 2500000
+    item "3000000" 3000000
+    item "3500000" 3500000
+    item "4000000" 4000000
+
+array APP_libmcu_soc_uart_follow_contrl
+    int "soc uart 流控设置"
+    item      "UART_FC_NONE 流控关" 0
+    item      "UART_FC_CTS_RTS 流控开" 1

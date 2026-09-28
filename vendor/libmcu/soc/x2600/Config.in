@@ -1,0 +1,144 @@
+menuconfig APP_libmcu_x2600
+    bool "x2600 小核配置"
+    depends on APP_libmcu_choice_x2600
+    select APP_libmcu_newlib_simple_syscall
+    select APP_libmcu_newlib_malloc_sbrk
+
+config APP_libmcu_x2600_libm_fix_longdouble
+    bool
+    depends on APP_libmcu_libcxx
+    select APP_libmcu_newlib_libm_fix_longdouble
+    default y
+
+menu "memory 选项"
+config APP_libmcu_x2600_mem_start
+    int "memory 起始地址"
+    default 0x7000000
+
+config APP_libmcu_x2600_mem_size
+    int "memory 大小(单位字节)"
+    default 0x1000000
+
+config APP_libmcu_x2600_stack_size
+    int "main stack 栈大小(单位字节)"
+    default 8192
+    help
+        "当代码主体运行在 tcsm 上, 推荐填入 1024"
+
+config APP_libmcu_x2600_data_from_host_size
+    int "核间通信 大核到小核 ringbuffer的大小"
+    default 256
+
+config APP_libmcu_x2600_data_to_host_size
+    int "核间通信 小核到大核 ringbuffer的大小"
+    default 256
+
+choice "选择代码运行主体所在内存段"
+    default APP_libmcu_x2600_in_ddr
+config APP_libmcu_x2600_in_ddr
+    bool "主体运行在 ddr 上"
+    select APP_libmcu_x2600_run_in_ddr
+config APP_libmcu_x2600_in_tcsm
+    bool "主体运行在 tcsm 上"
+    select APP_libmcu_x2600_run_in_tcsm
+endchoice
+
+config APP_libmcu_x2600_run_in_ddr
+    bool
+
+config APP_libmcu_x2600_run_in_tcsm
+    bool
+
+config APP_libmcu_x2600_stack_in_tcsm
+    bool "main stack 放入tcsm中,以提高实时性"
+    depends on APP_libmcu_x2600_run_in_ddr
+    select APP_libmcu_tcsm_text_section
+    default y
+
+config APP_libmcu_x2600_uncache_mem_size
+    int "uncache 内存大小(必须4k对齐，而且是2的幂次方)"
+    depends on APP_libmcu_x2600_run_in_ddr
+    default 4096
+
+config APP_libmcu_x2600_stack_in_ddr
+    bool "占用内存较大的函数或数据 放入ddr中,以减少占用tcsm"
+    depends on APP_libmcu_x2600_run_in_tcsm
+    select APP_libmcu_ddr_text_section
+    default y
+
+endmenu
+
+config APP_libmcu_x2600_adc
+    bool "adc 驱动"
+    select APP_libmcu_driver_adc
+    default n
+
+config APP_libmcu_x2600_tcu
+    bool "tcu 驱动(gpio 时钟计数捕获)"
+    select APP_libmcu_driver_tcu
+    default n
+
+config APP_libmcu_x2600_gpio
+    bool "gpio驱动"
+    select APP_libmcu_driver_gpio
+    default y
+
+config APP_libmcu_x2600_systick
+    bool "systick timer驱动"
+    select APP_libmcu_driver_systick
+    default y
+
+config APP_libmcu_x2600_clk
+    bool "clk 驱动"
+    select APP_libmcu_driver_clk
+    default y
+
+config APP_libmcu_x2600_irq
+    bool "irq 中断处理驱动"
+    select APP_libmcu_driver_irq
+    default y
+
+config APP_libmcu_x2600_felix
+    bool "h264 硬件解码驱动"
+    default n
+
+config APP_libmcu_x2600_dma
+    bool "dma驱动"
+    select APP_libmcu_driver_dma
+    default n
+
+menuconfig APP_libmcu_x2600_pwm
+    bool "pwm驱动"
+    select APP_libmcu_driver_pwm
+    default n
+
+config APP_libmcu_x2600_pwm_dma_trig_num
+    int "pwm dma fifo 触发数目(64 - this >= fifo num时, DMA触发)"
+    default 32
+
+endmenu
+
+menuconfig APP_libmcu_x2600_tpc
+    bool "tpc 驱动"
+    default n
+
+
+config APP_libmcu_x2600_tpc_motor_num
+    int "TPC 电机个数(1 ~ 2)"
+    default 2
+    help
+        "若设置为1，可作为一个4相8路电机使用，若设置为 2， 可作为两个2相4路电机使用"
+
+endmenu
+
+config APP_libmcu_x2600_nemc
+    bool "nemc 驱动"
+    default n
+
+source soc/x2600/def_gpio_pins.in
+source soc/x2600/config_uart.in
+source soc/x2600/config_fb.in
+source soc/x2600/config_spi.in
+source soc/x2600/config_i2c.in
+
+endmenu # APP_libmcu_x2600

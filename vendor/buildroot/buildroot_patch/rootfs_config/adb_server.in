@@ -1,0 +1,25 @@
+
+menuconfig APP_br_adb_server
+    bool "adb 服务脚本"
+    default y
+
+config APP_br_adb_server_start
+    bool "开机启动adb服务"
+    default y
+
+config APP_br_adb_server_name
+    string "adb 设备名"
+    default "ingenic"
+
+config APP_br_adb_server_add_mac
+    bool "使用wifi mac地址作为设备名后缀"
+    default y
+
+config APP_br_adb_enable_tcp_listen
+    bool "使能tcp 端口监听"
+    help
+        adb 端口代码中写死为 5555, 假设ip地址是 10.4.228.146
+        adb connect 10.4.228.146:5555
+        adb adb -s 10.4.228.146:5555 shell
+
+endmenu

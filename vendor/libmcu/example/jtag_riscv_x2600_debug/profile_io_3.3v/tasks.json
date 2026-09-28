@@ -1,0 +1,29 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "make_project",
+            "type": "shell",
+            "command":"export PATH=${workspaceFolder}/../tools/toolchains/riscv-r1.0.0/bin:$PATH;make clean;make -j8"
+        },
+        {
+            "label": "ingenic jtag init",
+            "type": "shell",
+            "command": [
+                "adb -s ingenic,jdi shell \"/led_status.sh 0\";",
+                "adb -s ingenic,jdi shell \"jtag_en.sh 3.3V\";",
+                "adb -s ingenic,jdi shell \"nohup openocd -f /openocd/interface/x2100-jdi-v1_1.cfg -f /openocd/target/x2600-risc.cfg > /dev/null\";",
+                "adb -s ingenic,jdi forward tcp:3333 tcp:3333;",
+            ]
+        },
+        {
+            "label":"build",
+            "dependsOn":[
+                "ingenic jtag init",
+                "make_project",
+            ]
+        },
+    ]
+}

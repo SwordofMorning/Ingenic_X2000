@@ -1,0 +1,56 @@
+menuconfig APP_lvgl
+    bool "lvgl 平台支持"
+    default n
+
+config APP_lvgl_use_msa
+    bool "使用 msa 优化后的绘制函数"
+    default y
+
+config APP_lvgl_use_jpeg_turbo
+    bool "使用 jpeg turbo 支持jpg文件(buildroot 需选上jpeg turbo)"
+    default n
+
+config APP_media_video_player
+    bool
+    default n
+
+config APP_lvgl_enable_backtrace
+    bool "异常时使用backtrace,依赖glibc"
+    default n
+
+config APP_lvgl_h264_view_client
+    bool "h264 view(依赖demos/multi_decode_display 的server 以及 libutils的cJSON 封装)"
+    default n
+
+config APP_lvgl_demo_widgets
+    bool "lvgl_demo_widgets 应用"
+    default n
+
+config APP_lvgl_video_player
+    bool "lvgl_video_player 应用"
+    select APP_media_video_player
+    default n
+
+config APP_LVGL_VIDEO_PATH
+    string "视频路径"
+    default "/usr/data/"
+    depends on APP_lvgl_video_player
+
+config APP_lvgl_demo_ilock
+    bool "demo ilock 门锁演示应用"
+    default n
+
+config APP_lvgl_demo_ilock2
+    bool "demo ilock2 (带图标 门锁演示应用)"
+    select APP_media_video_player
+    default n
+
+config APP_lvgl_demo_ilock_tuya
+    bool "demo ilock tuya (带图标 tuya门锁演示应用)"
+    default n
+
+config APP_lvgl_demo_ilock_txt
+    bool "demo ilock 门锁演示应用 (布局使用txt文本)"
+    default n
+
+endmenu # APP_libmedia

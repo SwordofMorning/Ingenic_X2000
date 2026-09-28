@@ -1,0 +1,4 @@
+config AIC8800_BSP_SUPPORT
+	tristate "AIC8800 initialize the module firmware“
+	---help---
+	  This is support for aic bsp driver.

@@ -1,0 +1,30 @@
+menuconfig MD_X2600_LCD_ST7789V
+    bool "SLCD ST7789V (240x320) (X2600) (8080接口)"
+    select MD_X2600_510_FB
+    depends on MD_SOC_X2600_BASE
+
+config MD_X2600_LCD_REGULATOR_NAME
+    string "regulator name(通过名字获取 lcd module 电源管理器)"
+    default -1
+
+config MD_X2600_ST7789V_CS
+    string "gpio chip select(lcd 片选引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2600_ST7789V_RD
+    string "gpio lcd read signal(lcd 读引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2600_ST7789V_RST
+    string "gpio reset(lcd 复位引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_X2600_ST7789V_POWER_EN
+    string "gpio power enable(lcd power使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+endmenu # MD_X2600_LCD_ST7789V

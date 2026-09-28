@@ -1,0 +1,36 @@
+array SOC_X2580_CAMERA_MCLK_IO
+    string "X2580 MCLK 引脚"
+    item "PC15" PC15
+    item "PA15" PA15
+
+menuconfig MD_X2580_CAMERA_VIC
+    bool "camera 驱动(vic控制器)"
+    select MD_RMEM_MANAGER
+
+config MD_X2580_CAMERA_VIC_CTL
+    bool "选择VIC控制器"
+
+config MD_X2580_CAMERA_VIC_MCLK
+    string "VIC MCLK管脚选择"
+    default PA15
+    choice from SOC_X2580_CAMERA_MCLK_IO
+    depends on MD_X2580_CAMERA_VIC_CTL
+
+choice "      选择VIC 数据通路(ISP/DDR)"
+    default MD_X2580_CAMERA_VIC_ISP_DISABLE
+    depends on MD_X2580_CAMERA_VIC_CTL
+
+config MD_X2580_CAMERA_VIC_ISP_DISABLE
+    bool "    VIC数据不通过ISP模块"
+
+config MD_X2580_CAMERA_VIC_ISP_ENABLE
+    bool "    VIC数据通过ISP模块"
+
+endchoice
+
+config MD_X2580_CAMERA_VIC_FRAME_NUMS
+    int "VIC Camera 帧缓冲数 "
+    default 2
+    depends on MD_X2580_CAMERA_VIC_CTL
+
+endmenu

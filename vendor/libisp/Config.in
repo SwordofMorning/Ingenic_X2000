@@ -1,0 +1,65 @@
+menuconfig APP_libisp
+    bool "libisp (X2000/X2580 isp接口/命令)"
+    default y
+
+choice "soc选择"
+    default APP_libisp_x2000
+
+config APP_libisp_x2000
+    bool "for x2000"
+
+config APP_libisp_x2580
+    bool "for x2580"
+
+endchoice
+
+config APP_libisp_isp_cmd
+    bool "isp shell命令"
+    default y
+
+config APP_libisp_demo_isp_cmd
+    bool "demo_isp(Camera经过ISP获取图像数据)"
+    depends on APP_libisp_x2000
+    default y
+
+config APP_libisp_demo_isp_nv12_preview_cmd
+    bool "demo_isp_nv12_preview(Camera经过ISP获取图像数据,并在FB上预览)"
+    depends on APP_libisp_x2000
+    default y
+
+config App_libisp_mult_chan_preview_cmd
+    bool "mult_chan_preview(预览多通道ISP数据)"
+    depends on APP_libisp_x2000
+    default y
+
+config App_libisp_demo_frame_sync_cmd
+    bool "frame sync(双摄帧同步)"
+    depends on APP_libisp_x2000
+    default y
+
+config APP_libisp_demo_isp_jpeg_encode_cmd
+    bool "demo_isp_jpeg_encode(Camera经过ISP获取图像数据,并且编码成JPEG格式图片)"
+    depends on APP_libisp_x2000
+    default y
+
+config APP_libisp_demo_isp_h264_encode_cmd
+    bool "demo_isp_h264_encode(Camera经过ISP获取图像数据,并且编码成H264格式图片)"
+    depends on APP_libisp_x2000
+    default y
+
+config APP_libisp_demo_isp_x2580_cmd
+    bool "demo_isp_x2580命令"
+    depends on APP_libisp_x2580
+    default y
+
+config APP_libisp_demo_isp_h264_encode_x2580_cmd
+    bool "demo_isp_h264_encode_x2580 命令"
+    depends on APP_libisp_x2580
+    default y
+
+config APP_libisp_demo_isp_jpeg_encode_x2580_cmd
+    bool "demo_isp_jpeg_encode_x2580 命令"
+    depends on APP_libisp_x2580
+    default y
+
+endmenu

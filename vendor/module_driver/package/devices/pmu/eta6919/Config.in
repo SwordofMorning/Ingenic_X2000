@@ -1,0 +1,48 @@
+array MD_PMU_ETA6919_MODE_LIST
+    int "pmu 上电模式列表"
+    item "USB供电" 0
+    item "USB供电,电池充电" 1
+    item "电池供电" 2
+
+menuconfig MD_PMU_ETA6919_POWER
+    bool "ETA6919"
+
+config MD_PMU_ETA6919_INT_GPIO
+    string "pmu interrupt gpio(eta6919 中断脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config MD_PMU_ETA6919_I2C_BUSNUM
+    int "pmu i2c bus num (eta6919 挂接的i2c总线号)"
+    default -1
+
+config MD_PMU_ETA6919_MODE
+    int "pmu 上电模式"
+    default 0
+    choice from MD_PMU_ETA6919_MODE_LIST
+
+config MD_PMU_ETA6919_CHARGE_CURRENT
+    int "pmu charge current (充电电流, 单位：mA)"
+    default 800
+
+config MD_PMU_ETA6919_CHARGE_VOLTAGE
+    int "pmu charge voltage (充电电压, 单位：mV)"
+    default 4200
+
+config MD_PMU_ETA6919_CHARGE_PRE_CURRENT
+    int "pmu pre-charge current (预充电电流, 单位：mA)"
+    default 40
+
+config MD_PMU_ETA6919_CHARGE_TERM_CURRENT
+    int "pmu term charge current (截止充电电流, 单位：mA)"
+    default 60
+
+config MD_PMU_ETA6919_INPUT_CURRENT
+    int "pmu input current (输入电流, 单位：mA)"
+    default 2400
+
+config MD_PMU_ETA6919_INPUT_VOLTAGE
+    int "pmu input voltage (输入电压, 单位：mV)"
+    default 4500
+
+endmenu

@@ -1,0 +1,82 @@
+
+menu "alsa 相关配置"
+
+choice "选择需要使用的插件"
+    default APP_br_asound_conf_none
+config APP_br_asound_conf_none
+    bool "不使用配置文件"
+config APP_br_asound_conf_keep
+    bool "保持配置文件,不做更改"
+config APP_br_asound_conf_dmix
+    bool "dmix插件(混音)"
+    select APP_br_asound_conf_use_dmix
+    select APP_br_asound_conf_config
+config APP_br_asound_conf_softvol
+    bool "softvol插件(调音)"
+    select APP_br_asound_conf_use_softvol
+    select APP_br_asound_conf_config
+config APP_br_asound_conf_dmix_softvol
+    bool "dmix与softvol插件"
+    select APP_br_asound_conf_use_dmix
+    select APP_br_asound_conf_use_softvol
+    select APP_br_asound_conf_config
+endchoice
+
+config APP_br_asound_conf_use_dmix
+    bool
+
+config APP_br_asound_conf_use_softvol
+    bool
+
+config APP_br_asound_conf_config
+    bool
+
+
+config APP_br_asound_conf_codec_name
+    string "声卡名字"
+    depends on APP_br_asound_conf_config
+    default "icodecsoundcard"
+
+
+config APP_br_asound_conf_dmix_format
+    string "dmixer 格式"
+    depends on APP_br_asound_conf_use_dmix
+    default S16_LE
+
+config APP_br_asound_conf_dmix_rate
+    string "dmixer 速率"
+    depends on APP_br_asound_conf_use_dmix
+    default 48000
+
+config APP_br_asound_conf_dmix_channels
+    string "dmixer 通道数"
+    depends on APP_br_asound_conf_use_dmix
+    default 1
+
+config APP_br_asound_conf_dmix_period_size
+    string "dmixer 周期大小"
+    depends on APP_br_asound_conf_use_dmix
+    default 2048
+
+config APP_br_asound_conf_dmix_buffer_size
+    string "dmixer 缓冲大小"
+    depends on APP_br_asound_conf_use_dmix
+    default 16384
+
+
+config APP_br_asound_conf_softvol_min_dB
+    string "softvol 最小分贝"
+    depends on APP_br_asound_conf_use_softvol
+    default -48.0
+
+config APP_br_asound_conf_softvol_max_dB
+    string "softvol 最大分贝"
+    depends on APP_br_asound_conf_use_softvol
+    default 0.0
+
+config APP_br_asound_conf_softvol_resolution
+    string "softvol 最大值"
+    depends on APP_br_asound_conf_use_softvol
+    default 100
+
+endmenu

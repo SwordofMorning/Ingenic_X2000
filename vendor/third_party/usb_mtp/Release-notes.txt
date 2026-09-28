@@ -1,0 +1,119 @@
+=================================================
+* uMTP Responder
+* Lightweight USB Media Transfer Protocol (MTP) 
+* responder
+*
+* Copyright (c) 2018 - 2020 Viveris Technologies
+*
+* https://github.com/viveris/uMTP-Responder
+*
+* Release notes
+=================================================
+
+Noteworthy changes in release v1.3.6 (2020-Apr-3)
+=================================================
+
+* MTP Storage mount / unmount support (-cmd:mount:[store name] / -cmd:unmount:[store name] / ).
+
+* Config file :
+    * "storage" operation : new "notmounted" option.
+    * New usb_max_rd_buffer_size option (iMX6 issue workaround).
+    * New usb_max_wr_buffer_size option (iMX6 issue workaround).
+    * New read_buffer_cache_size option (iMX6 issue workaround).
+
+* Config file path can be changed in the command line (-conf:[Config file path]).
+
+* Async/inotify event : Send file size changes.
+
+* Fix : gadgetfs -> Handle unexpected disconnection while transferring a file.
+
+* Fix : Shared multi-drives inotify events.
+
+* Code fixes / improvements :
+    * MTP operations : Better errors handling.
+    * Code refactoring (MTP operations code separated).
+
+Noteworthy changes in release v1.0.0 (2019-10-7)
+=================================================
+
+* Major update ! : Now support all file operations !
+
+* Config file : storage "rw"/"ro" parameter added to write protect a drive.
+
+* Performance : Read and write throughput increased (~ 4x speedup).
+
+* Fix >2GB files listing.
+
+* Fix >2GB files access support on 32 bits systems.
+
+* File read/write transfer cancel operation supported.
+
+* Drives and objects properties support.
+
+* New supported commands :
+
+    * MTP_OPERATION_GET_PARTIAL_OBJECT_64
+    * MTP_OPERATION_SEND_PARTIAL_OBJECT
+    * MTP_OPERATION_BEGIN_EDIT_OBJECT
+    * MTP_OPERATION_END_EDIT_OBJECT
+    * MTP_OPERATION_TRUNCATE_OBJECT
+    * MTP_REQ_CANCEL
+    * MTP_REQ_RESET
+    * MTP_REQ_GET_DEVICE_STATUS
+    * MTP_OPERATION_GET_DEVICE_PROP_DESC
+    * MTP_OPERATION_GET_DEVICE_PROP_VALUE
+    * MTP_OPERATION_GET_OBJECT_REFERENCES
+    * MTP_OPERATION_GET_OBJECT_PROP_LIST
+    * MTP_OPERATION_GET_OBJECT_PROP_VALUE
+    * MTP_OPERATION_SET_OBJECT_PROP_VALUE
+
+* Many others fixes and improvements !
+
+Noteworthy changes in release v0.10.1 (2019-7-17)
+=================================================
+
+* True Unicode support.
+
+* Files/Folders renaming support.
+
+* Fixes and improvements.
+
+Noteworthy changes in release v0.9.7 (2019-1-10)
+=================================================
+
+* MTP event support added :
+
+    * The MTP initiator is now notified when files/folders are removed or added from the responder.
+
+* Various debug messages fixes and improvements.
+
+Noteworthy changes in release v0.9.2 (2018-12-5)
+=================================================
+
+* Generic FunctionFS/libcomposite support added !
+
+* New configuration option : show/hide hidden files option.
+
+* It now follows the symbolic links.
+
+Noteworthy changes in release v0.8.6 (2018-6-30)
+=================================================
+
+* Daemon mode :
+
+    * New "loop_on_disconnect" config file option.
+
+* Bug fixes / Improvements :
+
+    * Windows host : Non-empty folder deletion issue fixed.
+
+    * Severals memory leaks in daemon mode fixed.
+
+    * GadgetFS init/deinit reworked.
+
+Noteworthy changes in release v0.8.1 (2018-5-9)
+=================================================
+
+* Initial release.
+
+    Tested on Raspberry Pi Zero and Atmel Sama5D2 Xplained boards.

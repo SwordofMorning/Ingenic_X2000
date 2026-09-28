@@ -1,0 +1,14 @@
+menuconfig MD_AIC8800_USB
+	bool "AIC8800_USB wireless cards support"
+
+config MD_AIC8800_USB_WLAN_POWER
+	string "gpio_wlan_power(wifi的供电引脚)"
+	default -1
+	choice from SOC_GPIO_PINS
+
+config MD_AIC8800_USB_WLAN_REG_ON
+	string "gpio_wlan_reg_on(wifi的使能引脚)"
+	default -1
+	choice from SOC_GPIO_PINS
+
+endmenu

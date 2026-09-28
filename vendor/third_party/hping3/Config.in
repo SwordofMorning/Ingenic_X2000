@@ -1,0 +1,5 @@
+menuconfig APP_hping3
+    bool "hping3 支持"
+    default n
+
+endmenu # network

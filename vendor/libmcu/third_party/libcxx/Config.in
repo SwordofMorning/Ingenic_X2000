@@ -1,0 +1,9 @@
+config APP_libmcu_libcxx
+    bool "libcxx(c++ support)"
+config APP_libmcu_libcxx_rtti
+    bool "    支持c++动态类型判断, typeid(dynamic_cast)"
+    default n
+    depends on APP_libmcu_libcxx
+config APP_libmcu_libcxx_thread
+    bool
+    default n

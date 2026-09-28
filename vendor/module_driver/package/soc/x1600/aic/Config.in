@@ -1,0 +1,37 @@
+menuconfig MD_X1600_AIC
+    bool "aic(i2s 接口)"
+
+menuconfig MD_X1600_AIC_IF_SEND_INVALID_DATA
+    bool "外部codec是否需要在传输有效数据之前先传输空数据至传输稳定"
+    default y
+
+config MD_X1600_AIC_IF_SEND_INVALID_DATA_EVERYTIME
+    bool "每次播放均先传输空数据至稳定"
+    default n
+    help
+        若不选中该项 仅上电后首次播放先传输空数据至稳定
+
+config MD_X1600_AIC_SEND_INVALID_DATA_TIME_MS
+    int "需要先传输空数据至传输稳定的时长(以ms为单位)"
+    default 120
+    help
+        基于halley6_x1600_v10板极测得播放音频为8k时对应时间为720
+        16k为360 48k为120 96k为60
+
+endmenu
+
+config MD_X1600_AIC_SELECT_CLOCK
+    int "选择rx和tx的时钟是否独立"
+    choice from MD_x1600_AIC_CLK_CHOICE_LIST
+    help
+        时钟完全独立指tx和rx的mclk、bclk、lrclk相互独立
+        时钟共享tx_mclk指i2s的tx和rx共享tx_mclk，但bclk和lrclk独立
+        时钟完全共享指tx和rx的mclk、bclk、lrclk相互共享
+
+endmenu # aic(i2s 接口)
+
+array MD_x1600_AIC_CLK_CHOICE_LIST
+    int "选择rx和tx的时钟选项"
+    item "i2s rx和tx的时钟完全独立" 0
+    item "i2s rx和tx共享tx_mclk" 1
+    item "i2s rx和tx共享所有的时钟" 2

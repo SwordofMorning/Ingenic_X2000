@@ -1,0 +1,68 @@
+menuconfig APP_libmcu_x2580_i2c
+    bool "I2C 控制器驱动"
+    select APP_libmcu_driver_i2c
+
+config APP_libmcu_x2580_I2C0_BUS
+    bool "选择 I2C0"
+
+choice "              选择I2C0 GPIO"
+    default APP_libmcu_x2580_I2C0_PC
+    depends on APP_libmcu_x2580_I2C0_BUS
+
+config APP_libmcu_x2580_I2C0_PC
+    bool "SCL: GPIO_PA(13) SDA: GPIO_PA(12)"
+
+endchoice
+
+config APP_libmcu_x2580_I2C0_RATE
+    int "       I2C0 速率"
+    default 400000
+    depends on APP_libmcu_x2580_I2C0_BUS
+
+config APP_libmcu_x2580_I2C1_BUS
+    bool "选择 I2C1"
+
+choice "              选择I2C1 GPIO"
+    default APP_libmcu_x2580_I2C1_PB
+    depends on APP_libmcu_x2580_I2C1_BUS
+
+config APP_libmcu_x2580_I2C1_PB
+    bool "SCL: GPIO_PB(26) SDA: GPIO_PB(25)"
+
+config APP_libmcu_x2580_I2C1_PC
+    bool "SCL: GPIO_PC(20) SDA: GPIO_PC(19)"
+
+config APP_libmcu_x2580_I2C1_PD
+    bool "SCL: GPIO_PD(7) SDA: GPIO_PD(6)"
+
+endchoice
+
+config APP_libmcu_x2580_I2C1_RATE
+    int "       I2C1 速率"
+    default 400000
+    depends on APP_libmcu_x2580_I2C1_BUS
+
+config APP_libmcu_x2580_I2C2_BUS
+    bool "选择 I2C2"
+
+choice "              选择I2C2 GPIO"
+    default APP_libmcu_x2580_I2C2_PB_10_11
+    depends on APP_libmcu_x2580_I2C2_BUS
+
+config APP_libmcu_x2580_I2C2_PB_10_11
+    bool "SCL: GPIO_PB(11) SDA: GPIO_PB(10)"
+
+config APP_libmcu_x2580_I2C2_PB_27_28
+    bool "SCL: GPIO_PB(28) SDA: GPIO_PB(27)"
+
+config APP_libmcu_x2580_I2C2_PC
+    bool "SCL: GPIO_PC(9) SDA: GPIO_PC(8)"
+
+endchoice
+
+config APP_libmcu_x2580_I2C2_RATE
+    int "       I2C2 速率"
+    default 400000
+    depends on APP_libmcu_x2580_I2C2_BUS
+
+endmenu # I2C 总线

@@ -1,0 +1,3 @@
+array CAMERA_INTERFACE_TYPE_SELECT
+    string "X2580 Camera Interface type"
+    item "VIC0" 0

@@ -1,0 +1,3 @@
+config MD_X2580_IPU
+    bool "IPU 驱动"
+    default n

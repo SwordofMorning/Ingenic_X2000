@@ -1,0 +1,236 @@
+menuconfig APP_test_shell
+    bool "外设测试脚本"
+
+config APP_test_pwm
+    bool "pwm测试脚本"
+
+config APP_test_pwm_gpio
+    string "pwm 引脚"
+    choice from SOC_GPIO_PINS
+    default -1
+    depends on APP_test_pwm
+
+config APP_test_pwm_max_level
+    int "pwm 最大级数（<=65535）"
+    default 300
+    depends on APP_test_pwm
+
+config APP_test_pwm_freq
+    int "pwm 频率(单位hz)"
+    default 1000000
+    depends on APP_test_pwm
+
+config APP_test_pwm_accuracy_priority
+    string "pwm 精度优先级"
+    choice from PWM_ACCURACY_PRIORITY
+    default freq
+    depends on APP_test_pwm
+
+config APP_test_pwm_active_level
+    string "pwm 引脚活跃电平"
+    choice from PWM_ACTIVE_LEVELS
+    default 1
+    depends on APP_test_pwm
+
+
+
+menuconfig APP_test_keyboard
+    bool "adc按键测试脚本"
+
+config APP_test_keyboard_KEY1
+    bool "按键１"
+    default n
+
+config APP_test_keyboard_KEY1_CODE
+    string "  按键值"
+    default -1
+    choice from MD_KEYBOARD_GPIO_KEYS
+    depends on APP_test_keyboard_KEY1
+
+
+config APP_test_keyboard_KEY2
+    bool "按键2"
+    default n
+
+config APP_test_keyboard_KEY2_CODE
+    string "  按键值"
+    default -1
+    choice from MD_KEYBOARD_GPIO_KEYS
+    depends on APP_test_keyboard_KEY2
+
+
+config APP_test_keyboard_KEY3
+    bool "按键3"
+    default n
+
+config APP_test_keyboard_KEY3_CODE
+    string "  按键值"
+    default -1
+    choice from MD_KEYBOARD_GPIO_KEYS
+    depends on APP_test_keyboard_KEY3
+
+
+config APP_test_keyboard_KEY4
+    bool "按键4"
+    default n
+
+config APP_test_keyboard_KEY4_CODE
+    string "  按键值"
+    default -1
+    choice from MD_KEYBOARD_GPIO_KEYS
+    depends on APP_test_keyboard_KEY4
+
+
+config APP_test_keyboard_KEY5
+    bool "按键5"
+    default n
+
+config APP_test_keyboard_KEY5_CODE
+    string "  按键值"
+    default -1
+    choice from MD_KEYBOARD_GPIO_KEYS
+    depends on APP_test_keyboard_KEY5
+
+
+config APP_test_keyboard_KEY6
+    bool "按键6"
+    default n
+
+config APP_test_keyboard_KEY6_CODE
+    string "  按键值"
+    default -1
+    choice from MD_KEYBOARD_GPIO_KEYS
+    depends on APP_test_keyboard_KEY6
+
+
+config APP_test_keyboard_KEY7
+    bool "按键7"
+    default n
+
+config APP_test_keyboard_KEY7_CODE
+    string "  按键值"
+    default -1
+    choice from MD_KEYBOARD_GPIO_KEYS
+    depends on APP_test_keyboard_KEY7
+
+
+config APP_test_keyboard_KEY8
+    bool "按键8"
+    default n
+
+config APP_test_keyboard_KEY8_CODE
+    string "  按键值"
+    default -1
+    choice from MD_KEYBOARD_GPIO_KEYS
+    depends on APP_test_keyboard_KEY8
+
+endmenu
+
+
+
+config APP_test_lcd
+    bool "lcd测试脚本"
+
+config APP_test_lcd_dev
+    string "    lcd 设备"
+    default /dev/fb0
+    depends on APP_test_lcd
+    help
+        "lcd设备    例:/dev/fb0"
+
+
+
+config APP_test_camera
+    bool "camera测试脚本"
+
+
+
+config APP_test_wifi
+    bool "wifi测试脚本"
+
+config APP_test_wifi_ssid
+    string "    wifi 名称"
+    default Guest
+    depends on APP_test_wifi
+
+config APP_test_wifi_psk
+    string "    wifi 密码"
+    default ingenic_guest
+    depends on APP_test_wifi
+
+
+
+config APP_test_mac
+    bool "mac测试脚本"
+
+config APP_test_mac_ip_addr
+    string "    ip 地址"
+    default 194.169.3.125
+    depends on APP_test_mac
+
+config APP_test_mac_mask
+    string "    子网掩码"
+    default 255.255.255.0
+    depends on APP_test_mac
+
+config APP_test_mac_gw
+    string "    网关"
+    default 194.169.3.1
+    depends on APP_test_mac
+
+
+
+config APP_test_amic
+    bool "amic录音测试脚本"
+
+config APP_test_amic_channel
+    string "    录制音频声道数"
+    default 1
+    depends on APP_test_amic
+
+
+config APP_test_dmic
+    bool "dmic录音测试脚本"
+
+config APP_test_dmic_channel
+    string "    录制音频声道数"
+    default 2
+    depends on APP_test_dmic
+
+
+config APP_test_speak
+    bool "喇叭播放测试脚本"
+
+
+
+config APP_test_bt
+    bool "蓝牙探测设备测试"
+
+config APP_test_bt_select
+    string "    测试蓝牙选择"
+    choice from APP_test_BT_SELECT
+    depends on APP_test_bt
+    help
+        "选择需要测试的蓝牙"
+
+config APP_test_bt_detect_time
+    string "    蓝牙探测时间    单位s"
+    default 10
+    depends on APP_test_bt
+
+endmenu
+
+array APP_test_BT_SELECT
+    string "蓝牙选择"
+    item "bt_bcm" BCM
+    item "bt_realtek" REALTEK
+
+array PWM_ACTIVE_LEVELS
+    int "pwm 活跃电平"
+    item "pwm_active_low" 0
+    item "pwm_active_high" 1
+
+array PWM_ACCURACY_PRIORITY
+    string "pwm 精度优先级"
+    item "pwm_accuracy_priority" freq
+    item "pwm_accuracy_priority" levels

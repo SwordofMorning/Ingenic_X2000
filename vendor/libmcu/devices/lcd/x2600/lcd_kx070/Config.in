@@ -1,0 +1,42 @@
+menuconfig APP_libmcu_device_x2600_lcd_kx070
+    bool "TFT KX070 (1024x600) (X2600) (lvds接口)"
+    select APP_libmcu_x2600_fb
+    depends on APP_libmcu_x2600
+
+config APP_libmcu_device_x2600_kx070_backlight_pin
+    string "gpio backlight pin(lcd backlight使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config APP_libmcu_device_x2600_kx070_backlight_level
+    int "gpio backlight level(lcd backlight使能引脚 有效电平)"
+    default 1
+
+config APP_libmcu_device_x2600_kx070_rst_pin
+    string "gpio reset pin(lcd 复位引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config APP_libmcu_device_x2600_kx070_rst_level
+    int "gpio reset level(lcd 复位引脚 有效电平)"
+    default 0
+
+config APP_libmcu_device_x2600_kx070_power_pin
+    string "gpio power pin(lcd power使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config APP_libmcu_device_x2600_kx070_power_level
+    string "gpio power level(lcd power使能引脚 有效电平)"
+    default 1
+
+config APP_libmcu_device_x2600_kx070_power_en_pin
+    string "gpio power_en pin(lcd power_en使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config APP_libmcu_device_x2600_kx070_power_en_level
+    string "gpio power_en level(lcd power_en使能引脚 有效电平)"
+    default 1
+
+endmenu # APP_libmcu_device_x2600_lcd_kx070

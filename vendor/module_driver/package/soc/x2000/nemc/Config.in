@@ -1,0 +1,71 @@
+
+array NEMC_BUSWIDTH
+    int "NEMC 数据总线位宽"
+    item "8位" 8
+    item "16位" 16
+
+menuconfig MD_X2000_NEMC
+    bool "nemc 外部总线接口"
+
+menu "使能 nemc 地址线引脚"
+
+config MD_X2000_NEMC_ADDR0_GPIO
+    bool "使能addr0 (PB00)"
+    default y
+config MD_X2000_NEMC_ADDR1_GPIO
+    bool "使能addr1 (PB01)"
+    default y
+config MD_X2000_NEMC_ADDR2_GPIO
+    bool "使能addr2 (PB02)"
+    default y
+config MD_X2000_NEMC_ADDR3_GPIO
+    bool "使能addr3 (PB03)"
+    default y
+config MD_X2000_NEMC_ADDR4_GPIO
+    bool "使能addr4 (PB04)"
+    default y
+config MD_X2000_NEMC_ADDR5_GPIO
+    bool "使能addr5 (PB05)"
+    default y
+config MD_X2000_NEMC_ADDR6_GPIO
+    bool "使能addr6 (PB06)"
+    default y
+config MD_X2000_NEMC_ADDR7_GPIO
+    bool "使能addr7 (PB07)"
+    default y
+config MD_X2000_NEMC_ADDR8_GPIO
+    bool "使能addr8 (PB08)"
+    default n
+config MD_X2000_NEMC_ADDR9_GPIO
+    bool "使能addr9 (PB09)"
+    default n
+config MD_X2000_NEMC_ADDR10_GPIO
+    bool "使能addr10 (PB10)"
+    default n
+config MD_X2000_NEMC_ADDR11_GPIO
+    bool "使能addr11 (PB11)"
+    default n
+config MD_X2000_NEMC_ADDR12_GPIO
+    bool "使能addr12 (PB12)"
+    default n
+
+endmenu
+
+config MD_X2000_NEMC0
+    bool "使能 nemc0"
+
+config MD_X2000_NEMC0_BUSWIDTH
+    int "nemc0 数据总线位宽"
+    choice from NEMC_BUSWIDTH
+    depends on MD_X2000_NEMC0
+
+
+config MD_X2000_NEMC1
+    bool "使能 nemc1"
+
+config MD_X2000_NEMC1_BUSWIDTH
+    int "nemc1 数据总线位宽"
+    choice from NEMC_BUSWIDTH
+    depends on MD_X2000_NEMC1
+
+endmenu

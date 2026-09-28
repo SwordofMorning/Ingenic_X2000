@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote  name="linux"
+           fetch="."
+           review="https://review.ingenic.cn/" />
+  <default revision="master"
+           remote="linux"
+           sync-j="1" />
+
+  <project path="buildroot/buildroot" name="buildroot/buildroot" />
+  <project path="buildroot/buildroot_patch" name="buildroot/buildroot_patch" />
+  <project path="libhardware2" name="libhardware2" />
+  <project path="libimpf" name="libimpf" />
+  <project path="libisp" name="libisp" />
+  <project path="libmcu" name="libmcu" />
+  <project path="libmedia" name="libmedia" />
+  <project path="libutils2" name="libutils2" />
+  <project path="lib2d" name="lib2d" />
+  <project path="module_driver" name="module_driver" />
+  <project path="ota_updater" name="ota_updater" />
+  <project path="factory_test" name="factory_test" />
+  <project path="third_party/usb_mtp" name="third_party/usb_mtp" />
+  <project path="third_party/libiniparser" name="third_party/libiniparser" />
+  <project path="third_party/alsa_aeq" name="third_party/alsa_aeq" />
+  <project path="third_party/awtk" name="third_party/awtk" />
+  <project path="third_party/lvgl" name="third_party/lvgl" />
+  <project path="third_party/speexdsp" name="third_party/speexdsp" />
+  <project path="third_party/hping3" name="third_party/hping3"/>
+  <project path="wireless/aicsemi" name="wireless/aicsemi" />
+  <project path="wireless/altobeam" name="wireless/altobeam" />
+  <project path="wireless/bcm" name="wireless/bcm" />
+  <project path="wireless/espressif" name="wireless/espressif" />
+  <project path="wireless/hisilicon/hi3861l" name="wireless/hisilicon/hi3861l" />
+  <project path="wireless/icommsemi" name="wireless/icommsemi" />
+  <project path="wireless/luat" name="wireless/luat" />
+  <project path="wireless/quectel" name="wireless/quectel" />
+  <project path="wireless/realtek" name="wireless/realtek" />
+  <project path="build" name="build" />
+
+  <project path="bootloader/uboot-x1000" name="bootloader/uboot-x1000" />
+  <project path="bootloader/uboot-x1021" name="bootloader/uboot-x1021" />
+  <project path="bootloader/uboot-x2000" name="bootloader/uboot-x2000" />
+
+  <project path="kernel/kernel-x1000" name="kernel/kernel-x1000" />
+  <project path="kernel/kernel-x1021" name="kernel/kernel-x1021" />
+  <project path="kernel/kernel-x2000" name="kernel/kernel-x2000" />
+  <project path="kernel/kernel" name="kernel/kernel" />
+  <project path="tools/toolchains/mips-gcc520-glibc222" name="tools/toolchains/mips-gcc520-glibc222" />
+  <project path="tools/toolchains/mips-gcc720-glibc229" name="tools/toolchains/mips-gcc720-glibc229" />
+  <project path="tools/toolchains/mips-gcc930-glibc228" name="tools/toolchains/mips-gcc930-glibc228" />
+  <project path="tools/toolchains/mips-gcc1210-glibc233" name="tools/toolchains/mips-gcc1210-glibc233" />
+  <project path="tools/toolchains/riscv-r1.0.0" name="tools/toolchains/riscv-r1.0.0" />
+  <project path="tools/iconfigtool" name="tools/iconfigtool" />
+  <project path="doc" name="doc" />
+  <project path="demos/faceapp" name="demos/faceapp" />
+  <project path="demos/evol" name="demos/evol" />
+  <project path="demos/ilockapp" name="demos/ilockapp" />
+  <project path="demos/scancode" name="demos/scancode" />
+  <project path="demos/nfc" name="demos/nfc" />
+  <project path="demos/gui" name="demos/gui" />
+  <project path="demos/tuya" name="demos/tuya" />
+  <project path="demos/tuya_sdk" name="demos/tuya_sdk" />
+  <project path="demos/ingenic_alg_lib" name="demos/ingenic_alg_lib" />
+  <project path="demos/multi_decode_display" name="demos/multi_decode_display" />
+</manifest>
+

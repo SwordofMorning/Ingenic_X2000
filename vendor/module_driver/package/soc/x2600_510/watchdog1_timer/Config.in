@@ -1,0 +1,2 @@
+config MD_X2600_510_WATCHDOG1_TIMER
+    bool "watchdog 的定时器功能(watchdog1 timer)"

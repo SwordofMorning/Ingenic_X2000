@@ -1,0 +1,14 @@
+menuconfig APP_libmcu
+    bool "libmcu (片上小核)"
+    default y
+
+source soc/Config.in
+source options/Config.in
+source devices/Config.in
+source drivers/Config.in
+source lib/Config.in
+source newlib/Config.in
+source third_party/Config.in
+source vendor/Config.in
+
+endmenu

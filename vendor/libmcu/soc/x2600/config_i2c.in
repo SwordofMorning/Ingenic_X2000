@@ -1,0 +1,85 @@
+menuconfig APP_libmcu_x2600_i2c
+    bool "I2C 控制器驱动"
+    select APP_libmcu_driver_i2c
+
+config APP_libmcu_x2600_I2C0_BUS
+    bool "选择 I2C0"
+
+choice "              选择I2C0 GPIO"
+    default APP_libmcu_x2600_I2C0_PC
+    depends on APP_libmcu_x2600_I2C0_BUS
+
+config APP_libmcu_x2600_I2C0_PC
+    bool "SDA: GPIO_PC(1)、SCL: GPIO_PC(0)"
+
+config APP_libmcu_X2600_I2C0_PD
+    bool "SDA: GPIO_PD(3)、SCL: GPIO_PD(4)"
+
+endchoice
+
+config APP_libmcu_x2600_I2C0_RATE
+    int "       I2C0 速率"
+    default 400000
+    depends on APP_libmcu_x2600_I2C0_BUS
+
+config APP_libmcu_x2600_I2C1_BUS
+    bool "选择 I2C1"
+
+choice "              选择I2C1 GPIO"
+    default APP_libmcu_x2600_I2C1_PB
+    depends on APP_libmcu_x2600_I2C1_BUS
+
+config APP_libmcu_x2600_I2C1_PB
+    bool "SDA: GPIO_PB(1)、SCL: GPIO_PB(0)"
+
+config APP_libmcu_x2600_I2C1_PC
+    bool "SDA: GPIO_PC(3)、SCL: GPIO_PC(2)"
+
+endchoice
+
+config APP_libmcu_x2600_I2C1_RATE
+    int "       I2C1 速率"
+    default 400000
+    depends on APP_libmcu_x2600_I2C1_BUS
+
+config APP_libmcu_x2600_I2C2_BUS
+    bool "选择 I2C2"
+
+choice "              选择I2C2 GPIO"
+    default APP_libmcu_x2600_I2C2_PB
+    depends on APP_libmcu_x2600_I2C2_BUS
+
+config APP_libmcu_x2600_I2C2_PB
+    bool "SDA: GPIO_PB(2)、SCL: GPIO_PB(3)"
+
+config APP_libmcu_x2600_I2C2_PC
+    bool "SDA: GPIO_PC(20)、SCL: GPIO_PC(19)"
+
+endchoice
+
+config APP_libmcu_x2600_I2C2_RATE
+    int "       I2C2 速率"
+    default 400000
+    depends on APP_libmcu_x2600_I2C2_BUS
+
+config APP_libmcu_x2600_I2C3_BUS
+    bool "选择 I2C3"
+
+choice "              选择I2C3 GPIO"
+    default APP_libmcu_x2600_I2C3_PC
+    depends on APP_libmcu_x2600_I2C3_BUS
+
+config APP_libmcu_x2600_I2C3_PC
+    bool "SDA: GPIO_PC(21)、SCL: GPIO_PC(22)"
+
+config APP_libmcu_x2600_I2C3_PE
+    bool "SDA: GPIO_PC(6)、SCL: GPIO_PC(5)"
+
+endchoice
+
+config APP_libmcu_x2600_I2C3_RATE
+    int "       I2C3 速率"
+    default 400000
+    depends on APP_libmcu_x2600_I2C3_BUS
+
+endmenu # I2C 总线

@@ -1,0 +1,2 @@
+config MD_AD100_510_AIC
+    bool "aic(i2s 接口)"

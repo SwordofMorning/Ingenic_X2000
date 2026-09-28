@@ -1,0 +1,22 @@
+diff -ru qtbase-everywhere-src-5.12.7-2/src/corelib/global/qendian.h qtbase-everywhere-src-5.12.7/src/corelib/global/qendian.h
+--- qtbase-everywhere-src-5.12.7-2/src/corelib/global/qendian.h	2023-10-30 17:35:03.701499645 +0800
++++ qtbase-everywhere-src-5.12.7/src/corelib/global/qendian.h	2023-10-30 17:41:35.091635249 +0800
+@@ -47,6 +47,7 @@
+ // include stdlib.h and hope that it defines __GLIBC__ for glibc-based systems
+ #include <stdlib.h>
+ #include <string.h>
++#include <limits>
+ 
+ #ifdef min // MSVC
+ #undef min
+diff -ru qtbase-everywhere-src-5.12.7-2/src/corelib/tools/qbytearraymatcher.h qtbase-everywhere-src-5.12.7/src/corelib/tools/qbytearraymatcher.h
+--- qtbase-everywhere-src-5.12.7-2/src/corelib/tools/qbytearraymatcher.h	2023-10-30 17:35:03.713499589 +0800
++++ qtbase-everywhere-src-5.12.7/src/corelib/tools/qbytearraymatcher.h	2023-10-30 17:35:07.881479901 +0800
+@@ -41,6 +41,7 @@
+ #define QBYTEARRAYMATCHER_H
+ 
+ #include <QtCore/qbytearray.h>
++#include <limits>
+ 
+ QT_BEGIN_NAMESPACE
+ 

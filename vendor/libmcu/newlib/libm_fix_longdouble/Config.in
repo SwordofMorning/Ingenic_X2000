@@ -1,0 +1,3 @@
+config APP_libmcu_newlib_libm_fix_longdouble
+    bool "newlib libm long double simple support"
+    default n

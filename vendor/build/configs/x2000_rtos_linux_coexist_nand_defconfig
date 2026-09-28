@@ -1,0 +1,232 @@
+APP_toolchain_dir=../tools/toolchains/mips-gcc720-glibc229
+APP_uboot_toolchain_dir=../tools/toolchains/mips-gcc720-glibc229
+APP_uboot_dir=../bootloader/uboot-x2000
+APP_uboot_config=x2000_base_rtos_xImage_sfc_nand_coexist
+APP_kernel_dir=../kernel/kernel-x2000
+APP_kernel_config=x2000_module_base_linux_single_core_sfc_nand_defconfig
+APP_br_dir=../buildroot/buildroot
+APP_br_config_file=configs/buildroot/buildroot_x2000_mini_adb_defconfig
+APP_compile_threads=8
+APP_module_driver=y
+MD_INIT_ORDER_FILE=package/default_driver_init_order.mk
+MD_INIT_START_FILE=package/S11module_driver_default
+# MD_KEYBOARD_GPIO is not set
+# MD_KEYBOARD_ADC is not set
+# MD_X1830_LCD_KWH035 is not set
+# MD_X1830_LCD_ST7701 is not set
+# MD_X1830_LCD_ST7701_9BIT_SPI is not set
+# MD_X1000_SLCD_TRULY240240 is not set
+# MD_X1021_SLCD_KWH035 is not set
+# MD_X2000_LCD_KWH035 is not set
+# MD_X2000_LCD_KD070D57 is not set
+# MD_X2000_LCD_MA0060 is not set
+# MD_X2000_LCD_M1700 is not set
+# MD_X2000_LCD_ST7789 is not set
+# MD_X2000_LCD_ST7701S is not set
+# MD_X2000_LCD_JD9851 is not set
+# MD_X2000_LCD_S6D04D1 is not set
+# MD_X2000_LCD_CC0702 is not set
+# MD_PWM_BACKLIGHT is not set
+# MD_TOUCHSCREEN_FTS is not set
+# MD_TOUCHSCREEN_GT9XX is not set
+# MD_TOUCHSCREEN_CST3XX is not set
+# MD_X2000_SENSOR_AR0230 is not set
+# MD_X2000_SENSOR_OV7251_MIPI is not set
+# MD_X2000_SENSOR_OV9281_MIPI is not set
+# MD_X2000_SENSOR_OV9732_MIPI is not set
+# MD_X2000_SENSOR_JXF37_MIPI is not set
+# MD_X2000_SENSOR_GC2375_MIPI is not set
+# MD_X2000_SENSOR_GC2053_MIPI is not set
+# MD_X2000_SENSOR_SC2310_MIPI is not set
+# MD_X2000_SENSOR_SC2310_DVP is not set
+# MD_X2000_SENSOR_GC5035_MIPI is not set
+# MD_X2000_SENSOR_GC0329 is not set
+# MD_X2000_SENSOR_OV2735_MIPI is not set
+# MD_X1830_SENSOR_OV2735 is not set
+# MD_X1520_SENSOR_OV9732 is not set
+# MD_X1000_SENSOR_GC0308 is not set
+# MD_X1000_SENSOR_GC2155 is not set
+# MD_X1000_SENSOR_GC0328 is not set
+# MD_X1021_SENSOR_GC0308 is not set
+# MD_X1021_SENSOR_GC0328 is not set
+# MD_X1021_SENSOR_OV9732 is not set
+# MD_X1520_SENSOR_ISP_OV9281_MIPI is not set
+# MD_X1520_SENSOR_ISP_SC031 is not set
+# MD_X1520_SENSOR_ISP_OV9732 is not set
+# MD_X1520_SENSOR_ISP_OV5693 is not set
+# MD_X1520_SENSOR_ISP_SC132 is not set
+# MD_X1830_SENSOR_ISP_OV2735 is not set
+# MD_X1830_SENSOR_ISP_S5K6A1 is not set
+# MD_X1830_SENSOR_ISP_GC2375A is not set
+# MD_X1830_SENSOR_ISP_AR0230 is not set
+# MD_X1830_SENSOR_ISP_AR0522 is not set
+# MD_X1830_SENSOR_ISP_BF2253L is not set
+# MD_CODEC_AK4493 is not set
+# MD_BCMDHD_1_363_125_7 is not set
+# MD_BCMDHD is not set
+# MD_BCMDHD_1_363_59_144 is not set
+# MD_RTL8723DS is not set
+# MD_RTL8189FS is not set
+# MD_AX88796C_SPI is not set
+# MD_X1000_ICODEC_SOUND_CARD is not set
+# MD_X1000_DUMMY_SOUND_CARD is not set
+# MD_X1021_ICODEC_SOUND_CARD is not set
+# MD_X1520_ICODEC_SOUND_CARD is not set
+# MD_X1830_ICODEC_SOUND_CARD is not set
+# MD_X2000_ICODEC_SOUND_CARD is not set
+# MD_X2000_AK4493_SOUND_CARD is not set
+# MD_X2000_SPDIF_SOUND_CARD is not set
+# MD_X2000_AXP_POWER is not set
+# MD_X2000_GPIO_REGULATOR is not set
+# MD_PWM_BATTERY is not set
+MD_UTILS_STRING=y
+MD_UTILS_GPIO=y
+MD_UTILS_I2C=y
+MD_UTILS_SPI=y
+MD_UTILS_CLOCK=y
+MD_UTILS_RING_MEM=y
+# MD_RMEM_MANAGER is not set
+# MD_SPI_GPIO is not set
+# MD_I2C_GPIO is not set
+# MD_SPI_DEVICE_HELPER is not set
+# MD_SPI_DEVICE is not set
+# MD_BT_HCIUART_RTKH5_KERNEL_4_4_94 is not set
+# MD_BT_HCIUART_RTKH5_KERNEL_3_10_14 is not set
+# MD_CHOICE_SOC_X1830 is not set
+# MD_CHOICE_SOC_X1520 is not set
+# MD_CHOICE_SOC_X1021 is not set
+# MD_CHOICE_SOC_X1000 is not set
+MD_CHOICE_SOC_X2000=y
+# MD_SOC_X1830 is not set
+# MD_SOC_X1520 is not set
+# MD_SOC_X1021 is not set
+# MD_SOC_X1000 is not set
+MD_SOC_X2000:=y
+MD_SOC_DIR=soc/x2000
+# MD_X2000_ADC is not set
+MD_X2000_GPIO=y
+MD_X2000_WATCHDOG=y
+# MD_X2000_DTRNG is not set
+# MD_X2000_I2C is not set
+# MD_X2000_DMIC is not set
+# MD_X2000_SPI is not set
+MD_X2000_SPI_CLK_RATE=100000000
+# MD_X2000_SPI0 is not set
+# MD_X2000_SPI1 is not set
+# MD_X2000_PWM is not set
+# MD_X2000_FB is not set
+# MD_X2000_FB_LAYER_MIXER is not set
+# MD_X2000_CAMERA_VIC is not set
+# MD_X2000_AUDIO_DMA is not set
+# MD_X2000_MAC is not set
+# MD_X2000_AIC is not set
+# MD_X2000_ICODEC is not set
+# MD_X2000_HASH is not set
+# MD_X2000_EFUSE is not set
+# MD_X2000_UTILS is not set
+# MD_X2000_MSC is not set
+# MD_X2000_SPDIF is not set
+# MD_X2000_MCU is not set
+# MD_X2000_TCU is not set
+MD_X2000_CONN=y
+MD_X2000_CONN_MAX_LINK_COUNT=16
+# MD_X2000_ROTATOR is not set
+MD_X2000_CONN_VIC=y
+APP_br=y
+APP_br_sh_utils_wait_file=y
+APP_br_sh_utils_mount_ubifs=y
+# APP_br_sh_utils_mount_jffs2 is not set
+# APP_br_sh_utils_mount_mmc_ext4 is not set
+APP_br_root_login=y
+# APP_br_root_login_no_console is not set
+# APP_br_root_login_keep_buildroot is not set
+APP_br_root_login_tty_port=console
+APP_br_adb_server=y
+APP_br_adb_server_start=y
+APP_br_adb_server_name="ingenic"
+APP_br_adb_server_add_mac=y
+APP_br_ubi_setting=y
+APP_br_ubi_mount_usr_data=y
+# APP_br_jffs2_setting is not set
+# APP_br_mmc_setting is not set
+# APP_br_sdcard_setting is not set
+# APP_br_mass_storage_setting is not set
+# APP_br_h264_server is not set
+# APP_br_usb_storage is not set
+# APP_br_display_logo is not set
+# APP_usb_mtp_server is not set
+# APP_ota_updater is not set
+APP_libhardware2=y
+APP_libhardware2_fb=y
+APP_libhardware2_fb_cmd=y
+APP_libhardware2_fb_rector_play=y
+APP_libhardware2_fb_scale_cmd=y
+APP_libhardware2_fb_layer_mixer=y
+APP_libhardware2_v4l2=y
+APP_libhardware2_v4l2_jpeg_encode=y
+APP_libhardware2_camera=y
+APP_libhardware2_camera_cmd=y
+APP_libhardware2_camera_jpeg_encode=y
+APP_libhardware2_camera_nv12_preview=y
+APP_libhardware2_camera_software_preview=y
+APP_libhardware2_pwm=y
+APP_libhardware2_pwm_cmd=y
+APP_libhardware2_pwm_battery=y
+APP_libhardware2_pwm_battery_cmd=y
+APP_libhardware2_adc=y
+APP_libhardware2_adc_cmd=y
+APP_libhardware2_i2c=y
+APP_libhardware2_i2c_cmd=y
+APP_libhardware2_rtc=y
+APP_libhardware2_rtc_cmd=y
+APP_libhardware2_efuse=y
+APP_libhardware2_efuse_cmd=y
+APP_libhardware2_watchdog=y
+APP_libhardware2_watchdog_cmd=y
+APP_libhardware2_dtrng=y
+APP_libhardware2_dtrng_cmd=y
+APP_libhardware2_keyboard=y
+APP_libhardware2_keyboard_cmd=y
+APP_libhardware2_keyboard_cmd_test=y
+APP_libhardware2_spi=y
+APP_libhardware2_spi_cmd=y
+APP_libhardware2_gpio=y
+APP_libhardware2_gpio_cmd=y
+APP_libhardware2_gpio_sys=y
+APP_libhardware2_mscaler=y
+APP_libhardware2_mscaler_cmd=y
+APP_libhardware2_mcu=y
+APP_libhardware2_mcu_cmd=y
+APP_libhardware2_wifi=y
+APP_libhardware2_wifi_cmd=y
+APP_libhardware2_gpio_counter=y
+APP_libhardware2_gpio_counter_cmd=y
+# APP_libhardware2_jpeg_display is not set
+APP_libhardware2_input_dev_listen=y
+APP_libhardware2_alsa=y
+APP_libhardware2_alsa_cmd=y
+APP_libhardware2_rmem=y
+APP_libhardware2_rotator=y
+APP_libutils2=y
+APP_libutils2_boot_time=y
+APP_libutils2_boot_time_cmd=y
+APP_libutils2_uevent_cmd=y
+APP_libutils2_image_format_conversion=y
+# APP_libimpf is not set
+APP_libisp=y
+APP_libisp_isp_cmd=y
+APP_libisp_demo_isp_cmd=y
+# APP_libisp_demo_isp_nv12_preview_cmd is not set
+App_libisp_mult_chan_preview_cmd=y
+App_libisp_demo_frame_sync_cmd=y
+APP_libisp_demo_isp_jpeg_encode_cmd=y
+# APP_test_shell is not set
+# APP_wireless_bcm is not set
+# APP_wireless_realtek is not set
+# APP_wireless_quectel is not set
+# APP_wireless_luat is not set
+# APP_FaceApp is not set
+# APP_EVOL is not set
+# APP_usb_mtp is not set
+# APP_iniparser is not set
+# APP_alsa_aeq is not set

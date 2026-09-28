@@ -1,0 +1,55 @@
+# repo-tool project lock (captured 2026-09-28T09:21:48+08:00)
+# path<TAB>head<TAB>date<TAB>subject
+bootloader/uboot-x1000	08fc397fbc86aaad5f617a5ccb6b9094dbc7cb09	2024-03-15	[Add] add GD5F1GM7UE nand flash
+bootloader/uboot-x1021	d44161c99cc2fed6ab066a107827acc9e31da3da	2021-11-23	[add]x1021 set sfc gpio pullup
+bootloader/uboot-x2000	021aeb1ef6f7c64d457f51429706b9df18979468	2024-04-03	[Modify] Fix rtos header being overwritten
+build	3471eef44e8c6719b1b944178fc65d5d2b009150	2024-04-01	[Add] ad101 config
+buildroot/buildroot	83bf747920f8b078ec2e677b69868c1f28d93928	2023-08-21	[update]:set duma use c++14
+buildroot/buildroot_patch	58fa84869ed350b01f7ee92235c0da3e300915ab	2024-03-08	Merge "[BUG]change busybox config"
+demos/evol	c3340c4fadccc1df6fb09d8f36e7821749c56f4d	2024-01-30	update the libwztts.so
+demos/faceapp	7e4f94ee5502a370fe55931ddc4947fe51e82c9e	2020-10-29	[UPDATE]modify Makefile
+demos/gui	628f4ad8a2f177ac881d0060ff57387415cbb484	2022-09-22	delete the isp for make HelloWorld.Xml-Demo of only awtk
+demos/ilockapp	508cfede5f3fa1c91829ef182bb69415e1c76a14	2022-10-24	[Update]Synchronize the facerec logic and libfacerec of rtos to Linux
+demos/ingenic_alg_lib	644cc1a951cc5c886a8db17ccbcbe53106f8debb	2023-06-07	[Add]ingenic qrcode alg lib
+demos/multi_decode_display	13c79038d5b11608b24b6176ca63af215dfc62d7	2024-03-28	[Update]:add display frame num config
+demos/nfc	c98231e5e4c45268756db0a458f7a777de79821d	2020-10-22	[add]nfc app
+demos/scancode	5ca8bd99dbf67aa9f47349176b11b891beafb7f2	2024-01-23	[Update]modify help information:scancode demo only x2580 support
+demos/tuya	c614866597c012b43a39c5552dc07448431eae53	2024-03-08	[Update]tuya ipc add read pid/uuid/authkey from partition
+demos/tuya_sdk	1d76aadcc3d4473781bd1df6387e05571612e5e8	2023-06-06	[Add]tuya sdk
+doc	1aed8c86e3b8aac7d56ec4bc8761ad7ee263720f	2024-04-03	add cim&sd voltage switch document file
+factory_test	89156d3ed6b52ea577acb4a815316dc7b45a9a69	2022-12-22	[Update] S99factory_test_shell
+kernel/kernel	d4c815c4148e1320b5f8c02e94cb3cbb2587b25d	2024-04-07	[update] update partial function
+kernel/kernel-x1000	4d0edd31e252cb3ee50b206a9964830521299860	2024-03-20	Merge branch 'develop/speaker-master' of ssh://10.1.1.26:29418/kernel/
+kernel/kernel-x1021	824274fdf8ee07c81db2739a88fa97b374e1d0bb	2023-12-11	[Bug] dwc2_new usb host halt abnormal
+kernel/kernel-x2000	1672c21f72d34c5c1131ff56368b57e659542897	2024-03-28	[update] ingenic_can: return err to application & support 8M->5/10/20K
+lib2d	b0c4b923259aa7d4ed74e29a15f84c7044044d56	2024-01-05	[Update]fix frame stride calculate bytes through format
+libhardware2	d3e26e98547ce587f1eba98f7983912f41ad003f	2024-03-28	[Update]:h264 direct work, y_mem、uv_^Cm must align pagesize
+libimpf	e8cc174fd995334bb6a3216a4fa6a87b220465a1	2021-07-20	[update]x1520 get again and get raw pic
+libisp	8f8326890a04adc9a91535c75ed0957db8f05ba2	2023-08-23	[Fix]1.demo_isp tuning params define err; 2.x2580 h264 encode change s
+libmcu	48613d39eeb508323029e0795c00fc98e17900c7	2024-03-21	[Update]x2600:dma channel request from MSB,avoid conflict with linux d
+libmedia	cbe5882fc38b9305599dcec65706985f61466bed	2024-03-28	[Update]:add media_alloter alloc data by planar
+libutils2	1ee21e481b2c99ede4873b229481b05952038bfe	2024-03-18	[Add]soft nv12 90° rotate
+module_driver	e675df0fdb847e3d30c743458aae98ec560d6a0c	2024-04-07	[update] ad100/x2600 mixer_mode set wb_frame_count
+ota_updater	031ed40c07b8229fb263b67c59540aa5ae7151b1	2023-12-04	[Update] ota update logic emmc illustrate
+third_party/alsa_aeq	5ac0cbf965fa10bf42f21e4d35b95d010d7b2b4f	2021-03-24	[update]alsa_aeq config
+third_party/awtk	fcd186d1db5733149425c82e342569edb783c718	2024-03-28	[Update]awtk lcd display mode determined by fb_info->frame_nums
+third_party/hping3	99aa37ce9676bfc1e37927218f3f2f6ac5013564	2023-11-02	[Add] hping3
+third_party/libiniparser	b2589d3cff28740c1794a2bdcec56cf67c8ba3aa	2021-03-24	[update]libiniparser config
+third_party/lvgl	3d5c6986115ee721dcd89cf41c22172af7343b7a	2024-03-28	[Update]:demo_ilock2: reset scroll when select one h264_view
+third_party/speexdsp	6edc21c8d78d1dc9ad833261d5b1795cb4097b37	2023-06-08	[Add ] speexdsp lib
+third_party/usb_mtp	a770c29934c2c846916f1a2f689e29a61465866b	2021-10-18	[Update] mtp setup request data length error
+tools/iconfigtool	eb1a396ba30f0caca5fddb93bdc9fcfaa02d4ed5	2020-10-14	[bug]add libQTGui.so.4 libQTCore.so.4
+tools/toolchains/mips-gcc1210-glibc233	bd15cecf1d49fe2ef9222589f505dfa7b72daa4d	2023-08-10	[ADD]:add gcc12.1.0-glibc2.33 version toolchains
+tools/toolchains/mips-gcc520-glibc222	287f3eaadeab6907b4658758c0f49ba8ccb360ea	2020-07-01	init mips-gcc520-glibc222 2018-02-10
+tools/toolchains/mips-gcc720-glibc229	671a9ebdb717d2b5dd8d6eb69a4186ea95112e02	2023-07-28	[Update]mips-gcc720-glibc229-fp64-r5.1.8
+tools/toolchains/mips-gcc930-glibc228	46e1921f8208359e1f387c3342d927c2e070974a	2021-12-15	[Add] mips-gcc930-glibc228
+tools/toolchains/riscv-r1.0.0	a5dc4754fc67db4cfa6a44238d8043ed3f0e6ff7	2023-08-10	[ADD]:riscv toolchain
+wireless/aicsemi	67f64700f18ce40f7889874eabe2846f1285303b	2024-03-21	[Update] fix wifi/bt aic8800d80 bt problem
+wireless/altobeam	ebee3ef45628c0fbe8fd0caad54b8973a742464b	2023-12-25	[Add] wifi atbm603x auto start
+wireless/bcm	9a290311f744c7b8905f2cd0d7540c8fdbce0a7f	2022-07-28	[Update]add wifi ap6212 firmware and config
+wireless/espressif	2dbdade19128bbecd9d0de2aae40f5684630fe3f	2022-07-15	[Add]wifi esp32 auto start
+wireless/hisilicon/hi3861l	3ade80aefc0b1f7b8f5832dd64c11f7a55b0af8a	2024-01-03	[Update]hi3861 with app tuya
+wireless/icommsemi	7ee1498a572bb0ca2ecd7884aeb25473950b6c04	2023-12-01	[Add] add ssv6x5x ble_app & ap script
+wireless/luat	377d845f47b7f14d5743c1d8270d28a86ed45fdb	2020-12-09	[Add]:ppp files
+wireless/quectel	be21776933da40a820d0dfd41437502d6ac6762a	2023-08-21	[Update] fix bluetooth connect bug
+wireless/realtek	71280d025a6bdbbae3b823d4810c25fe99bc6b1e	2023-11-17	[Add] add erl8733bs bt driver and firwmare

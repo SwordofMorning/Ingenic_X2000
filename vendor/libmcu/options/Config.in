@@ -1,0 +1,64 @@
+menu "通用选项"
+
+config APP_libmcu_version
+    int "软件版本号"
+    default 0
+
+config APP_libmcu_show_compile_time
+    bool "启动时显示编译时间"
+    default y
+
+menuconfig APP_libmcu_enable_jtag_debug
+    bool "使用 jtag 调试程序"
+    depends on APP_libmcu_x2600
+    default n
+
+config APP_libmcu_gcc_optimization_O0
+    bool "gcc 强制使用-O0选项，gcc优化选项配置无效"
+    default y
+
+endmenu
+
+
+array APP_libmcu_gcc_optimizations
+    string "gcc 优化选项"
+    item "-O0" -O0
+    item "-O1" -O1
+    item "-O2" -O2
+    item "-O3" -O3
+    item "-Os" -Os
+    item "-Ofast" -Ofast
+    item "默认选项"
+
+config APP_libmcu_gcc_optimization
+    string "gcc 优化选项"
+    choice from APP_libmcu_gcc_optimizations
+    default -Os
+
+config APP_libmcu_gcc_function_sections
+    bool "-ffunction-sections (配合--gc-sections优化多余的函数)"
+    select APP_libmcu_gcc_gc_sections
+    default y
+
+config APP_libmcu_gcc_data_sections
+    bool "-fdata-sections (配合--gc-sections优化多余的数据)"
+    select APP_libmcu_gcc_gc_sections
+    default y
+
+config APP_libmcu_gcc_gc_sections
+    bool "--gc-sections (优化不使用的段)"
+    default y
+
+config APP_libmcu_simple_irq_handle
+    bool "用户自定义中断处理函数(用于去掉irq函数回调数据)"
+    default n
+
+config APP_libmcu_tcsm_text_section
+    bool "使用内部tcsm 运行实时性要求较高的代码段"
+    default n
+
+config APP_libmcu_ddr_text_section
+    bool "使用 ddr 运行占用内存较大的代码段"
+    default n
+
+endmenu

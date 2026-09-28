@@ -1,0 +1,37 @@
+menuconfig APP_libmcu_device_x2600_lcd_fw050
+    bool "TFT FW050 (720x1280) (X2600) (mipi接口)"
+    select APP_libmcu_x2600_fb
+    depends on APP_libmcu_x2600
+
+config APP_libmcu_device_x2600_fw050_4lane_en
+    bool "使能 4lane 通道"
+    default n
+
+config APP_libmcu_device_x2600_fw050_backlight_pin
+    string "gpio backlight pin(lcd backlight使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config APP_libmcu_device_x2600_fw050_backlight_level
+    int "gpio backlight level(lcd backlight使能引脚 有效电平)"
+    default 1
+
+config APP_libmcu_device_x2600_fw050_rst_pin
+    string "gpio reset pin(lcd 复位引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config APP_libmcu_device_x2600_fw050_rst_level
+    int "gpio reset level(lcd 复位引脚 有效电平)"
+    default 0
+
+config APP_libmcu_device_x2600_fw050_power_pin
+    string "gpio power pin(lcd power使能引脚)"
+    choice from SOC_GPIO_PINS
+    default -1
+
+config APP_libmcu_device_x2600_fw050_power_level
+    string "gpio power level(lcd power使能引脚 有效电平)"
+    default 1
+
+endmenu # APP_libmcu_device_x2600_lcd_fw050

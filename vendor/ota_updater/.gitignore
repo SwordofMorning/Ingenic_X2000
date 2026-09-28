@@ -1,0 +1,6 @@
+.objs/
+ota/
+*.d
+.config.in
+config.h
+.vscode/

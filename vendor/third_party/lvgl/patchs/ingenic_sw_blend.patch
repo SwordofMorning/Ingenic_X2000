@@ -1,0 +1,88 @@
+diff --git a/src/draw/lv_draw_img.h b/src/draw/lv_draw_img.h
+index a88a33c..9212d04 100644
+--- a/src/draw/lv_draw_img.h
++++ b/src/draw/lv_draw_img.h
+@@ -29,6 +29,19 @@ extern "C" {
+  *      TYPEDEFS
+  **********************/
+ 
++typedef struct rotate_dsc {
++    int32_t s_w;
++    int32_t s_h;
++    int32_t s_x;
++    int32_t s_y;
++    int32_t d_x;
++    int32_t d_y;
++    int32_t angle;
++    int32_t bilinear;
++    int32_t ignore_alpha;
++    int (*get_fast_version)(int angle);
++} rotate_dsc_t;
++
+ typedef struct {
+ 
+     int16_t angle;
+@@ -43,6 +56,7 @@ typedef struct {
+ 
+     int32_t frame_id;
+     uint8_t antialias       : 1;
++    rotate_dsc_t *rotate_dsc;
+ } lv_draw_img_dsc_t;
+ 
+ struct _lv_draw_ctx_t;
+diff --git a/src/draw/sw/lv_draw_sw_blend.c b/src/draw/sw/lv_draw_sw_blend.c
+index a7c4313..dd5d9c3 100644
+--- a/src/draw/sw/lv_draw_sw_blend.c
++++ b/src/draw/sw/lv_draw_sw_blend.c
+@@ -107,6 +107,11 @@ void lv_draw_sw_blend(lv_draw_ctx_t * draw_ctx, const lv_draw_sw_blend_dsc_t * d
+     ((lv_draw_sw_ctx_t *)draw_ctx)->blend(draw_ctx, dsc);
+ }
+ 
++int lv_draw_sw_blend_basic_ingenic(
++       lv_color_t *dest_buf, const lv_area_t *dest_area, lv_coord_t dest_stride,
++       const lv_color_t *src_buf, lv_coord_t src_stride, lv_color_t color, lv_opa_t opa,
++       const lv_opa_t *mask, lv_coord_t mask_stride, lv_blend_mode_t blend_mode);
++
+ void LV_ATTRIBUTE_FAST_MEM lv_draw_sw_blend_basic(lv_draw_ctx_t * draw_ctx,
+                                                   const lv_draw_sw_blend_dsc_t * dsc)
+ {
+@@ -167,6 +172,11 @@ void LV_ATTRIBUTE_FAST_MEM lv_draw_sw_blend_basic(lv_draw_ctx_t * draw_ctx,
+ 
+     lv_area_move(&blend_area, -draw_ctx->buf_area->x1, -draw_ctx->buf_area->y1);
+ 
++    if (!lv_draw_sw_blend_basic_ingenic(
++        dest_buf, &blend_area, dest_stride,
++        src_buf, src_stride, dsc->color, dsc->opa,
++         mask, mask_stride, dsc->blend_mode))
++        return;
+ 
+     if(disp->driver->set_px_cb) {
+         if(dsc->src_buf == NULL) {
+diff --git a/src/draw/sw/lv_draw_sw_img.c b/src/draw/sw/lv_draw_sw_img.c
+index 7181c15..ac72f03 100644
+--- a/src/draw/sw/lv_draw_sw_img.c
++++ b/src/draw/sw/lv_draw_sw_img.c
+@@ -41,6 +41,9 @@ static void convert_cb(const lv_area_t * dest_area, const void * src_buf, lv_coo
+  *   GLOBAL FUNCTIONS
+  **********************/
+ 
++int lv_draw_sw_img_decoded_ingenic(
++        lv_draw_ctx_t * draw_ctx, const lv_draw_img_dsc_t * draw_dsc, 
++        const lv_draw_sw_blend_dsc_t * dsc, lv_img_cf_t cf);
+ 
+ void LV_ATTRIBUTE_FAST_MEM lv_draw_sw_img_decoded(struct _lv_draw_ctx_t * draw_ctx,
+                                                   const lv_draw_img_dsc_t * draw_dsc,
+@@ -62,6 +65,13 @@ void LV_ATTRIBUTE_FAST_MEM lv_draw_sw_img_decoded(struct _lv_draw_ctx_t * draw_c
+     blend_dsc.blend_mode = draw_dsc->blend_mode;
+     blend_dsc.blend_area = &blend_area;
+ 
++    blend_dsc.src_buf = (const lv_color_t *)src_buf;
++    blend_dsc.blend_area = coords;
++    if (!lv_draw_sw_img_decoded_ingenic(draw_ctx, draw_dsc, &blend_dsc, cf))
++        return;
++    blend_dsc.src_buf = NULL;
++    blend_dsc.blend_area = NULL;
++
+     /*The simplest case just copy the pixels into the draw_buf*/
+     if(!mask_any && !transform && cf == LV_IMG_CF_TRUE_COLOR && draw_dsc->recolor_opa == LV_OPA_TRANSP) {
+         blend_dsc.src_buf = (const lv_color_t *)src_buf;

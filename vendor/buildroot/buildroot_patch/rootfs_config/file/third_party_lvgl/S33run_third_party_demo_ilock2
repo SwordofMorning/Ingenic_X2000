@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+
+case "$1" in
+    start)
+        cd /etc/lv_demo_ilock2/
+        ./lv_demo_ilock2 &
+        cd -
+
+    ;;
+    *)
+        exit 1
+esac
+
+exit 0

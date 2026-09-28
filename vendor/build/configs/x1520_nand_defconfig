@@ -1,0 +1,122 @@
+APP_toolchain_dir=../tools/toolchains/mips-gcc520-glibc222
+APP_uboot_toolchain_dir=../tools/toolchains/mips-gcc520-glibc222
+APP_uboot_dir=../bootloader/uboot-x1000
+APP_uboot_config=x1520_new_xImage_sfc_nand
+APP_kernel_dir=../kernel/kernel-x1000
+APP_kernel_config=PD_x1520_sfcnand_base_defconfig
+APP_br_dir=../buildroot/buildroot
+APP_br_config_file=configs/buildroot/buildroot_mini_adb_defconfig
+APP_compile_threads=8
+APP_module_driver=y
+MD_INIT_ORDER_FILE=package/default_driver_init_order.mk
+MD_INIT_START_FILE=package/S11module_driver_default
+# MD_KEYBOARD_GPIO is not set
+# MD_X1830_LCD_KWH035 is not set
+# MD_X1830_LCD_ST7701 is not set
+# MD_X1000_SLCD_TRULY240240 is not set
+# MD_X1021_SLCD_KWH035 is not set
+# MD_X2000_LCD_KWH035 is not set
+# MD_X2000_SENSOR_AR0230 is not set
+# MD_X2000_SENSOR_OV9281_MIPI is not set
+# MD_X1830_SENSOR_OV2735 is not set
+# MD_X1520_SENSOR_OV9732 is not set
+# MD_X1000_SENSOR_GC0308 is not set
+# MD_X1000_SENSOR_GC2155 is not set
+# MD_X1000_SENSOR_GC0328 is not set
+# MD_X1021_SENSOR_GC0328 is not set
+# MD_X1520_SENSOR_ISP_OV9281_MIPI is not set
+# MD_X1520_SENSOR_ISP_SC031 is not set
+# MD_X1520_SENSOR_ISP_OV9732 is not set
+# MD_X1520_SENSOR_ISP_OV5693 is not set
+# MD_X1520_SENSOR_ISP_SC132 is not set
+# MD_X1830_SENSOR_ISP_OV2735 is not set
+# MD_X1830_SENSOR_ISP_GC2375A is not set
+# MD_X1830_SENSOR_ISP_AR0230 is not set
+# MD_X1830_SENSOR_ISP_AR0522 is not set
+# MD_BCMDHD_1_363_125_7 is not set
+# MD_RTL8723DS is not set
+# MD_AX88796C_SPI is not set
+# MD_X1000_ICODEC_SOUND_CARD is not set
+# MD_X1021_ICODEC_SOUND_CARD is not set
+# MD_X1520_ICODEC_SOUND_CARD is not set
+# MD_X1830_ICODEC_SOUND_CARD is not set
+MD_UTILS_STRING=y
+MD_UTILS_GPIO=y
+MD_UTILS_I2C=y
+MD_UTILS_SPI=y
+MD_UTILS_CLOCK=y
+# MD_SPI_GPIO is not set
+# MD_I2C_GPIO is not set
+# MD_SPI_DEVICE_HELPER is not set
+# MD_SPI_DEVICE is not set
+# MD_CHOICE_SOC_X1830 is not set
+MD_CHOICE_SOC_X1520=y
+# MD_CHOICE_SOC_X1021 is not set
+# MD_CHOICE_SOC_X1000 is not set
+# MD_CHOICE_SOC_X2000 is not set
+# MD_SOC_X1830 is not set
+MD_SOC_X1520:=y
+MD_SOC_DIR=soc/x1520
+# MD_X1520_SPI is not set
+# MD_X1520_SPI0 is not set
+# MD_X1520_ADC is not set
+# MD_X1520_EFUSE is not set
+# MD_X1520_PWM is not set
+# MD_X1520_WATCHDOG is not set
+# MD_X1520_I2C is not set
+# MD_X1520_UTILS is not set
+# MD_X1520_CAMERA is not set
+# MD_X1520_GPIO is not set
+# MD_X1520_ICODEC is not set
+# MD_X1520_AIC is not set
+# MD_SOC_X1021 is not set
+# MD_SOC_X1000 is not set
+# MD_SOC_X2000 is not set
+APP_br=y
+APP_br_sh_utils_wait_file=y
+APP_br_sh_utils_mount_ubifs=y
+# APP_br_sh_utils_mount_jffs2 is not set
+APP_br_root_login=y
+APP_br_root_login_tty_port=console
+APP_br_adb_server=y
+APP_br_adb_server_start=y
+APP_br_adb_server_name="ingenic"
+APP_br_adb_server_add_mac=y
+APP_br_ubi_setting=y
+APP_br_ubi_mount_usr_data=y
+# APP_br_jffs2_setting is not set
+# APP_ota_updater is not set
+APP_libhardware2=y
+APP_libhardware2_fb=y
+APP_libhardware2_fb_cmd=y
+APP_libhardware2_fb_rector_play=y
+APP_libhardware2_camera=y
+APP_libhardware2_camera_cmd=y
+APP_libhardware2_camera_nv12_preview=y
+APP_libhardware2_pwm=y
+APP_libhardware2_pwm_cmd=y
+APP_libhardware2_adc=y
+APP_libhardware2_adc_cmd=y
+APP_libhardware2_i2c=y
+APP_libhardware2_i2c_cmd=y
+APP_libhardware2_efuse=y
+APP_libhardware2_efuse_cmd=y
+APP_libhardware2_watchdog=y
+APP_libhardware2_watchdog_cmd=y
+APP_libhardware2_dtrng=y
+APP_libhardware2_dtrng_cmd=y
+APP_libhardware2_keyboard=y
+APP_libhardware2_keyboard_cmd=y
+APP_libhardware2_spi=y
+APP_libhardware2_spi_cmd=y
+APP_libhardware2_gpio=y
+APP_libhardware2_gpio_cmd=y
+APP_libhardware2_mscaler=y
+APP_libhardware2_mscaler_cmd=y
+APP_libutils2=y
+APP_libutils2_boot_time=y
+APP_libutils2_boot_time_cmd=y
+# APP_libimpf is not set
+APP_wireless_bcm=y
+MD_BT_UART_DEV_PATH=/dev/ttyS0
+# APP_wireless_realtek is not set

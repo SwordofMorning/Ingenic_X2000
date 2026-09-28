@@ -1,0 +1,10 @@
+[pack] mips-gcc720-glibc229  start 08:56:24
+[pack] mips-gcc720-glibc229  done  08:56:36  size=228M
+[pack] mips-gcc930-glibc228  start 08:56:36
+[pack] mips-gcc930-glibc228  done  08:57:52  size=1.5G
+[pack] manifest
+# x2000 toolchain bundle manifest  generated 2026-09-28T08:57:52+08:00
+# name  bytes  sha256  files
+mips-gcc720-glibc229  238707912  68105d9d2a1f0469e960ecd34b0206942cf24256957e69a89e475f690ae59e1a  10812
+mips-gcc930-glibc228  1533187556  2b017038cae5e16dbb4d7d96d50195af7c3288b236c4383a4e733bf58c9814e4  52109
+[pack] ALL DONE 08:59:28
