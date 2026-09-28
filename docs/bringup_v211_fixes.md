@@ -437,6 +437,58 @@ echo "01" > "$g/functions/rndis.usb0/protocol"
 MS OS 描述符（第 14.2–14.3 节）依旧保留：它不冲突，且在仍然认 `USB\MS_COMP_RNDIS` 的
 主机/驱动组合上多一层保险。两条路径现在同时具备，任何一条被主机接受即可用。
 
+### 14.9 结论：Windows 11 上用 CDC-NCM（本轮落地）
+
+把 IAD 改成 EF/04/01 之后，Windows 11 25H2 确实把设备认成了 RNDIS（"网络适配器"里出现
+Remote NDIS Compatible Device，匹配 ID = `USB\Class_ef&SubClass_04&Prot_01`），但它选中的是
+**RNDIS 6.0 驱动** `rndiscmp.inf`（`usbrndis6.sys`），启动失败：问题代码 0xA、状态 0xC0000001。
+
+板端用内核 dynamic debug 抓到的证据（`file rndis.c +p` / `file composite.c +p`）：
+
+```text
+dwc2 13500000.otg: new device is high-speed
+dwc2 13500000.otg: new address 30
+configfs-gadget gadget: high-speed config #1: c
+configfs-gadget gadget: init rndis
+configfs-gadget gadget: RNDIS RX/TX early activation ...
+configfs-gadget gadget: rndis_open
+```
+
+即：主机选好配置、激活了数据接口，**然后一条 RNDIS 控制报文都没发**（没有 `RNDIS_MSG_INIT`，
+也没有任何 ep0 类请求）。说明 `usbrndis6.sys` 在发第一个报文之前就判定设备不合格 —— 它期望的是
+"杂项类（EF/04/01）"那套 RNDIS 约定，而 Linux 的 RNDIS gadget 是 CDC 那套（控制接口
+class 02h/02h/FF + CDC 功能描述符，控制报文走 class 请求）。这不是配置能修的。
+
+这也解释了为什么第 14.2 节的 Microsoft OS 描述符路线在 25H2 上不成立：它依赖 Windows 自带的
+**RNDIS 5.x 驱动**（netrndis.inf，"Remote NDIS Compatible Device"）。25H2 上 `netrndis.inf`
+文件还在，但已经不是可安装的驱动包，兼容 ID `USB\MS_COMP_RNDIS` 落不到任何驱动上，
+于是只剩严格的 RNDIS 6.0 驱动可选。
+
+改用 **CDC-NCM**（USB-IF 标准，类代码 02h/0Dh）：
+
+- Windows 11 自带 `UsbNcm.sys` / `UsbNcm.inf`（微软《USB Device Class Drivers Included in
+  Windows》：Communications 02h，Supports SubClass 0Dh，Windows 11 / Server 2022），按类自动匹配；
+- Linux 与 macOS 原生支持 NCM，不需要额外驱动；
+- Windows 10 及更早需要装微软的 NCM 驱动包，因此 NCM 接口仍写 `WINNCM` 兼容 ID，
+  装了那个驱动包的主机会自动挂上。
+
+落地内容：
+
+- 内核 `configs/kernel/x2000_module_base_linux_sfc_nand_defconfig`：`CONFIG_USB_CONFIGFS_NCM=y`
+  （自动 select `USB_F_NCM`、`USB_U_ETHER`；`System.map` 里确认 `ncm_bind/ncm_setup/ncm_set_alt` 都在）。
+  **坑**：改内核 defconfig 之后必须重新执行 `./build.sh config` 再 `./build.sh kernel`，
+  否则沙箱里的 `.config` 还是旧的（第一次就踩了：defconfig 改好、`.config` 里仍是 `is not set`）。
+- `fs_overlay/common/etc/init.d/S70USB`：
+  - 模式表：`mtp | ncm（默认）| rndis | both | serial`；
+  - NCM 固定网卡名 `usb1`、网段 `192.168.9.168/24`；RNDIS 固定 `usb0`、`192.168.8.168/24`，
+    两条链路可同时存在且不冲突；
+  - 两条链路各自可跑 udhcpd（`etc/udhcpd_ncm.conf` 与 `etc/udhcpd_usb.conf`）；
+  - NCM 无需类代码覆盖（内核的 NCM IAD 本身就是 02h/0Dh/00h）；
+  - `status` 同时打印两条链路状态、收发计数与两个功能的类代码 / 兼容 ID；
+  - `USB_REV` 升到 4（描述符布局又变了，Windows 需要新的设备实例）。
+- 交付含义：这一轮除了 `rootfs.ubi` **还要重烧 `xImage`**（内核变了），u-boot 不用动。
+
+
 
 
 

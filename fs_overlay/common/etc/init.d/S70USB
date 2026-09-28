@@ -21,23 +21,38 @@
  # @note Kernel requirements (all satisfied in
  #       configs/kernel/x2000_module_base_linux_sfc_nand_defconfig):
  #         CONFIG_USB_CONFIGFS=y, CONFIG_USB_CONFIGFS_F_FS=y, CONFIG_USB_F_FS=y
- #         CONFIG_USB_CONFIGFS_RNDIS=y, CONFIG_USB_F_RNDIS=y, CONFIG_USB_U_ETHER=y
+ #         CONFIG_USB_CONFIGFS_NCM=y (+ the USB_F_NCM / USB_U_ETHER it selects)
+ #         CONFIG_USB_CONFIGFS_RNDIS=y, CONFIG_USB_F_RNDIS=y
  #         CONFIG_USB_CONFIGFS_ACM=y, CONFIG_USB_F_ACM=y   (optional serial)
  #
+ # @note Why NCM is the default network function (docs/bringup_v211_fixes.md
+ #       section 14.9): Windows 11 (25H2) no longer offers the classic "Remote
+ #       NDIS Compatible Device" driver (netrndis.inf, RNDIS 5.x) to new devices -
+ #       the only RNDIS driver left there is the strict RNDIS 6.0 one
+ #       (rndiscmp.inf / usbrndis6.sys), and that one rejects a CDC-style Linux
+ #       RNDIS gadget with "device cannot start (code 10)" before it even sends an
+ #       RNDIS message. CDC-NCM is a USB-IF standard with an honest class code:
+ #       Windows 11 ships UsbNcm.sys for class 02h/subclass 0Dh, Linux and macOS
+ #       support NCM natively. RNDIS stays available (modes rndis / both) for
+ #       hosts that only speak RNDIS, e.g. Windows 10.
+ #
  # @note The host sees MTP as a portable device (Android-compatible IDs, class
- #       0x06 so no driver install is needed) and RNDIS as a network adapter.
+ #       0x06 so no driver install is needed), NCM as a network adapter on
+ #       modern Windows / Linux / macOS, and RNDIS as one on older Windows.
  #
- # Usage: S70USB {start|stop|restart|status|mtp|rndis|serial}
+ # Usage: S70USB {start|stop|restart|status|mtp|ncm|rndis|both|serial}
  #
- #   start    default at boot: MTP + RNDIS (no serial)
+ #   start    default at boot: MTP + NCM
  #   mtp      MTP only
- #   rndis    RNDIS only
- #   serial   MTP + RNDIS + CDC-ACM serial (/dev/ttyGS0)
- #   status   show gadget directory, bound UDC, usb0 state, umtprd process
+ #   ncm      MTP + NCM     (default; usb1 = 192.168.9.168/24)
+ #   rndis    MTP + RNDIS   (older Windows; usb0 = 192.168.8.168/24)
+ #   both     MTP + NCM + RNDIS (two network links, maximum compatibility)
+ #   serial   MTP + NCM + CDC-ACM serial (/dev/ttyGS0)
+ #   status   show gadget directory, bound UDC, both links, umtprd process
  #   stop     unbind and remove every gadget
  #
- # Environment overrides: RNDIS_IP (default 192.168.8.168), MTP_STORAGE
- # (default /usr/data: the ubi user-data partition mounted by S21mount_ubifs).
+ # Environment overrides: NCM_IP (192.168.9.168), RNDIS_IP (192.168.8.168),
+ # MTP_STORAGE (/usr/data: the ubi user-data partition mounted by S21mount_ubifs).
  #
 
 USB_GADGET=/sys/kernel/config/usb_gadget
@@ -59,7 +74,7 @@ PRODUCT="${PRODUCT:-VOT X2000 Board}"
 # USB_REV is that revision marker - bump it whenever the functions, their order
 # or the OS descriptors change, so hosts see a new device and re-read
 # everything.
-USB_REV="${USB_REV:-3}"
+USB_REV="${USB_REV:-4}"
 SERIALNUMBER="${SERIALNUMBER:-}"
 if [ -z "$SERIALNUMBER" ]; then
     WIFI_MAC_FILE=/sys/class/net/wlan0/address
@@ -75,6 +90,13 @@ fi
 RNDIS_IP="${RNDIS_IP:-192.168.8.168}"
 RNDIS_NETMASK="${RNDIS_NETMASK:-255.255.255.0}"
 UDHCPD_USB_CONF="${UDHCPD_USB_CONF:-/etc/udhcpd_usb.conf}"
+
+# NCM network (the default link). Deliberately on its own subnet: both links can
+# be active at once ("both" mode) and two interfaces in one subnet would only
+# confuse the host's routing table.
+NCM_IP="${NCM_IP:-192.168.9.168}"
+NCM_NETMASK="${NCM_NETMASK:-255.255.255.0}"
+UDHCPD_NCM_CONF="${UDHCPD_NCM_CONF:-/etc/udhcpd_ncm.conf}"
 
 # MTP backing store. /usr/data is the writable ubi volume (see
 # device/NAND_LAYOUT.md); it is created here if the mount script has not run.
@@ -170,8 +192,26 @@ gadget_build() {
                 mkdir -p "$g/functions/ffs.mtp"
                 ln -s "$g/functions/ffs.mtp" "$g/configs/c.1/ffs.mtp"
                 ;;
+            ncm.usb0)
+                mkdir -p "$g/functions/ncm.usb0"
+                # fixed netdev name (the default is usb%d in creation order)
+                echo "usb1" > "$g/functions/ncm.usb0/ifname"
+                # locally administered MAC pair (host <-> device)
+                echo "1a:55:89:b4:10:21" > "$g/functions/ncm.usb0/dev_addr"
+                echo "1a:55:89:b4:10:22" > "$g/functions/ncm.usb0/host_addr"
+                # No class override here: the kernel's NCM IAD already carries the
+                # standard codes (Communication 02h / SubClass NCM 0Dh), which is
+                # exactly what Windows' in-box UsbNcm.sys matches. The "WINNCM"
+                # compatible ID is only for hosts that install Microsoft's NCM
+                # driver package (Windows 10 and older); unknown IDs are ignored.
+                echo "WINNCM"  > "$g/functions/ncm.usb0/os_desc/interface.ncm/compatible_id"
+                echo "5162001" > "$g/functions/ncm.usb0/os_desc/interface.ncm/sub_compatible_id"
+                ln -s "$g/functions/ncm.usb0" "$g/configs/c.1/ncm.usb0"
+                ;;
             rndis.usb0)
                 mkdir -p "$g/functions/rndis.usb0"
+                # fixed netdev name (the default is usb%d in creation order)
+                echo "usb0" > "$g/functions/rndis.usb0/ifname"
                 # locally administered MAC pair (host <-> device)
                 echo "1a:55:89:b4:10:11" > "$g/functions/rndis.usb0/dev_addr"
                 echo "1a:55:89:b4:10:12" > "$g/functions/rndis.usb0/host_addr"
@@ -230,14 +270,15 @@ gadget_build() {
 # End-func gadget_build
 
 ##
- # @brief Bind the gadget to the UDC and start the userspace side (umtprd, usb0).
+ # @brief Bind the gadget to the UDC and start the userspace side (umtprd, links).
  #
  # @param $1 gadget directory
  # @param $2 1 when MTP is part of the gadget
- # @param $3 1 when RNDIS is part of the gadget
+ # @param $3 1 when NCM is part of the gadget
+ # @param $4 1 when RNDIS is part of the gadget
  #
 gadget_bind() {
-    local g="$1" with_mtp="$2" with_rndis="$3"
+    local g="$1" with_mtp="$2" with_ncm="$3" with_rndis="$4"
     local udc
 
     if [ "$with_mtp" = "1" ]; then
@@ -257,19 +298,36 @@ gadget_bind() {
     echo "$udc" > "$g/UDC"
     log "bound to UDC $udc"
 
-    if [ "$with_rndis" = "1" ]; then
-        # the netdev appears asynchronously once the host enumerates it
-        sleep 1
-        ifconfig usb0 "$RNDIS_IP" netmask "$RNDIS_NETMASK" up 2>/dev/null \
-            || ip addr add "$RNDIS_IP"/24 dev usb0 2>/dev/null
-        ifconfig usb0 up 2>/dev/null
-        if [ -f "$UDHCPD_USB_CONF" ] && command -v udhcpd >/dev/null 2>&1; then
-            udhcpd "$UDHCPD_USB_CONF" 2>/dev/null && log "udhcpd started"
-        fi
-        log "RNDIS up: usb0 $RNDIS_IP/24"
-    fi
+    [ "$with_ncm" = "1" ]   && bring_up_link usb1 "$NCM_IP"   "$NCM_NETMASK"   "$UDHCPD_NCM_CONF"
+    [ "$with_rndis" = "1" ] && bring_up_link usb0 "$RNDIS_IP" "$RNDIS_NETMASK" "$UDHCPD_USB_CONF"
+    return 0
 }
 # End-func gadget_bind
+
+##
+ # @brief Give one gadget network link an address and (optionally) a DHCP server.
+ #
+ # @note The netdev only appears once the host enumerates the function, so this
+ #       runs right after the UDC write with a short settle delay.
+ #
+ # @param $1 netdev name (usb0 for RNDIS, usb1 for NCM)
+ # @param $2 board address
+ # @param $3 netmask
+ # @param $4 udhcpd configuration file (skipped when it does not exist)
+ #
+bring_up_link() {
+    local ifc="$1" ip="$2" mask="$3" conf="$4"
+
+    sleep 1
+    ifconfig "$ifc" "$ip" netmask "$mask" up 2>/dev/null \
+        || ip addr add "$ip"/24 dev "$ifc" 2>/dev/null
+    ifconfig "$ifc" up 2>/dev/null
+    if [ -f "$conf" ] && command -v udhcpd >/dev/null 2>&1; then
+        udhcpd "$conf" 2>/dev/null && log "udhcpd started on $ifc"
+    fi
+    log "$ifc up: $ip/24"
+}
+# End-func bring_up_link
 
 ##
  # @brief Bring up one of the supported combinations.
@@ -277,22 +335,23 @@ gadget_bind() {
  # @param $1 mtp | rndis | both | full
  #
 start_mode() {
-    local mode="$1" funcs="" with_mtp=0 with_rndis=0
+    local mode="$1" funcs="" with_mtp=0 with_ncm=0 with_rndis=0
 
     prepare
     gadget_cleanup
 
     case "$mode" in
-        mtp)    funcs="ffs.mtp";                 with_mtp=1 ;;
-        rndis)  funcs="rndis.usb0";              with_rndis=1 ;;
-        both)   funcs="ffs.mtp rndis.usb0";      with_mtp=1 with_rndis=1 ;;
-        full)   funcs="ffs.mtp rndis.usb0 acm.usb0"; with_mtp=1 with_rndis=1 ;;
+        mtp)    funcs="ffs.mtp";                       with_mtp=1 ;;
+        ncm)    funcs="ffs.mtp ncm.usb0";              with_mtp=1 with_ncm=1 ;;
+        rndis)  funcs="ffs.mtp rndis.usb0";            with_mtp=1 with_rndis=1 ;;
+        both)   funcs="ffs.mtp ncm.usb0 rndis.usb0";   with_mtp=1 with_ncm=1 with_rndis=1 ;;
+        serial) funcs="ffs.mtp ncm.usb0 acm.usb0";     with_mtp=1 with_ncm=1 ;;
         *)      log "ERROR: unknown mode $mode"; exit 1 ;;
     esac
 
     local g
     g="$(gadget_build "$funcs")"
-    gadget_bind "$g" "$with_mtp" "$with_rndis"
+    gadget_bind "$g" "$with_mtp" "$with_ncm" "$with_rndis"
     log "mode '$mode' active"
 }
 # End-func start_mode
@@ -301,7 +360,7 @@ start_mode() {
  # @brief Print the current USB gadget state.
  #
 status() {
-    local g udc
+    local g udc d
     echo "--- gadget ---"
     for g in "$USB_GADGET"/*; do
         [ -d "$g" ] || continue
@@ -314,14 +373,23 @@ status() {
         ls "$g/functions"
     done
     echo "--- network ---"
-    ifconfig usb0 2>/dev/null | head -3
-    echo "--- RNDIS ---"
-    if [ -d "$USB_GADGET/$GADGET_NAME/functions/rndis.usb0" ]; then
-        local d="$USB_GADGET/$GADGET_NAME"
-        echo "os_desc: use=$(cat "$d/os_desc/use" 2>/dev/null) sign=$(cat "$d/os_desc/qw_sign" 2>/dev/null) config-links=$(ls -1 "$d/os_desc/" 2>/dev/null | grep -c '^c\.')"
-        echo "compatible id: $(cat "$d/functions/rndis.usb0/os_desc/interface.rndis/compatible_id" 2>/dev/null)"
-        echo "host traffic on usb0: rx=$(cat /sys/class/net/usb0/statistics/rx_packets 2>/dev/null) tx=$(cat /sys/class/net/usb0/statistics/tx_packets 2>/dev/null) packets"
-        echo "(rx stays 0 until the host has bound its RNDIS driver and sent something)"
+    for d in usb0 usb1; do
+        if [ -d "/sys/class/net/$d" ]; then
+            echo "$d: $(cat /sys/class/net/$d/operstate 2>/dev/null) rx=$(cat /sys/class/net/$d/statistics/rx_packets 2>/dev/null) tx=$(cat /sys/class/net/$d/statistics/tx_packets 2>/dev/null) packets"
+            ifconfig "$d" 2>/dev/null | sed -n '2p'
+        else
+            echo "$d: not present"
+        fi
+    done
+    echo "(rx stays 0 until the host has bound its driver for that link and sent something)"
+    echo "--- functions detail ---"
+    d="$USB_GADGET/$GADGET_NAME"
+    echo "os_desc: use=$(cat "$d/os_desc/use" 2>/dev/null) sign=$(cat "$d/os_desc/qw_sign" 2>/dev/null) config-links=$(ls -1 "$d/os_desc/" 2>/dev/null | grep -c '^c\.')"
+    if [ -d "$d/functions/rndis.usb0" ]; then
+        echo "rndis: class=$(cat "$d/functions/rndis.usb0/class" 2>/dev/null)/$(cat "$d/functions/rndis.usb0/subclass" 2>/dev/null)/$(cat "$d/functions/rndis.usb0/protocol" 2>/dev/null) compatible=$(cat "$d/functions/rndis.usb0/os_desc/interface.rndis/compatible_id" 2>/dev/null)"
+    fi
+    if [ -d "$d/functions/ncm.usb0" ]; then
+        echo "ncm:   class=$(cat "$d/functions/ncm.usb0/class" 2>/dev/null)/$(cat "$d/functions/ncm.usb0/subclass" 2>/dev/null)/$(cat "$d/functions/ncm.usb0/protocol" 2>/dev/null) compatible=$(cat "$d/functions/ncm.usb0/os_desc/interface.ncm/compatible_id" 2>/dev/null)"
     fi
     echo "--- processes ---"
     ps | grep -E "umtprd|udhcpd" | grep -v grep
@@ -329,14 +397,16 @@ status() {
 # End-func status
 
 case "$1" in
-    start)   start_mode both ;;
+    start)   start_mode ncm ;;
     mtp)     start_mode mtp ;;
+    ncm)     start_mode ncm ;;
     rndis)   start_mode rndis ;;
-    serial)  start_mode full ;;
+    both)    start_mode both ;;
+    serial)  start_mode serial ;;
     stop)    prepare; gadget_cleanup ;;
-    restart) prepare; gadget_cleanup; start_mode both ;;
+    restart) prepare; gadget_cleanup; start_mode ncm ;;
     status)  status ;;
-    *)       echo "Usage: $0 {start|stop|restart|status|mtp|rndis|serial}"; exit 1 ;;
+    *)       echo "Usage: $0 {start|stop|restart|status|mtp|ncm|rndis|both|serial}"; exit 1 ;;
 esac
 
 exit 0
