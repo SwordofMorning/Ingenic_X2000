@@ -59,7 +59,7 @@ PRODUCT="${PRODUCT:-VOT X2000 Board}"
 # USB_REV is that revision marker - bump it whenever the functions, their order
 # or the OS descriptors change, so hosts see a new device and re-read
 # everything.
-USB_REV="${USB_REV:-2}"
+USB_REV="${USB_REV:-3}"
 SERIALNUMBER="${SERIALNUMBER:-}"
 if [ -z "$SERIALNUMBER" ]; then
     WIFI_MAC_FILE=/sys/class/net/wlan0/address
@@ -175,6 +175,19 @@ gadget_build() {
                 # locally administered MAC pair (host <-> device)
                 echo "1a:55:89:b4:10:11" > "$g/functions/rndis.usb0/dev_addr"
                 echo "1a:55:89:b4:10:12" > "$g/functions/rndis.usb0/host_addr"
+                # Interface association (IAD) function class/subclass/protocol:
+                # this - not the Microsoft OS descriptor - is what modern Windows
+                # matches its in-box RNDIS driver against. The kernel default is
+                # E0/01/03 ("Wireless Controller"), which no Windows INF claims,
+                # so the interface group ends up driverless ("other devices ->
+                # RNDIS" in the device manager). Microsoft's "USB device class
+                # drivers included in Windows" lists Rndismp.inf for
+                # "Miscellaneous (EFh), SubClass 04h, Protocol 01h".
+                # NOTE: these three attributes parse BARE HEX (sscanf "%02hhx"),
+                # so write EF / 04 / 01 - "0xEF" is silently read as 0x0.
+                echo "EF" > "$g/functions/rndis.usb0/class"
+                echo "04" > "$g/functions/rndis.usb0/subclass"
+                echo "01" > "$g/functions/rndis.usb0/protocol"
                 ln -s "$g/functions/rndis.usb0" "$g/configs/c.1/rndis.usb0"
                 ;;
             acm.usb0)

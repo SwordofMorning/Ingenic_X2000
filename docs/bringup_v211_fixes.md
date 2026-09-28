@@ -401,5 +401,42 @@ ln -s "$g/configs/c.1" "$g/os_desc/c.1"
    两者的前提都是内核打开 `CONFIG_USB_CONFIGFS_NCM` / `CONFIG_USB_F_NCM`（当前 `not set`），
    需要重编内核并重烧 `xImage`。
 
+### 14.8 真正的开关：IAD 的 class/subclass/protocol（2026-09-28 定位）
+
+用户主机环境：**Windows 11 25H2（内部版本 26200.8875）**，`C:\Windows\INF\netrndis.inf` 存在，
+设备硬件 ID 是 `USB\VID_18D1&PID_4EE1&REV_0100&MI_01` 与 `USB\VID_18D1&PID_4EE1&MI_01`
+—— 没有任何"类别派生"的条目，设备一直无驱动。
+
+关键依据（微软官方《USB Device Class Drivers Included in Windows》表格）：
+
+| 类代码 | 驱动 | 适配范围 |
+|--------|------|----------|
+| Miscellaneous (**EFh**) | `Rndismp.sys` / `Rndismp.inf` | **SubClass 04h + Protocol 01h**，Windows 10/11 |
+| CDC (02h) | `UsbNcm.sys` / `UsbNcm.inf` | SubClass 0Dh（NCM），Windows 11 / Server 2022 |
+
+也就是说：现代 Windows 的 RNDIS 驱动 `Rndismp.inf` 认的是 **EF/04/01** 这组类代码，
+而不是 Microsoft OS 描述符里的 `RNDIS` 兼容 ID；而对于带 IAD 的复合设备，Windows 恰恰是
+**用 IAD 的 `bFunctionClass/SubClass/Protocol`** 去为"这个功能"匹配驱动的。
+内核默认把 RNDIS 的 IAD 写成 `E0/01/03`（Wireless Controller 的 RNDIS 组合），没有任何 INF 认它，
+所以设备管理器里就只能是"其他设备 → RNDIS"。社区里 Toradex 的结论也是同一句：
+把 `functions/rndis.usb0/{class,subclass,protocol}` 设成 Windows 期望的 `EF/04/01` 即可自动挂驱动，
+不需要 INF、也不需要 OS 描述符。
+
+修法（`fs_overlay/common/etc/init.d/S70USB`，rndis.usb0 分支）：
+
+```sh
+echo "EF" > "$g/functions/rndis.usb0/class"
+echo "04" > "$g/functions/rndis.usb0/subclass"
+echo "01" > "$g/functions/rndis.usb0/protocol"
+```
+
+**坑：这三个属性是"裸十六进制"解析**（内核里的 `sscanf(page, "%02hhx", &val)`），
+写成 `0xEF` 会被解析成 `0x00`（只吃掉 `0`），必须写 `EF`；同理 `0x04`→`04`、`0x01`→`01`。
+板端验证：写入后回读为 `ef / 04 / 01`，重新 bind 主机即重新枚举。
+
+MS OS 描述符（第 14.2–14.3 节）依旧保留：它不冲突，且在仍然认 `USB\MS_COMP_RNDIS` 的
+主机/驱动组合上多一层保险。两条路径现在同时具备，任何一条被主机接受即可用。
+
+
 
 
