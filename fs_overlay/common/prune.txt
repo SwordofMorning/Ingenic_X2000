@@ -1,0 +1,16 @@
+# Paths (relative to the root filesystem) that must NOT be present in the image.
+#
+# Why this file exists: buildroot never uninstalls a package. When a package or
+# a rootfs_config option is disabled in a new product configuration, the files it
+# installed earlier stay in buildroot's persistent output/target and would end up
+# in the shipped image. This list removes them explicitly, so a configuration
+# change does not silently keep dead services around (a full "clean" rebuild
+# would also work, but costs 30-60 minutes and hides the intent).
+#
+# One path per line; lines starting with # are comments.
+# This file itself is excluded from the overlay copy by build.sh.
+
+# adb is disabled in the product defconfig (APP_br_adb_server is not set): the
+# init scripts are dropped by the vendor rootfs_config logic, but the binary
+# comes from the buildroot package android-tools and has to be pruned here.
+usr/bin/adbd

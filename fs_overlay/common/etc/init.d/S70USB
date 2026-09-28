@@ -1,0 +1,263 @@
+#!/bin/sh
+##
+ # @file S70USB
+ # @date 2026/09/28
+ #
+ # @brief USB gadget manager (configfs) for the VOT X2000 board: MTP + RNDIS.
+ #
+ # @note Replaces the vendor's gadget scripts on this product:
+ #       - rootfs_config/file/usb_mtp/usb_mtp_server.sh (MTP only, started by
+ #         S99usb_mtp_server)   -> APP_usb_mtp_server is disabled in
+ #         configs/build/vot_x2000_ingenic_board_defconfig
+ #       - rootfs_config/file/adb/*                     (adb gadget)
+ #       The umtprd binary itself still comes from third_party/usb_mtp
+ #       (APP_usb_mtp=y) and is started here.
+ #
+ # @note Why a single script: configfs allows exactly one gadget bound to the
+ #       UDC (USB Device Controller). The vendor shipped one script per mode
+ #       (MTP / adb / mass storage), so they mutually evict each other. Here
+ #       MTP and RNDIS are functions of the SAME gadget, so both work at once.
+ #
+ # @note Kernel requirements (all satisfied in
+ #       configs/kernel/x2000_module_base_linux_sfc_nand_defconfig):
+ #         CONFIG_USB_CONFIGFS=y, CONFIG_USB_CONFIGFS_F_FS=y, CONFIG_USB_F_FS=y
+ #         CONFIG_USB_CONFIGFS_RNDIS=y, CONFIG_USB_F_RNDIS=y, CONFIG_USB_U_ETHER=y
+ #         CONFIG_USB_CONFIGFS_ACM=y, CONFIG_USB_F_ACM=y   (optional serial)
+ #
+ # @note The host sees MTP as a portable device (Android-compatible IDs, class
+ #       0x06 so no driver install is needed) and RNDIS as a network adapter.
+ #
+ # Usage: S70USB {start|stop|restart|status|mtp|rndis|serial}
+ #
+ #   start    default at boot: MTP + RNDIS (no serial)
+ #   mtp      MTP only
+ #   rndis    RNDIS only
+ #   serial   MTP + RNDIS + CDC-ACM serial (/dev/ttyGS0)
+ #   status   show gadget directory, bound UDC, usb0 state, umtprd process
+ #   stop     unbind and remove every gadget
+ #
+ # Environment overrides: RNDIS_IP (default 192.168.8.168), MTP_STORAGE
+ # (default /usr/data: the ubi user-data partition mounted by S21mount_ubifs).
+ #
+
+USB_GADGET=/sys/kernel/config/usb_gadget
+GADGET_NAME="${GADGET_NAME:-x2000_g1}"
+FFS_DIR=/dev/ffs-mtp
+
+# Device identity: Android-compatible MTP IDs, class 0x06 (still imaging) so
+# the generic MTP driver is picked up on Windows/macOS without an INF file.
+VID="${VID:-0x18D1}"
+PID="${PID:-0x4EE1}"
+MANUFACTURER="${MANUFACTURER:-VOT}"
+PRODUCT="${PRODUCT:-VOT X2000 Board}"
+SERIALNUMBER="${SERIALNUMBER:-0123456789}"
+
+# RNDIS network: the board takes this address, and (if a udhcpd config is
+# present) also serves a lease to the host so no manual IP setup is needed.
+RNDIS_IP="${RNDIS_IP:-192.168.8.168}"
+RNDIS_NETMASK="${RNDIS_NETMASK:-255.255.255.0}"
+UDHCPD_USB_CONF="${UDHCPD_USB_CONF:-/etc/udhcpd_usb.conf}"
+
+# MTP backing store. /usr/data is the writable ubi volume (see
+# device/NAND_LAYOUT.md); it is created here if the mount script has not run.
+MTP_STORAGE="${MTP_STORAGE:-/usr/data}"
+MTP_CONF="${MTP_CONF:-/etc/umtprd/umtprd.conf}"
+
+log() { echo "[S70USB] $*"; }
+
+##
+ # @brief Mount configfs and make sure the MTP storage directory exists.
+ #
+prepare() {
+    if [ ! -d "$USB_GADGET" ]; then
+        mount -t configfs none /sys/kernel/config 2>/dev/null
+    fi
+    [ -d "$USB_GADGET" ] || { log "ERROR: configfs not available"; exit 1; }
+
+    mkdir -p "$MTP_STORAGE"
+    mkdir -p "$(dirname "$MTP_CONF")"
+}
+# End-func prepare
+
+##
+ # @brief Tear the gadget down completely (safe to call when nothing is up).
+ #
+gadget_cleanup()
+{
+    local g c l
+
+    killall umtprd 2>/dev/null
+    umount "$FFS_DIR" 2>/dev/null
+    rmdir "$FFS_DIR" 2>/dev/null
+    pkill -f "udhcpd $UDHCPD_USB_CONF" 2>/dev/null
+
+    for g in "$USB_GADGET"/*; do
+        [ -d "$g" ] || continue
+        if [ -s "$g/UDC" ]; then
+            echo "" > "$g/UDC" 2>/dev/null
+            sleep 0.3
+        fi
+        for c in "$g"/configs/*/; do
+            [ -d "$c" ] || continue
+            for l in "$c"/*; do
+                [ -L "$l" ] && rm -f "$l" 2>/dev/null
+            done
+        done
+        rm -rf "$g" 2>/dev/null
+    done
+    log "gadget cleaned"
+}
+# End-func gadget_cleanup
+
+##
+ # @brief Create gadget scaffolding and the requested functions.
+ #
+ # @param $1 space separated function list: ffs.mtp rndis.usb0 acm.usb0
+ #
+gadget_build() {
+    local funcs="$1"
+    local g="$USB_GADGET/$GADGET_NAME"
+    local f
+
+    echo "$VID"   > "$g/idVendor"
+    echo "$PID"   > "$g/idProduct"
+    echo 0x0100   > "$g/bcdDevice"
+    echo 0x0200   > "$g/bcdUSB"
+
+    mkdir -p "$g/strings/0x409"
+    echo "$SERIALNUMBER" > "$g/strings/0x409/serialnumber"
+    echo "$MANUFACTURER" > "$g/strings/0x409/manufacturer"
+    echo "$PRODUCT"      > "$g/strings/0x409/product"
+
+    mkdir -p "$g/configs/c.1/strings/0x409"
+    echo "MTP + RNDIS" > "$g/configs/c.1/strings/0x409/configuration"
+    echo 250 > "$g/configs/c.1/MaxPower"
+
+    for f in $funcs; do
+        case "$f" in
+            ffs.mtp)
+                mkdir -p "$g/functions/ffs.mtp"
+                ln -s "$g/functions/ffs.mtp" "$g/configs/c.1/ffs.mtp"
+                ;;
+            rndis.usb0)
+                mkdir -p "$g/functions/rndis.usb0"
+                # locally administered MAC pair (host <-> device)
+                echo "1a:55:89:b4:10:11" > "$g/functions/rndis.usb0/dev_addr"
+                echo "1a:55:89:b4:10:12" > "$g/functions/rndis.usb0/host_addr"
+                ln -s "$g/functions/rndis.usb0" "$g/configs/c.1/rndis.usb0"
+                ;;
+            acm.usb0)
+                mkdir -p "$g/functions/acm.usb0"
+                ln -s "$g/functions/acm.usb0" "$g/configs/c.1/acm.usb0"
+                ;;
+            *) log "WARN: unknown function $f" ;;
+        esac
+    done
+
+    echo "$g"
+}
+# End-func gadget_build
+
+##
+ # @brief Bind the gadget to the UDC and start the userspace side (umtprd, usb0).
+ #
+ # @param $1 gadget directory
+ # @param $2 1 when MTP is part of the gadget
+ # @param $3 1 when RNDIS is part of the gadget
+ #
+gadget_bind() {
+    local g="$1" with_mtp="$2" with_rndis="$3"
+    local udc
+
+    if [ "$with_mtp" = "1" ]; then
+        mkdir -p "$FFS_DIR"
+        mount -t functionfs mtp "$FFS_DIR" 2>/dev/null
+        if [ ! -f "$MTP_CONF" ]; then
+            log "WARN: $MTP_CONF missing, using built-in defaults of umtprd"
+            umtprd &
+        else
+            umtprd -c "$MTP_CONF" &
+        fi
+        sleep 1
+    fi
+
+    udc="$(ls /sys/class/udc/ 2>/dev/null | head -1)"
+    [ -n "$udc" ] || { log "ERROR: no UDC found"; return 1; }
+    echo "$udc" > "$g/UDC"
+    log "bound to UDC $udc"
+
+    if [ "$with_rndis" = "1" ]; then
+        # the netdev appears asynchronously once the host enumerates it
+        sleep 1
+        ifconfig usb0 "$RNDIS_IP" netmask "$RNDIS_NETMASK" up 2>/dev/null \
+            || ip addr add "$RNDIS_IP"/24 dev usb0 2>/dev/null
+        ifconfig usb0 up 2>/dev/null
+        if [ -f "$UDHCPD_USB_CONF" ] && command -v udhcpd >/dev/null 2>&1; then
+            udhcpd "$UDHCPD_USB_CONF" 2>/dev/null && log "udhcpd started"
+        fi
+        log "RNDIS up: usb0 $RNDIS_IP/24"
+    fi
+}
+# End-func gadget_bind
+
+##
+ # @brief Bring up one of the supported combinations.
+ #
+ # @param $1 mtp | rndis | both | full
+ #
+start_mode() {
+    local mode="$1" funcs="" with_mtp=0 with_rndis=0
+
+    prepare
+    gadget_cleanup
+
+    case "$mode" in
+        mtp)    funcs="ffs.mtp";                 with_mtp=1 ;;
+        rndis)  funcs="rndis.usb0";              with_rndis=1 ;;
+        both)   funcs="ffs.mtp rndis.usb0";      with_mtp=1 with_rndis=1 ;;
+        full)   funcs="ffs.mtp rndis.usb0 acm.usb0"; with_mtp=1 with_rndis=1 ;;
+        *)      log "ERROR: unknown mode $mode"; exit 1 ;;
+    esac
+
+    local g
+    g="$(gadget_build "$funcs")"
+    gadget_bind "$g" "$with_mtp" "$with_rndis"
+    log "mode '$mode' active"
+}
+# End-func start_mode
+
+##
+ # @brief Print the current USB gadget state.
+ #
+status() {
+    local g udc
+    echo "--- gadget ---"
+    for g in "$USB_GADGET"/*; do
+        [ -d "$g" ] || continue
+        udc="$(cat "$g/UDC" 2>/dev/null)"
+        echo "$(basename "$g"): UDC=${udc:-<unbound>}"
+    done
+    echo "--- functions ---"
+    for g in "$USB_GADGET"/*; do
+        [ -d "$g/functions" ] || continue
+        ls "$g/functions"
+    done
+    echo "--- network ---"
+    ifconfig usb0 2>/dev/null | head -3
+    echo "--- processes ---"
+    ps | grep -E "umtprd|udhcpd" | grep -v grep
+}
+# End-func status
+
+case "$1" in
+    start)   start_mode both ;;
+    mtp)     start_mode mtp ;;
+    rndis)   start_mode rndis ;;
+    serial)  start_mode full ;;
+    stop)    prepare; gadget_cleanup ;;
+    restart) prepare; gadget_cleanup; start_mode both ;;
+    status)  status ;;
+    *)       echo "Usage: $0 {start|stop|restart|status|mtp|rndis|serial}"; exit 1 ;;
+esac
+
+exit 0

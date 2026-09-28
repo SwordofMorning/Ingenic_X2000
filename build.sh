@@ -410,6 +410,7 @@ vendor_make_nosync() {
 do_vendor_make() {
     local target="$1"
     sync_sources
+    ensure_config
     info "make $target (jobs=$JOBS)"
     vendor_make_nosync "$target"
 }
@@ -452,27 +453,114 @@ fs_overlay_apply() {
     for ov in $FS_OVERLAY; do
         local d="$REPO_ROOT/$ov"
         if [ -d "$d" ]; then
-            n="$(find "$d" -type f | wc -l)"
+            n="$(find "$d" -type f ! -name prune.txt | wc -l)"
             info "fs overlay: $ov ($n files)"
-            rsync -a "$d/" "$target_dir/"
+            rsync -a --exclude='prune.txt' "$d/" "$target_dir/"
         else
             echo "  [warn] overlay dir missing: $d"
         fi
+    done
+
+    # Optional removal list per layer (fs_overlay/<layer>/prune.txt): paths,
+    # relative to the rootfs, that must NOT be in the image. Needed because
+    # buildroot never uninstalls anything: a package that is disabled in a new
+    # configuration leaves its files behind in the persistent output/target
+    # (observed with awtk, adb and the vendor h264 server).
+    for ov in $FS_OVERLAY; do
+        local pf="$REPO_ROOT/$ov/prune.txt" p
+        [ -f "$pf" ] || continue
+        info "fs prune list: $ov/prune.txt"
+        while read -r p; do
+            case "$p" in ''|'#'*) continue ;; esac
+            if [ -e "$target_dir/$p" ]; then
+                rm -rf "$target_dir/$p"
+                echo "  pruned $p"
+            fi
+        done < "$pf"
     done
 }
 # End-func fs_overlay_apply
 
 ##
- # @brief Full build: sync, prepare, vendor "make all", overlay, repack rootfs.
+ # @brief Pack the root filesystem image from the current target tree.
  #
- # @note Phase 1 builds u-boot and buildroot (the latter creates the host
- #       toolchain and the staging sysroot), phase 2 pre-builds packages whose
- #       headers later packages need, phase 3 runs the vendor "all" (kernel +
- #       apps + rootfs + images), phase 4 merges our filesystem overlay and
- #       regenerates the root filesystem image.
+ # @note Why we pack it ourselves: buildroot runs the vendor post-build script
+ #       inside its target-finalize step, so a file we merge into output/target
+ #       BEFORE the last buildroot pass can be deleted again by the vendor
+ #       rootfs_config logic (this happened to our umtprd.conf). Therefore the
+ #       overlay is merged after the last buildroot pass and the image is
+ #       regenerated here with the same arguments buildroot itself would use.
+ #
+repack_rootfs() {
+    local br="$BUILD_DIR/buildroot/buildroot"
+    local tdir="$br/output/target"
+    local images="$br/output/images"
+    local mk="$br/output/host/bin/mksquashfs"
+    local comp="lzo" extra=""
+
+    [ -d "$tdir" ] || { echo "  [warn] buildroot target dir missing, skip repack"; return 0; }
+    [ -x "$mk" ]   || { echo "  [warn] host mksquashfs missing, skip repack"; return 0; }
+
+    if [ -f "$br/.config" ]; then
+        if   grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_LZ4=y'  "$br/.config"; then comp="lz4"; extra="-Xhc"
+        elif grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_LZO=y'  "$br/.config"; then comp="lzo"
+        elif grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_LZMA=y' "$br/.config"; then comp="lzma"
+        elif grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_XZ=y'   "$br/.config"; then comp="xz"
+        elif grep -q '^BR2_TARGET_ROOTFS_SQUASHFS4_ZSTD=y' "$br/.config"; then comp="zstd"
+        else comp="gzip"; fi
+    fi
+
+    info "repacking rootfs.squashfs (-comp $comp)"
+    # shellcheck disable=SC2086
+    "$mk" "$tdir" "$images/rootfs.squashfs" -noappend -processors "$JOBS" -comp "$comp" $extra >/dev/null
+    cp -f "$images/rootfs.squashfs" "$BUILD_DIR/build/output/"
+    info "build/build/output/rootfs.squashfs refreshed ($(du -h "$images/rootfs.squashfs" | cut -f1))"
+}
+# End-func repack_rootfs
+
+##
+ # @brief Apply the product configuration inside the sandbox if needed.
+ #
+ # @note The vendor framework needs .config.in / config.h before any other
+ #       target can run. Two traps this guard avoids:
+ #         1) after "clean" they do not exist, and the vendor's per-module
+ #            targets fail with a confusing "No rule to make target";
+ #         2) a failed run leaves a .config.in whose product keys are EMPTY
+ #            (the vendor's own check_config.sh generates that stub), so
+ #            testing for the file alone is not enough - we check that the
+ #            u-boot key actually matches this product.
+ #       "all" always re-applies the configuration (phase 0).
+ #
+ensure_config() {
+    load_product
+    local cfg="$BUILD_DIR/build/.config.in"
+    local ok=0
+    if [ -s "$cfg" ] && grep -q "^APP_uboot_config=$UBOOT_CONFIG\$" "$cfg"; then
+        ok=1
+    fi
+    if [ "$ok" = "0" ] || [ "${FORCE_CONFIG:-0}" = "1" ]; then
+        info "applying product configuration: $APP_CONFIG"
+        vendor_make_nosync "$APP_CONFIG"
+    else
+        echo "  configuration up to date for product '$PRODUCT'"
+    fi
+}
+# End-func ensure_config
+
+##
+ # @brief Full build: sync, configure, prepare, vendor "make all", overlay, repack.
+ #
+ # @note Phase 0 applies the product defconfig (idempotent), phase 1 builds u-boot
+ #       and buildroot (the latter creates the host toolchain and the staging
+ #       sysroot), phase 2 pre-builds packages whose headers later packages need,
+ #       phase 3 runs the vendor "all" (kernel + apps + rootfs + images),
+ #       phase 4 runs the final buildroot pass, merges the product filesystem
+ #       overlay and repacks the rootfs image.
  #
 do_all() {
     sync_sources
+    info "phase 0/4: product configuration"
+    FORCE_CONFIG=1 ensure_config
     info "phase 1/4: u-boot"
     vendor_make_nosync uboot
     info "phase 1/4: buildroot (host toolchain + staging sysroot)"
@@ -481,13 +569,10 @@ do_all() {
     prebuild_staging_deps
     info "phase 3/4: vendor make all (kernel + apps + rootfs + images)"
     vendor_make_nosync all
-    info "phase 4/4: product filesystem overlay + rootfs repack"
-    fs_overlay_apply
+    info "phase 4/4: final buildroot pass, product overlay, rootfs repack"
     vendor_make_nosync buildroot
-    if [ -f "$BUILD_DIR/buildroot/buildroot/output/images/rootfs.squashfs" ]; then
-        cp -f "$BUILD_DIR/buildroot/buildroot/output/images/rootfs.squashfs" "$BUILD_DIR/build/output/"
-        info "refreshed build/build/output/rootfs.squashfs with the overlay applied"
-    fi
+    fs_overlay_apply
+    repack_rootfs
 }
 # End-func do_all
 
@@ -500,11 +585,7 @@ do_fs() {
     local target_dir="$BUILD_DIR/buildroot/buildroot/output/target"
     [ -d "$target_dir" ] || die "buildroot target dir not found ($target_dir); run ./build.sh all first"
     fs_overlay_apply
-    vendor_make_nosync buildroot
-    if [ -f "$BUILD_DIR/buildroot/buildroot/output/images/rootfs.squashfs" ]; then
-        cp -f "$BUILD_DIR/buildroot/buildroot/output/images/rootfs.squashfs" "$BUILD_DIR/build/output/"
-        info "build/build/output/rootfs.squashfs refreshed"
-    fi
+    repack_rootfs
 }
 # End-func do_fs
 
