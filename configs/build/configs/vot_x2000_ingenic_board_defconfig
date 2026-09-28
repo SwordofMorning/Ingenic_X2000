@@ -19,6 +19,8 @@
 #     media stack (found by a build failure, not by inspection)
 #   * the vendor factory-test tool (APP_test_shell) is disabled: it runs an
 #     interactive device test at boot and does not belong in a product image
+#   * APP_br_config_file points at our buildroot configuration, which builds a
+#     writable UBIFS rootfs (plus the UBI image) and adds hostapd/iw
 #   * vendor MTP gadget script (APP_usb_mtp_server) disabled: our own script
 #     "fs_overlay/common/etc/init.d/S70USB" sets up ONE composite gadget
 #     with MTP + RNDIS; umtprd itself still comes from APP_usb_mtp
@@ -34,7 +36,7 @@ APP_kernel_dir=../kernel/kernel
 APP_kernel_config=x2000_module_base_linux_sfc_nand_defconfig
 # Kernel_uImage_menu is not set
 APP_br_dir=../buildroot/buildroot
-APP_br_config_file=configs/buildroot/buildroot_x2000_510_wifi_common_defconfig
+APP_br_config_file=configs/buildroot/vot_x2000_ingenic_board_defconfig
 APP_compile_threads=12
 APP_module_driver=y
 MD_INIT_ORDER_FILE=package/default_driver_init_order.mk

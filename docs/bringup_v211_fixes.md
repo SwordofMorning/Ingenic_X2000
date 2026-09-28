@@ -130,3 +130,54 @@ ping -I wlan0 192.168.50.1             # 连通性
 
 补充：AP 模式（hostapd）**当前镜像没有编进去**（buildroot 里 `BR2_PACKAGE_HOSTAPD` 未选），
 需要 AP 测试的话我再把它加进 buildroot 配置；`iw`/`iwlist` 也未选，扫描请用 `wpa_cli scan`。
+
+## 11. 第三轮：可写根文件系统 + WiFi 统一管理（2026-09-28）
+
+### 11.1 根文件系统改为可写（UBIFS on UBI）
+
+之前 rootfs 是**只读 squashfs**（厂商的 NAND 默认：`root=/dev/mtdblock_bbt_ro2 rootfstype=squashfs ro`），
+所以运行期无法改文件（`rm` 报 read-only）。现在改为：
+
+| 项 | 之前 | 现在 |
+|----|------|------|
+| 根文件系统 | squashfs（只读） | **UBIFS（读写）**，放在名为 `rootfs` 的 UBI 卷里 |
+| 内核启动参数 | `root=/dev/mtdblock_bbt_ro2 rootfstype=squashfs ro` | `ubi.mtd=rootfs root=ubi0:rootfs rootwait rootfstype=ubifs rw` |
+| 交付镜像 | `rootfs.squashfs` | `rootfs.ubi`（烧录用）+ `rootfs.ubifs`（UBI 内层，便于自己 ubinize）；`rootfs.squashfs` 仍保留作回退 |
+| 覆盖的文件 | — | `configs/uboot/x2000_base.h`（选 `CONFIG_ROOTFS_UBI`）、`configs/uboot/x2000_base_common.h`（设备串与 `rw`）、`configs/build/configs/buildroot/vot_x2000_ingenic_board_defconfig`（UBIFS/UBI 镜像参数） |
+
+要点：
+
+- 新增的 buildroot 配置里：`BR2_TARGET_ROOTFS_UBIFS=y`（`-m 0x800 -e 0x1f000 -c 750 -x lzo`，对应 2048B 页 /128KiB 块，
+  卷上限约 91 MiB）+ `BR2_TARGET_ROOTFS_UBI=y`（ubinize，卷名 `rootfs`、`vol_flags=autoresize`）。
+  因为 UBI 是 autoresize，**烧录时卷会自动铺满 rootfs 分区**，剩余空间就是可写空间。
+- **分区要求**：`rootfs.ubi` 当前 42 MiB，且它还要容纳运行期写入，
+  建议 rootfs 分区不小于 **64 MiB**（当前推断的布局：`boot 1M + kernel 8M + rootfs 96M + userdata 23M`）。
+  分区与 `-c` 的关系：`-c` 必须 ≥ 分区 PEB 数，否则挂载会报卷过大。
+- **必须重烧 u-boot**：启动参数在内核 cmdline 里由 u-boot 生成，换了 rootfs 类型就必须一起更新。
+- 运行时注意：UBIFS 是读写挂载，直接改动会持久化；若想恢复出厂状态，重烧 `rootfs.ubi` 即可。
+
+### 11.2 WiFi 统一管理：S60WiFi
+
+新增 `fs_overlay/common/etc/init.d/S60WiFi`（结构与你 Hi3556 的 S60WiFi 一致：Part I `Func_*` / Part II `API_*` / Part III main）：
+
+```text
+S60WiFi {start|stop|restart|status|scan|connect <ssid> [pwd]|reconnect|ap <ssid> [pwd]|insmod|rmmod}
+```
+
+- `start`：开机自动执行 —— 确保驱动加载（必要时 `insmod /module_driver/cywdhd.ko`）、设置 MAC
+  （调用厂商 `S43wifi_bcm_init_config`：macaddr.txt → 烧录分区 → efuse → 随机）、
+  若有已保存的站点配置则自动连接并取地址；没有则只提示用法。
+- `connect <ssid> [pwd]`：生成 `wpa_supplicant.conf` → 关联（等 `wpa_state=COMPLETED`，默认 30s）→
+  `udhcpc` 取地址；成功后把 SSID/PSK 存到 `/usr/data/wifi/sta.conf`（下次 `start`/`reconnect` 直接复用）。
+- `ap <ssid> [pwd]`：hostapd（nl80211）+ busybox udhcpd 起热点，默认 `192.168.7.168/24`，
+  地址池 `192.168.7.20-100`；`WIFI_AP_OPEN=1` 可开无密码热点。
+- `scan`：`wpa_cli scan` + `scan_results`（镜像里已加 `iw`，需要时可改用 `iw dev wlan0 scan`）。
+- `status`：接口 / 驱动 / supplicant 状态 / 进程 / 已保存配置一览。
+- 参数可用环境变量覆盖：`WIFI_IF WIFI_KO WIFI_DIR AP_IP AP_NETMASK AP_CHANNEL WPA_TIMEOUT DHCP_ROUNDS`。
+
+配套改动：
+
+- 镜像里新增 **hostapd** 与 **iw**（buildroot 配置），AP 模式因此可用；
+- 移除厂商的 `S44wifi_bcm_up`（WiFi 自动启动改由 S60WiFi 负责），保留 `S41`（蓝牙固件下载）与
+  `S43`（MAC 初始化）；
+- 站点/热点配置保存在可写分区 `/usr/data/wifi/`，与新的可写 rootfs 配合。

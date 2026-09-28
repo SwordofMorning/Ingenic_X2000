@@ -337,15 +337,18 @@ sync_sources() {
         mkdir -p "$BUILD_DIR/$(sb_path "$KERNEL_DIR")/arch/mips/configs"
         rsync -a "$CONFIGS_DIR/kernel/" "$BUILD_DIR/$(sb_path "$KERNEL_DIR")/arch/mips/configs/"
     fi
-    # u-boot board table (e.g. the LPJ calibration for this board revision).
-    # Our copy differs from the vendor file only in the lines we deliberately change.
+    # u-boot overrides: boards.cfg (board table) and board headers, e.g. the
+    # LPJ calibration for this board revision and the writable-rootfs setup.
+    # Each file differs from the vendor file only in the lines we change.
     if [ -d "$CONFIGS_DIR/uboot" ]; then
         info "overlaying configs/uboot -> bootloader/uboot-x2000"
+        local base
         for f in "$CONFIGS_DIR/uboot"/*; do
             [ -f "$f" ] || continue
-            local base; base="$(basename "$f")"
+            base="$(basename "$f")"
             case "$base" in
                 boards.cfg) cp -f "$f" "$BUILD_DIR/bootloader/uboot-x2000/boards.cfg" ;;
+                *.h)        cp -f "$f" "$BUILD_DIR/bootloader/uboot-x2000/include/configs/$base" ;;
                 *)          echo "  [warn] unhandled uboot overlay file: $base" ;;
             esac
         done
@@ -517,6 +520,58 @@ copy_extra_libs() {
 # End-func copy_extra_libs
 
 ##
+ # @brief Build the UBIFS and UBI root filesystem images from the target tree.
+ #
+ # @note Same reasoning as repack_rootfs(): the vendor post-build script runs
+ #       inside buildroot's target-finalize, so the overlay has to be merged
+ #       after buildroot has finished and the images are then rebuilt here. The
+ #       geometry and compression are read from the buildroot configuration, so
+ #       this stays in sync when the NAND geometry changes.
+ #
+build_ubi_images() {
+    local br="$BUILD_DIR/buildroot/buildroot"
+    local cfg="$br/.config" host="$br/output/host" tdir="$br/output/target" img="$br/output/images"
+    local leb minio maxleb peb comp ucfg
+
+    [ -f "$cfg" ] || return 0
+    grep -q '^BR2_TARGET_ROOTFS_UBIFS=y' "$cfg" || return 0
+    [ -x "$host/sbin/mkfs.ubifs" ] || { echo "  [warn] host mkfs.ubifs missing, skip UBIFS"; return 0; }
+
+    leb="$(sed -n 's/^BR2_TARGET_ROOTFS_UBIFS_LEBSIZE=//p' "$cfg" | head -1)"
+    minio="$(sed -n 's/^BR2_TARGET_ROOTFS_UBIFS_MINIOSIZE=//p' "$cfg" | head -1)"
+    maxleb="$(sed -n 's/^BR2_TARGET_ROOTFS_UBIFS_MAXLEBCNT=//p' "$cfg" | head -1)"
+    peb="$(sed -n 's/^BR2_TARGET_ROOTFS_UBI_PEBSIZE=//p' "$cfg" | head -1)"
+    comp="lzo"
+    grep -q '^BR2_TARGET_ROOTFS_UBIFS_RT_LZO=y' "$cfg" || comp="zlib"
+
+    info "building rootfs.ubifs (leb=$leb minio=$minio maxleb=$maxleb comp=$comp)"
+    "$host/sbin/mkfs.ubifs" -d "$tdir" -e "$leb" -c "$maxleb" -m "$minio" -x "$comp" \
+        -o "$img/rootfs.ubifs" >/dev/null || { echo "  [warn] mkfs.ubifs failed"; return 0; }
+
+    if grep -q '^BR2_TARGET_ROOTFS_UBI=y' "$cfg" && [ -x "$host/sbin/ubinize" ]; then
+        ucfg="$BUILD_DIR/ubinize.cfg"
+        {
+            echo "[ubifs]"
+            echo "mode=ubi"
+            echo "vol_id=0"
+            echo "vol_type=dynamic"
+            echo "vol_name=rootfs"
+            echo "vol_alignment=1"
+            echo "vol_flags=autoresize"
+            echo "image=$img/rootfs.ubifs"
+        } > "$ucfg"
+        info "building rootfs.ubi (peb=$peb)"
+        "$host/sbin/ubinize" -o "$img/rootfs.ubi" -m "$minio" -p "$peb" "$ucfg" >/dev/null \
+            || echo "  [warn] ubinize failed"
+    fi
+
+    cp -f "$img/rootfs.ubifs" "$BUILD_DIR/build/output/" 2>/dev/null
+    [ -f "$img/rootfs.ubi" ] && cp -f "$img/rootfs.ubi" "$BUILD_DIR/build/output/" 2>/dev/null
+    info "rootfs images refreshed: $(du -h "$img/rootfs.ubifs" | cut -f1) ubifs$([ -f "$img/rootfs.ubi" ] && echo ", $(du -h "$img/rootfs.ubi" | cut -f1) ubi")"
+}
+# End-func build_ubi_images
+
+##
  # @brief Pack the root filesystem image from the current target tree.
  #
  # @note Why we pack it ourselves: buildroot runs the vendor post-build script
@@ -609,6 +664,7 @@ do_all() {
     fs_overlay_apply
     copy_extra_libs
     repack_rootfs
+    build_ubi_images
 }
 # End-func do_all
 
@@ -623,6 +679,7 @@ do_fs() {
     fs_overlay_apply
     copy_extra_libs
     repack_rootfs
+    build_ubi_images
 }
 # End-func do_fs
 
@@ -640,7 +697,7 @@ do_release() {
     # file name == partition name (Hi3556 house style)
     local f
     for f in u-boot-spl-pad.bin u-boot-with-spl.bin xImage xImage_split rootfs.squashfs \
-             rootfs.ubifs userdata.ubifs overlay_bootfs.squashfs image.bin; do
+             rootfs.ubifs rootfs.ubi userdata.ubifs overlay_bootfs.squashfs image.bin; do
         [ -f "$out/$f" ] && cp -f "$out/$f" "$rel/"
     done
     if [ -d "$out/ota" ] && [ "$OTA" = "y" ]; then

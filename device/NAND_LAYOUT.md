@@ -32,8 +32,16 @@ cat /proc/cmdline             # 看是否带 mtdparts=
 
 ## 4. 当前产品决定
 
-- 采用**厂商默认布局**（不引入君正 OTA / A/B 双分区），即
-  `uboot 1M + kernel 8M + rootfs 40M + data 剩余`。
-- 因此交付物只需要 3 个烧录文件：`u-boot-spl-pad.bin`、`xImage`、`rootfs.squashfs`。
-- 若将来要启用 A/B OTA，需要重新分配（估算见方案文档 `10_packaging_plan_review.md` §1.2：
-  `uboot 1M + kernel 8M×2 + rootfs 40M×2 + ota 1M ≈ 98 MiB`），并重新生成烧录参数。
+- 分区采用**厂商默认布局**（不引入君正 OTA / A/B 双分区）：
+  `uboot 1M + kernel 8M + rootfs 40M + data 剩余`（当 rootfs 为只读 squashfs 时）。
+- **根文件系统已改为可写 UBIFS**（见 `docs/bringup_v211_fixes.md` 第 11 节）：
+  - rootfs 分区烧录 `rootfs.ubi`（内含名为 `rootfs` 的 UBI 卷，`autoresize` 会铺满分区）；
+  - 内核 cmdline 由 u-boot 生成为
+    `ubi.mtd=rootfs root=ubi0:rootfs rootwait rootfstype=ubifs rw`；
+  - 因此 **rootfs 分区建议不小于 64 MiB**（当前镜像 42 MiB，还要留运行期写入空间），
+    UBIFS 的 `-c 750` 上限对应约 91 MiB，分区若更大需要同步提高该值（在
+    `configs/build/configs/buildroot/vot_x2000_ingenic_board_defconfig` 里）。
+- 交付物：`u-boot-spl-pad.bin` + `xImage` + `rootfs.ubi`（可写启动），
+  另保留 `rootfs.squashfs` 作为回退方案（只读启动，需配套旧 cmdline）。
+- 若将来要启用 A/B OTA，需要重新分配（估算见方案文档 `10_packaging_plan_review.md` §1.2），
+  并重新生成烧录参数。

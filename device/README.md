@@ -6,11 +6,16 @@
 
 | 文件 | 分区 | 说明 |
 |------|------|------|
-| `u-boot-spl-pad.bin` (24 KB) | uboot | SPL + U-Boot（SFC NAND 启动） |
+| `u-boot-spl-pad.bin` (24 KB) | uboot | SPL + U-Boot（SFC NAND 启动）。**启动参数在本文件里**，换 rootfs 类型必须一起重烧 |
 | `xImage` (~5 MB) | kernel | 5.10.186 内核（君正私有格式，**不能**用 uImage 代替） |
-| `rootfs.squashfs` (~48 MB) | rootfs | 只读根文件系统 |
-| `md5sum.txt` | — | 与文件同名同序，烧录后可用 `md5sum -c` 核对 |
-| `notes.txt` | — | 构建时间 / 配置来源 / git 版本 |
+| `rootfs.ubi` (~42 MB) | rootfs | **可写根文件系统**（UBIFS in UBI，卷名 `rootfs`，autoresize）。当前产品用这个 |
+| `rootfs.ubifs` (~41 MB) | — | UBI 内层镜像，仅在自己 ubinize / 手工写入时需要 |
+| `rootfs.squashfs` (~30 MB) | rootfs | 只读回退方案（需配套旧的 `rootfstype=squashfs ro` 启动参数） |
+| `md5sum.txt` / `notes.txt` | — | 校验与构建记录 |
+
+> 启动参数由 u-boot 生成（见 `configs/uboot/x2000_base_common.h` 覆盖）：
+> `ubi.mtd=rootfs root=ubi0:rootfs rootwait rootfstype=ubifs rw`。
+> 因此 rootfs 分区需要 ≥64 MB（镜像 42 MB + 运行期写入余量）。
 
 ## 1. 烧录工具（不在 SDK 内）
 
@@ -29,10 +34,10 @@ Windows 版把 `-ubuntu.tar.gz` 换成 `-windows.zip`（需先装驱动）。
    差异只体现在烧录工具的 DDR 参数上；选错会导致内存只认到 128 MB。
 2. **SFC 面板 → 设定分区**：偏移 / 大小 / 名称，与 `device/NAND_LAYOUT.md` 第 2 节一致
    （默认 `uboot 1M` / `kernel 8M` / `rootfs 40M` / `data` 其余）。
-3. **选择镜像文件**：分别指向 `u-boot-spl-pad.bin` / `xImage` / `rootfs.squashfs`。
+3. **选择镜像文件**：uboot → `u-boot-spl-pad.bin`；kernel → `xImage`；**rootfs → `rootfs.ubi`**。
 4. **OPS → 选存储器类型**：nand flash 选 `SFC_NAND`（nor 选 `SFC_NOR`）；
-   rootfs 的 `Manage_mode` 必须是 **`MTD_MODE`**，否则内核挂载会报
-   `No filesystem could mount root, tried: squashfs`。
+   rootfs 分区的 `Manage_mode` 必须是 **`MTD_MODE`**（裸分区写入）——UBI/UBIFS、squashfs 都要求这样，
+   否则内核挂载会报 `No filesystem could mount root`。
 5. **开始烧录**：点击"开始"后，**按住开发板 BOOT 键不放 → 再按 Reset（或重新上电）**。
 6. 首次/全量烧录建议勾选"全部擦除"；擦除阶段耗时较久属正常。
 

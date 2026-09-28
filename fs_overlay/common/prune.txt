@@ -20,3 +20,9 @@ usr/bin/adbd
 # under the etc directory.
 etc/init.d/S99factory_test_shell
 etc/factory_test
+
+# vendor WiFi autostart: replaced by our own manager (S60WiFi), which brings the
+# interface up with the stored profile and also supports AP mode.
+# S41 (BT firmware download) and S43 (MAC address setup) are kept: S60WiFi calls
+# S43 for the MAC and leaves Bluetooth to the vendor scripts.
+etc/init.d/S44wifi_bcm_up

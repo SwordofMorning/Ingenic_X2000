@@ -1,0 +1,459 @@
+#!/bin/sh
+##
+ # @file S60WiFi
+ # @date 2026/09/28
+ #
+ # @brief WiFi manager for the VOT X2000 board (CYW43438 / bcmdhd), restructured
+ #        in the same way as the hi3556v200 S60WiFi reference:
+ #          Part I   Func_*   low level operations
+ #          Part II  API_*    business flows
+ #          Part III main     dispatch + per-action result mapping
+ #
+ # @note Board specifics (differs from the hi3556 reference):
+ #   - driver: cywdhd.ko (bcmdhd 1.363.125.19, SDIO), installed in /module_driver
+ #     and loaded at boot by /etc/init.d/S11module_driver_default,
+ #   - the module is powered by the SDIO host through the MD_X2000_510_WIFI_*
+ #     configuration (power PB14 / reg-on PD18); if wlan0 never appears the
+ #     configuration is wrong, not this script,
+ #   - MAC handling is delegated to the vendor script S43wifi_bcm_init_config
+ #     (it derives the MAC from /usr/data/macaddr.txt, the burn partition,
+ #     efuse or a random UUID, and programs the module parameter),
+ #   - the vendor's S44wifi_bcm_up autostart is removed from the image; this
+ #     script is the single entry point (prune.txt),
+ #   - AP mode uses hostapd + busybox udhcpd, STA mode uses wpa_supplicant +
+ #     busybox udhcpc (both tools are in the image),
+ #   - "start" brings up whatever profile is stored on /usr/data, so a product
+ #     boots into its last known WiFi state.
+ #
+ # Usage: S60WiFi {start|stop|restart|status|scan|
+ #                 connect <ssid> [pwd]|reconnect|
+ #                 ap <ssid> [pwd]|insmod|rmmod}
+ #
+ # Environment overrides:
+ #   WIFI_IF, WIFI_KO, WIFI_DIR, AP_IP, AP_NETMASK, AP_CHANNEL,
+ #   WPA_TIMEOUT, DHCP_ROUNDS, WIFI_AP_OPEN (=1: open AP, no passphrase)
+ #
+ # @note ASCII only, /bin/sh (busybox ash).
+ #
+
+ACTION=${1:-help}
+ARG_SSID=${2:-}
+ARG_PWD=${3:-}
+
+WIFI_IF="${WIFI_IF:-wlan0}"
+WIFI_KO="${WIFI_KO:-/module_driver/cywdhd.ko}"
+WIFI_DIR="${WIFI_DIR:-/usr/data/wifi}"
+STA_CONF="$WIFI_DIR/sta.conf"
+AP_CONF="$WIFI_DIR/ap.conf"
+MACADDR_TXT=/usr/data/macaddr.txt
+VENDOR_MAC_SCRIPT=/etc/init.d/S43wifi_bcm_init_config
+
+WPA_CTRL_DIR=/var/run/wpa_supplicant
+WPA_CONF=/tmp/wpa_supplicant.conf
+HOSTAPD_CONF=/tmp/hostapd_ap.conf
+UDHCPD_AP_CONF=/tmp/udhcpd_ap.conf
+UDHCPC_PID=/tmp/udhcpc_wifi.pid
+
+AP_IP="${AP_IP:-192.168.7.168}"
+AP_NETMASK="${AP_NETMASK:-255.255.255.0}"
+AP_CHANNEL="${AP_CHANNEL:-6}"
+AP_LEASE_START="${AP_LEASE_START:-192.168.7.20}"
+AP_LEASE_END="${AP_LEASE_END:-192.168.7.100}"
+WPA_TIMEOUT="${WPA_TIMEOUT:-30}"
+DHCP_ROUNDS="${DHCP_ROUNDS:-6}"
+
+###############################################################################
+# Part I: Func_* - low level operations
+###############################################################################
+
+##
+ # @brief Emit a log line with the script tag.
+ #
+Func_log() { echo "[S60WiFi] $*"; }
+# End-func Func_log
+
+##
+ # @brief Wait for the wlan interface to appear.
+ #
+ # @return 0 when /sys/class/net/$WIFI_IF exists, 1 on timeout (5 s)
+ #
+Func_wait_if() {
+    local i=0
+    while [ ! -e "/sys/class/net/$WIFI_IF" ]; do
+        i=$((i + 1))
+        [ "$i" -gt 100 ] && return 1
+        usleep 50000 2>/dev/null || sleep 0.05
+    done
+    return 0
+}
+# End-func Func_wait_if
+
+##
+ # @brief Load the WiFi module when the interface is missing.
+ #
+Func_insmod() {
+    if Func_wait_if; then
+        Func_log "driver already loaded ($WIFI_IF present)"
+        return 0
+    fi
+    if [ ! -f "$WIFI_KO" ]; then
+        Func_log "ERROR: kernel module not found: $WIFI_KO"
+        return 1
+    fi
+    Func_log "loading $WIFI_KO"
+    insmod "$WIFI_KO" || { Func_log "ERROR: insmod failed"; return 1; }
+    Func_wait_if || { Func_log "ERROR: $WIFI_IF did not appear"; return 1; }
+    Func_log "$WIFI_IF is up"
+    return 0
+}
+# End-func Func_insmod
+
+##
+ # @brief Stop all userspace WiFi services (does not unload the module).
+ #
+Func_stop_services() {
+    killall wpa_supplicant 2>/dev/null
+    killall hostapd 2>/dev/null
+    killall udhcpd 2>/dev/null
+    [ -f "$UDHCPC_PID" ] && kill "$(cat "$UDHCPC_PID")" 2>/dev/null && rm -f "$UDHCPC_PID"
+    killall udhcpc 2>/dev/null
+    return 0
+}
+# End-func Func_stop_services
+
+##
+ # @brief Unload the WiFi module.
+ #
+Func_rmmod() {
+    Func_stop_services
+    ifconfig "$WIFI_IF" down 2>/dev/null
+    if [ -e "/sys/class/net/$WIFI_IF" ]; then
+        rmmod cywdhd 2>/dev/null || rmmod bcmdhd 2>/dev/null
+    fi
+    if [ -e "/sys/class/net/$WIFI_IF" ]; then
+        Func_log "WARN: $WIFI_IF still present after rmmod"
+        return 1
+    fi
+    Func_log "driver unloaded"
+    return 0
+}
+# End-func Func_rmmod
+
+##
+ # @brief Program the interface MAC address (vendor logic reused).
+ #
+Func_set_mac() {
+    if [ -x "$VENDOR_MAC_SCRIPT" ]; then
+        sh "$VENDOR_MAC_SCRIPT" start >/dev/null 2>&1
+        [ -f "$MACADDR_TXT" ] && Func_log "MAC: $(cat "$MACADDR_TXT")"
+    else
+        Func_log "WARN: $VENDOR_MAC_SCRIPT missing, using the module MAC"
+    fi
+    return 0
+}
+# End-func Func_set_mac
+
+##
+ # @brief Write a station profile to the writable config directory.
+ #
+ # @param $1 SSID, $2 passphrase (empty = open network)
+ #
+Func_save_sta() {
+    mkdir -p "$WIFI_DIR"
+    {
+        echo "SSID=\"$1\""
+        echo "PSK=\"$2\""
+    } > "$STA_CONF"
+    chmod 600 "$STA_CONF"
+    return 0
+}
+# End-func Func_save_sta
+
+##
+ # @brief Generate wpa_supplicant.conf for the given credentials.
+ #
+ # @param $1 SSID, $2 passphrase (empty = open)
+ #
+Func_gen_wpa_conf() {
+    mkdir -p "$WPA_CTRL_DIR"
+    {
+        echo "ctrl_interface=$WPA_CTRL_DIR"
+        echo "update_config=0"
+        echo "country=CN"
+        echo "network={"
+        echo "    ssid=\"$1\""
+        if [ -n "$2" ]; then
+            echo "    psk=\"$2\""
+            echo "    key_mgmt=WPA-PSK"
+        else
+            echo "    key_mgmt=NONE"
+        fi
+        echo "}"
+    } > "$WPA_CONF"
+    return 0
+}
+# End-func Func_gen_wpa_conf
+
+##
+ # @brief Start wpa_supplicant and wait for association.
+ #
+ # @return 0 associated, 1 timeout
+ #
+Func_wpa_start() {
+    killall wpa_supplicant 2>/dev/null
+    sleep 1
+    ifconfig "$WIFI_IF" up
+    wpa_supplicant -B -i "$WIFI_IF" -c "$WPA_CONF" >/dev/null 2>&1
+    local i=0 state=""
+    while [ "$i" -lt "$WPA_TIMEOUT" ]; do
+        state="$(wpa_cli -i "$WIFI_IF" status 2>/dev/null | sed -n 's/^wpa_state=//p')"
+        case "$state" in
+            COMPLETED) Func_log "associated (wpa_state=COMPLETED)"; return 0 ;;
+        esac
+        i=$((i + 1))
+        sleep 1
+    done
+    Func_log "ERROR: association failed after ${WPA_TIMEOUT}s (state=${state:-none})"
+    return 1
+}
+# End-func Func_wpa_start
+
+##
+ # @brief Obtain an address with udhcpc.
+ #
+ # @return 0 when an address is configured
+ #
+Func_dhcp_client() {
+    local i=0 ip=""
+    udhcpc -i "$WIFI_IF" -p "$UDHCPC_PID" -b >/dev/null 2>&1
+    while [ "$i" -lt "$DHCP_ROUNDS" ]; do
+        ip="$(ifconfig "$WIFI_IF" 2>/dev/null | sed -n 's/.*inet addr:\([0-9.][0-9.]*\).*/\1/p')"
+        [ -n "$ip" ] && { Func_log "address: $ip"; return 0; }
+        i=$((i + 1))
+        sleep 1
+    done
+    Func_log "WARN: no DHCP lease (link is up, check the AP side)"
+    return 1
+}
+# End-func Func_dhcp_client
+
+##
+ # @brief Write the AP profile.
+ #
+Func_save_ap() {
+    mkdir -p "$WIFI_DIR"
+    {
+        echo "SSID=\"$1\""
+        echo "PSK=\"$2\""
+    } > "$AP_CONF"
+    chmod 600 "$AP_CONF"
+    return 0
+}
+# End-func Func_save_ap
+
+##
+ # @brief Start AP mode: hostapd + udhcpd on the given credentials.
+ #
+ # @param $1 SSID, $2 passphrase (empty or WIFI_AP_OPEN=1 = open AP)
+ #
+Func_ap_start() {
+    local ssid="$1" pwd="$2"
+    mkdir -p "$WIFI_DIR"
+    {
+        echo "interface=$WIFI_IF"
+        echo "driver=nl80211"
+        echo "ssid=$ssid"
+        echo "hw_mode=g"
+        echo "channel=$AP_CHANNEL"
+        echo "country_code=CN"
+        echo "ieee80211n=1"
+        echo "wmm_enabled=1"
+        if [ -n "$pwd" ] && [ "${WIFI_AP_OPEN:-0}" != "1" ]; then
+            echo "wpa=2"
+            echo "wpa_passphrase=$pwd"
+            echo "wpa_key_mgmt=WPA-PSK"
+            echo "rsn_pairwise=CCMP"
+        fi
+    } > "$HOSTAPD_CONF"
+
+    {
+        echo "start		$AP_LEASE_START"
+        echo "end		$AP_LEASE_END"
+        echo "interface	$WIFI_IF"
+        echo "opt	router	$AP_IP"
+        echo "opt	dns	$AP_IP"
+        echo "option	subnet	$AP_NETMASK"
+        echo "max_leases	30"
+        echo "lease_file	/tmp/udhcpd.leases"
+    } > "$UDHCPD_AP_CONF"
+
+    ifconfig "$WIFI_IF" "$AP_IP" netmask "$AP_NETMASK" up
+    hostapd -B "$HOSTAPD_CONF" >/dev/null 2>&1 || {
+        Func_log "ERROR: hostapd failed to start (check $HOSTAPD_CONF)"
+        return 1
+    }
+    udhcpd "$UDHCPD_AP_CONF" 2>/dev/null
+    Func_log "AP '$ssid' up on $WIFI_IF ($AP_IP/24), DHCP $AP_LEASE_START-$AP_LEASE_END"
+    return 0
+}
+# End-func Func_ap_start
+
+##
+ # @brief Scan for access points.
+ #
+Func_scan() {
+    ifconfig "$WIFI_IF" up 2>/dev/null
+    if ! pgrep wpa_supplicant >/dev/null 2>&1; then
+        wpa_supplicant -B -i "$WIFI_IF" -c "$WPA_CONF" >/dev/null 2>&1
+        [ -f "$WPA_CONF" ] || {
+            mkdir -p "$WPA_CTRL_DIR"
+            printf 'ctrl_interface=%s\nupdate_config=0\n' "$WPA_CTRL_DIR" > "$WPA_CONF"
+            wpa_supplicant -B -i "$WIFI_IF" -c "$WPA_CONF" >/dev/null 2>&1
+        }
+    fi
+    wpa_cli -i "$WIFI_IF" scan >/dev/null 2>&1
+    sleep 3
+    wpa_cli -i "$WIFI_IF" scan_results 2>/dev/null
+}
+# End-func Func_scan
+
+##
+ # @brief Read KEY="VALUE" pairs out of a profile file.
+ #
+ # @param $1 file, $2 key
+ #
+Func_conf_get() {
+    [ -f "$1" ] || return 1
+    sed -n "s/^$2=\"\{0,1\}\([^\"]*\)\"\{0,1\}$/\1/p" "$1" | head -1
+}
+# End-func Func_conf_get
+
+###############################################################################
+# Part II: API_* - business flows (0 ok, 1 failure, 2 degraded)
+###############################################################################
+
+##
+ # @brief Bring WiFi up using the stored station profile.
+ #
+API_start() {
+    Func_insmod || return 1
+    Func_set_mac
+    if [ -f "$STA_CONF" ]; then
+        API_connect "$(Func_conf_get "$STA_CONF" SSID)" "$(Func_conf_get "$STA_CONF" PSK)"
+        return $?
+    fi
+    Func_log "no station profile yet; use: S60WiFi connect <ssid> <pwd>"
+    return 2
+}
+# End-func API_start
+
+##
+ # @brief Join a network and get an address.
+ #
+API_connect() {
+    local ssid="$1" pwd="$2"
+    [ -n "$ssid" ] || { Func_log "ERROR: connect needs an SSID"; return 1; }
+    Func_stop_services
+    Func_gen_wpa_conf "$ssid" "$pwd"
+    Func_wpa_start || return 1
+    Func_save_sta "$ssid" "$pwd"
+    Func_dhcp_client
+    return 0
+}
+# End-func API_connect
+
+##
+ # @brief Reconnect with the stored station profile.
+ #
+API_reconnect() {
+    [ -f "$STA_CONF" ] || { Func_log "ERROR: no stored station profile"; return 1; }
+    API_connect "$(Func_conf_get "$STA_CONF" SSID)" "$(Func_conf_get "$STA_CONF" PSK)"
+}
+# End-func API_reconnect
+
+##
+ # @brief Start AP mode (skips the join flow entirely).
+ #
+API_ap() {
+    local ssid="$1" pwd="$2"
+    [ -n "$ssid" ] || { Func_log "ERROR: ap needs an SSID"; return 1; }
+    Func_insmod || return 1
+    Func_set_mac
+    Func_stop_services
+    Func_ap_start "$ssid" "$pwd" || return 1
+    Func_save_ap "$ssid" "$pwd"
+    return 0
+}
+# End-func API_ap
+
+##
+ # @brief Stop every WiFi service (module stays loaded).
+ #
+API_stop() {
+    Func_stop_services
+    ifconfig "$WIFI_IF" down 2>/dev/null
+    Func_log "WiFi services stopped"
+    return 0
+}
+# End-func API_stop
+
+##
+ # @brief Print the current state.
+ #
+API_status() {
+    echo "--- interface ---"
+    ifconfig "$WIFI_IF" 2>/dev/null || echo "$WIFI_IF not present"
+    echo "--- module ---"
+    lsmod 2>/dev/null | grep -E "cywdhd|bcmdhd" || echo "driver not loaded"
+    echo "--- station ---"
+    wpa_cli -i "$WIFI_IF" status 2>/dev/null | grep -E "wpa_state|ssid|ip_address|bssid" \
+        || echo "wpa_supplicant not running"
+    echo "--- processes ---"
+    ps 2>/dev/null | grep -E "wpa_supplicant|hostapd|udhcpc|udhcpd" | grep -v grep \
+        || echo "no WiFi processes"
+    echo "--- profiles ---"
+    [ -f "$STA_CONF" ] && echo "sta: $(cat "$STA_CONF" | tr '\n' ' ')"
+    [ -f "$AP_CONF" ] && echo "ap : $(cat "$AP_CONF" | tr '\n' ' ')"
+    return 0
+}
+# End-func API_status
+
+###############################################################################
+# Part III: main
+###############################################################################
+
+case "$ACTION" in
+    start)      API_start; rc=$? ;;
+    stop)       API_stop; rc=$? ;;
+    restart)    API_stop; API_start; rc=$? ;;
+    status)     API_status; rc=$? ;;
+    scan)       Func_scan; rc=0 ;;
+    connect)    API_connect "$ARG_SSID" "$ARG_PWD"; rc=$? ;;
+    reconnect)  API_reconnect; rc=$? ;;
+    ap)         API_ap "$ARG_SSID" "$ARG_PWD"; rc=$? ;;
+    insmod)     Func_insmod; rc=$? ;;
+    rmmod)      Func_rmmod; rc=$? ;;
+    *)
+        cat <<EOF
+Usage: $0 {start|stop|restart|status|scan|
+           connect <ssid> [pwd]|reconnect|ap <ssid> [pwd]|insmod|rmmod}
+
+  start      bring up WiFi with the stored profile (used at boot)
+  connect    join <ssid> with [pwd] and get an address (profile is stored)
+  reconnect  rejoin the stored network
+  ap         start an access point <ssid> [pwd] (hostapd + udhcpd)
+  scan       list visible access points
+  status     interface / module / supplicant / process state
+  stop       stop all WiFi services (module stays loaded)
+  insmod     load the driver if it is not loaded
+  rmmod      unload the driver
+
+Profiles live in $WIFI_DIR (sta.conf / ap.conf).
+Environment: WIFI_IF WIFI_KO WIFI_DIR AP_IP AP_NETMASK AP_CHANNEL
+             WPA_TIMEOUT DHCP_ROUNDS WIFI_AP_OPEN
+EOF
+        rc=1
+        ;;
+esac
+
+exit "$rc"
