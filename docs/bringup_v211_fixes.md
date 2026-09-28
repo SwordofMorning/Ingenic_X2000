@@ -81,3 +81,52 @@ cat /proc/bus/input/devices | grep -i -A3 gt9xx
 
 预期：WiFi 模组上电并 probe（不再反复 power on/off）、无 kernel Oops、触摸坐标事件正常、
 背光可控、主机看到 MTP 设备与 RNDIS 网卡。
+
+## 7. 第二轮修正（首轮新镜像上板后）
+
+| # | 现象 | 根因 | 修法 |
+|---|------|------|------|
+| 6 | 开机时 `S70USB` 报 `can't create gadget 目录下的 idVendor: nonexistent directory`，主机识别不到 USB 设备 | 脚本缺陷：写描述符之前没有创建 gadget 目录 `/sys/kernel/config/usb_gadget/<name>`，于是 VID/PID 等都没写进去（设备以 0 VID/PID 枚举） | `gadget_build()` 开头 `mkdir -p "$g"`；同时把设备类设为 **0xEF/0x02/0x01（IAD 复合设备）**，否则 Windows 会把整个设备绑到 PTP 驱动、RNDIS 网卡永远不出现 |
+| 7 | `sshd` / `ssh-keygen` 启动失败：`libssp.so.0: cannot open shared object file` | buildroot 的 `TOOLCHAIN_EXTERNAL_LIBS += libssp.so.*` 在本工具链上匹配不到（该工具链只对部分 ABI 提供共享 libssp），目标 rootfs 因此缺库；而 openssh 链接时用的是 host sysroot 里那份 | 新增 `fs_overlay/common/extra-libs.txt` 与 `build.sh copy_extra_libs()`：打包 rootfs 之前把列出的库从工具链 sysroot 拷入镜像 `/lib`（本次 3 个 libssp 文件） |
+| 8 | 开机自动跑产测交互测试（`test pwm_led ... ok`、`please press the key which you want to test`），且 `rm` 删不掉 | 厂商产测工具由 `APP_test_shell` 提供，安装 `S99factory_test_shell` 与 `/etc/factory_test/`；根文件系统是只读 squashfs，运行期无法删除 | 关闭 `APP_test_shell`，并在 `fs_overlay/common/prune.txt` 删除这两个路径（buildroot 不会自动卸载） |
+
+> 运行期需要改文件时请用可写分区 `/usr/data`（ubi），其余内容靠改配置重新出镜像。
+
+## 8. 已知但未处理的小问题
+
+- 开机打印 `MAC d0:31:10:0x:c6:0x` 与 `ifconfig: invalid hw-addr`：厂商脚本
+  `wireless/bcm/bin/S43wifi_bcm_init_config` 从 flash 读 MAC 后拼出的字符串含 `0x` 字面量
+  （说明 MAC 分区里没有有效值），`ifconfig ... hw ether` 因此失败。不影响 WiFi 使用（驱动使用
+  自己的 MAC）。要消除可写入有效 MAC，或让脚本在 MAC 非法时跳过。
+
+## 9. USB 口与主机侧准备
+
+- 板上有两个 USB 口：**Type-C 只供电**，**Micro-USB（丝印 Download）是 OTG/UDC 口**
+  （内核里是 `13500000.otg`，就是烧录用的那个口）。MTP/RNDIS gadget 只在 Micro-USB 上生效，
+  主机的 USB 数据线必须插这个口。
+- Windows 侧：插好后在设备管理器里应出现"便携设备/MTP"与"Remote NDIS Compatible Device"
+  （或"未知设备"）。若 RNDIS 没自动装驱动，手动指向系统自带的 Remote NDIS 驱动后，
+  用 `ipconfig` 应看到新网卡；若没有 DHCP（未放 `/etc/udhcpd_usb.conf`），把主机该网卡设为
+  `192.168.8.100/24`，板端是 `192.168.8.168`。
+- Linux 主机：`dmesg` 会看到 rndis_host/cdc_ether 绑定，`ifconfig` 出现新网卡，直接配同网段即可。
+
+## 10. WiFi 测试步骤（本镜像已含驱动/固件/工具）
+
+```sh
+ifconfig wlan0 up                      # 驱动加载后 wlan0 已存在
+# 建一份 wpa_supplicant 配置（/usr/data 是可写分区）
+cat > /usr/data/wpa_supplicant.conf <<EOF
+ctrl_interface=/var/run/wpa_supplicant
+network={
+    ssid="你的AP"
+    psk="密码"
+}
+EOF
+wifi_up.sh                             # 或: wpa_supplicant -B -i wlan0 -c /usr/data/wpa_supplicant.conf
+udhcpc -i wlan0                        # 取 IP
+wpa_cli -i wlan0 status                # 看 wpa_state=COMPLETED
+ping -I wlan0 192.168.50.1             # 连通性
+```
+
+补充：AP 模式（hostapd）**当前镜像没有编进去**（buildroot 里 `BR2_PACKAGE_HOSTAPD` 未选），
+需要 AP 测试的话我再把它加进 buildroot 配置；`iw`/`iwlist` 也未选，扫描请用 `wpa_cli scan`。

@@ -17,6 +17,8 @@
 #     i2c-gpio disabled: unused on this product
 #   * lib2d KEPT: libmedia_ffmpeg.so links -l2d, so disabling it breaks the
 #     media stack (found by a build failure, not by inspection)
+#   * the vendor factory-test tool (APP_test_shell) is disabled: it runs an
+#     interactive device test at boot and does not belong in a product image
 #   * vendor MTP gadget script (APP_usb_mtp_server) disabled: our own script
 #     "fs_overlay/common/etc/init.d/S70USB" sets up ONE composite gadget
 #     with MTP + RNDIS; umtprd itself still comes from APP_usb_mtp
@@ -742,7 +744,7 @@ APP_libisp_demo_isp_h264_encode_cmd=y
 # APP_libisp_demo_isp_x2580_cmd is not set
 # APP_libisp_demo_isp_h264_encode_x2580_cmd is not set
 # APP_libisp_demo_isp_jpeg_encode_x2580_cmd is not set
-APP_test_shell=y
+# APP_test_shell is not set
 APP_test_pwm=y
 APP_test_pwm_gpio=PC08
 APP_test_pwm_max_level=300

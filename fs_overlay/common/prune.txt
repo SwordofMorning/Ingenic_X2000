@@ -8,9 +8,15 @@
 # would also work, but costs 30-60 minutes and hides the intent).
 #
 # One path per line; lines starting with # are comments.
-# This file itself is excluded from the overlay copy by build.sh.
+# This file and extra-libs.txt are excluded from the overlay copy by build.sh.
 
 # adb is disabled in the product defconfig (APP_br_adb_server is not set): the
 # init scripts are dropped by the vendor rootfs_config logic, but the binary
 # comes from the buildroot package android-tools and has to be pruned here.
 usr/bin/adbd
+
+# vendor factory-test tool (APP_test_shell is not set): the script runs an
+# interactive device test at boot and the package installs its helper scripts
+# under the etc directory.
+etc/init.d/S99factory_test_shell
+etc/factory_test

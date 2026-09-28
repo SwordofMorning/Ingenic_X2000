@@ -1,0 +1,13 @@
+# Runtime libraries copied from the toolchain sysroot into the image.
+#
+# Why: buildroot's TOOLCHAIN_EXTERNAL_LIBS list asks for "libssp.so.*", but this
+# external toolchain ships a shared libssp only for some ABI variants, so the
+# glob matches nothing and the library is missing from the target. Programs that
+# were linked against it (openssh: sshd, ssh-keygen) then fail to start with
+# "libssp.so.0: cannot open shared object file".
+#
+# One shell glob per line; files are copied from the toolchain sysroot
+# (build/buildroot/buildroot/output/host/<tuple>/sysroot) into the image's /lib
+# during the filesystem stage, before the rootfs image is packed.
+
+libssp.so*

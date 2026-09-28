@@ -119,6 +119,19 @@ gadget_build() {
     local g="$USB_GADGET/$GADGET_NAME"
     local f
 
+    # The gadget directory must exist before any descriptor attribute is
+    # written; without this the first writes fail with "nonexistent directory"
+    # and the device enumerates with a zero VID/PID (the host then refuses to
+    # load a driver for it).
+    mkdir -p "$g"
+
+    # Composite device: class 0xEF / subclass 0x02 / protocol 0x01 (IAD). With
+    # the still-imaging class used by a pure MTP gadget, Windows binds the whole
+    # device to the PTP driver and the RNDIS interface is never brought up.
+    echo 0xEF > "$g/bDeviceClass"
+    echo 0x02 > "$g/bDeviceSubClass"
+    echo 0x01 > "$g/bDeviceProtocol"
+
     echo "$VID"   > "$g/idVendor"
     echo "$PID"   > "$g/idProduct"
     echo 0x0100   > "$g/bcdDevice"

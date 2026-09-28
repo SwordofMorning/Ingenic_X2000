@@ -453,9 +453,9 @@ fs_overlay_apply() {
     for ov in $FS_OVERLAY; do
         local d="$REPO_ROOT/$ov"
         if [ -d "$d" ]; then
-            n="$(find "$d" -type f ! -name prune.txt | wc -l)"
+            n="$(find "$d" -type f ! -name prune.txt ! -name extra-libs.txt | wc -l)"
             info "fs overlay: $ov ($n files)"
-            rsync -a --exclude='prune.txt' "$d/" "$target_dir/"
+            rsync -a --exclude='prune.txt' --exclude='extra-libs.txt' "$d/" "$target_dir/"
         else
             echo "  [warn] overlay dir missing: $d"
         fi
@@ -480,6 +480,41 @@ fs_overlay_apply() {
     done
 }
 # End-func fs_overlay_apply
+
+##
+ # @brief Copy runtime libraries that buildroot does not install.
+ #
+ # @note buildroot's external-toolchain file list asks for "libssp.so.*", but
+ #       this toolchain ships a shared libssp only for some ABI variants, so
+ #       nothing is copied and openssh binaries fail at start with
+ #       "libssp.so.0: cannot open shared object file". The list of libraries to
+ #       copy lives in fs_overlay/common/extra-libs.txt (shell globs).
+ #
+copy_extra_libs() {
+    local sysroot="$BUILD_DIR/buildroot/buildroot/output/host/mipsel-buildroot-linux-gnu/sysroot"
+    local dst="$BUILD_DIR/buildroot/buildroot/output/target"
+    local list="$REPO_ROOT/fs_overlay/common/extra-libs.txt"
+    local pat src f n=0
+
+    [ -f "$list" ] || return 0
+    [ -d "$sysroot" ] || { echo "  [warn] toolchain sysroot missing, skip extra libs"; return 0; }
+    [ -d "$dst" ] || return 0
+
+    while read -r pat; do
+        case "$pat" in ''|'#'*) continue ;; esac
+        for src in "$sysroot/lib" "$sysroot/usr/lib"; do
+            [ -d "$src" ] || continue
+            for f in "$src"/$pat; do
+                [ -e "$f" ] || continue
+                if cp -a "$f" "$dst/lib/" 2>/dev/null; then
+                    n=$((n + 1))
+                fi
+            done
+        done
+    done < "$list"
+    [ "$n" -gt 0 ] && info "extra runtime libraries installed: $n file(s)" || echo "  [info] no extra runtime libraries needed"
+}
+# End-func copy_extra_libs
 
 ##
  # @brief Pack the root filesystem image from the current target tree.
@@ -572,6 +607,7 @@ do_all() {
     info "phase 4/4: final buildroot pass, product overlay, rootfs repack"
     vendor_make_nosync buildroot
     fs_overlay_apply
+    copy_extra_libs
     repack_rootfs
 }
 # End-func do_all
@@ -585,6 +621,7 @@ do_fs() {
     local target_dir="$BUILD_DIR/buildroot/buildroot/output/target"
     [ -d "$target_dir" ] || die "buildroot target dir not found ($target_dir); run ./build.sh all first"
     fs_overlay_apply
+    copy_extra_libs
     repack_rootfs
 }
 # End-func do_fs
