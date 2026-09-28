@@ -1,0 +1,7 @@
+product=darwin_v211
+chip=x2000h
+media=nand
+kernel=5.10.186
+vendor_baseline=2024-04-07
+vendor_patch=ingenic-x2000-sdk-patch-v1.0.0
+fs_overlay=common,darwin_v211
