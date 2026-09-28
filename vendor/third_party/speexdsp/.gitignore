@@ -1,0 +1,5 @@
+.config.in
+.objs/
+config.h
+output/
+src/*.c.d

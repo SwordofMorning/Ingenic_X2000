@@ -83,6 +83,8 @@ src-$(APP_libmedia_test_overlayer) += test/main_overlay_test.c
 include tools/build_elf.mk
 
 module_name = output/scaler_test
+# fix compile error, modify by yhy on 041524
+LDFLAGS-$(APP_libmedia_test_scale) = -lmedia_ffmpeg
 src-$(APP_libmedia_test_scale) += test/main_scale_test.c
 include tools/build_elf.mk
 

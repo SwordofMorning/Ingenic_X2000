@@ -1,0 +1,1862 @@
+# Serbian translation of minicom.
+# Copyright © 2017 Free Software Foundation, Inc.
+# This file is distributed under the same license as the minicom package.
+# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2016, 2017.
+msgid ""
+msgstr ""
+"Project-Id-Version: minicom-2.6.1.90\n"
+"Report-Msgid-Bugs-To: minicom-devel@lists.alioth.debian.org\n"
+"POT-Creation-Date: 2013-12-31 16:15+0100\n"
+"PO-Revision-Date: 2017-01-02 21:51+0200\n"
+"Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
+"Language-Team: Serbian <(nothing)>\n"
+"Language: sr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Virtaal 0.7.1\n"
+
+#: src/config.c:75
+#, c-format
+msgid "minicom: cannot open macro file %s\n"
+msgstr "миником: не могу да отворим макро датотеку „%s“\n"
+
+#: src/config.c:245
+msgid " A - File name (empty=disable) :"
+msgstr " A — Назив датотеке (празно=искључује) :"
+
+#: src/config.c:246
+msgid " B - Log connects and hangups  :"
+msgstr " B — Бележи повезивања и прекиде       :"
+
+#: src/config.c:247
+msgid " C - Log file transfers        :"
+msgstr " C — Бележи преносе датотека           :"
+
+#: src/config.c:248 src/config.c:302 src/config.c:544 src/config.c:650
+#: src/config.c:1194 src/dial.c:1186
+msgid "Change which setting?"
+msgstr "Које подешавање се мења?"
+
+#: src/config.c:252
+msgid "Logging options"
+msgstr "Опције бележења"
+
+#: src/config.c:294
+msgid " A - Download directory :"
+msgstr " A — Директоријум преузимања :"
+
+#: src/config.c:295
+msgid " B - Upload directory   :"
+msgstr " B — Директоријум отпремања  :"
+
+#: src/config.c:296
+msgid " C - Script directory   :"
+msgstr " C — Директоријум скрипте    :"
+
+#: src/config.c:297
+msgid " D - Script program     :"
+msgstr " D — Програм скрипте         :"
+
+#: src/config.c:298
+msgid " E - Kermit program     :"
+msgstr " E — Кермит програм          :"
+
+#: src/config.c:300
+msgid " F - Logging options"
+msgstr " F — Опције бележења"
+
+#: src/config.c:355 src/rwconf.c:114 src/rwconf.c:147 src/rwconf.c:148
+msgid "Yes"
+msgstr "Да"
+
+#: src/config.c:355
+msgid "No "
+msgstr "Не"
+
+#: src/config.c:430
+msgid "M  Zmodem download string activates..."
+msgstr "M  Активира ниску преузимања З-модема......."
+
+#: src/config.c:431
+msgid "N  Use filename selection window......"
+msgstr "N  Користи прозор избора назива датотеке...."
+
+#: src/config.c:432
+msgid "O  Prompt for download directory......"
+msgstr "O  Поставља упит директоријума преузимања..."
+
+#: src/config.c:433
+msgid "Change which setting? (SPACE to delete)"
+msgstr "Које подешавање се мења? (РАЗМАК за брисање)"
+
+#: src/config.c:436
+msgid "     Name             Program"
+msgstr "     Назив             Програм"
+
+#. TRANSLATORS:
+#. * Name: Protocol sends filename internally
+#. * U/D: Command is used for upload or download
+#. * FullScr: Command runs fullscreen
+#. * IO-Red: Redirect output of commands to logfile
+#. * Multi: Protocol can transfer multiple files at once
+#: src/config.c:445
+msgid "Name U/D FullScr IO-Red. Multi"
+msgstr "Назив С/П Цео_екран УИ-Преусм. Више"
+
+#: src/config.c:476
+msgid "Delete which protocol? "
+msgstr "Који протокол се брише? "
+
+#: src/config.c:537
+msgid " A -    Serial Device      :"
+msgstr " A —    Серијски уређај         :"
+
+#: src/config.c:538
+msgid " B - Lockfile Location     :"
+msgstr " B — Место датотеке закључавања :"
+
+#: src/config.c:539
+msgid " C -   Callin Program      :"
+msgstr " C —   Програм позивања         :"
+
+#: src/config.c:540
+msgid " D -  Callout Program      :"
+msgstr " D —  Програм одзивања          :"
+
+#: src/config.c:541
+msgid " E -    Bps/Par/Bits       :"
+msgstr " E —    Б/с/Пар/Битови          :"
+
+#: src/config.c:542
+msgid " F - Hardware Flow Control :"
+msgstr " F — Контрола тока хардвера     :"
+
+#: src/config.c:543
+msgid " G - Software Flow Control :"
+msgstr " G — Контрола тока софтвера     :"
+
+#: src/config.c:620
+msgid "DTE speed "
+msgstr "ДТЕ брзина "
+
+#: src/config.c:622
+msgid "line speed"
+msgstr "брзина реда"
+
+#: src/config.c:630
+msgid " A - Init string ........."
+msgstr " A — Ниска покретања ............"
+
+#: src/config.c:631
+msgid " B - Reset string ........"
+msgstr " B — Ниска поништавња ..........."
+
+#: src/config.c:632
+msgid " C - Dialing prefix #1...."
+msgstr " C — Префикс бирања #1..........."
+
+#: src/config.c:633
+msgid " D - Dialing suffix #1...."
+msgstr " D — Суфикс бирања #1............"
+
+#: src/config.c:634
+msgid " E - Dialing prefix #2...."
+msgstr " E — Префикс бирања #2..........."
+
+#: src/config.c:635
+msgid " F - Dialing suffix #2...."
+msgstr " F — Суфикс бирања #2............"
+
+#: src/config.c:636
+msgid " G - Dialing prefix #3...."
+msgstr " G — Префикс бирања #3..........."
+
+#: src/config.c:637
+msgid " H - Dialing suffix #3...."
+msgstr " H — Суфикс бирања #3............"
+
+#: src/config.c:638
+msgid " I - Connect string ......"
+msgstr " I — Ниска повезивања ..........."
+
+#: src/config.c:639
+msgid " J - No connect strings .."
+msgstr " J — Без ниски повезивања ......."
+
+#: src/config.c:640
+msgid " K - Hang-up string ......"
+msgstr " K — Ниска прекида .............."
+
+#: src/config.c:641
+msgid " L - Dial cancel string .."
+msgstr " L — Ниска брисања бирања ......."
+
+#: src/config.c:642
+msgid " M - Dial time ..........."
+msgstr " M — Време бирања ..............."
+
+#: src/config.c:643
+msgid " N - Delay before redial ."
+msgstr " N — Застој пре поновног бирања ."
+
+#: src/config.c:644
+msgid " O - Number of tries ....."
+msgstr " O — Број покушаја .............."
+
+#: src/config.c:645
+msgid " P - DTR drop time (0=no)."
+msgstr " P — Време ДТР одбацивања (0=no)."
+
+#: src/config.c:646
+msgid " Q - Auto bps detect ....."
+msgstr " Q — Самооткривање б/с .........."
+
+#: src/config.c:647
+msgid " R - Modem has DCD line .."
+msgstr " R — Модем има ДЦД ред .........."
+
+#: src/config.c:648
+msgid " S - Status line shows ..."
+msgstr " S — Приказује ред стања ........"
+
+#: src/config.c:649
+msgid " T - Multi-line untag ...."
+msgstr " T — Брише вишередну ознаку ....."
+
+#: src/config.c:661
+msgid "Modem and dialing parameter setup"
+msgstr "Подешавање параметара модема и бирања"
+
+#: src/config.c:694
+msgid "    Return or Esc to exit. Edit A+B to get defaults."
+msgstr "    „Унеси“ или „Есц“ да изађете . Уредите „A+B“ да добијете основно."
+
+#: src/config.c:832
+msgid " A - Command key is         :"
+msgstr " A — Тастер наредбе је         :"
+
+#: src/config.c:833
+msgid " B - Backspace key sends    :"
+msgstr " B — Тастер повратнице шаље    :"
+
+#: src/config.c:834
+msgid " C - Status line is         :"
+msgstr " C — Ред стања је              :"
+
+#: src/config.c:835
+msgid " D - Alarm sound            :"
+msgstr " D — Звук аларма               :"
+
+#: src/config.c:836
+msgid " E - Foreground Color (menu):"
+msgstr " E — Боја исписа (изборник)    :"
+
+#: src/config.c:837
+msgid " F - Background Color (menu):"
+msgstr " F — Боја позадине (изборник)  :"
+
+#: src/config.c:838
+msgid " G - Foreground Color (term):"
+msgstr " G — Боја исписа (терминал)    :"
+
+#: src/config.c:839
+msgid " H - Background Color (term):"
+msgstr " H — Боја позадине (терминал)  :"
+
+#: src/config.c:840
+msgid " I - Foreground Color (stat):"
+msgstr " I — Боја исписа (стање)       :"
+
+#: src/config.c:841
+msgid " J - Background Color (stat):"
+msgstr " J — Боја позадине (стање)     :"
+
+#: src/config.c:842
+msgid " K - History Buffer Size    :"
+msgstr " K — Величина бафера историјата:"
+
+#: src/config.c:843
+msgid " L - Macros file            :"
+msgstr " L — Датотеке макроа           :"
+
+#: src/config.c:844
+msgid " N - Macros enabled         :"
+msgstr " N — Укључен макро             :"
+
+#: src/config.c:845
+msgid " O - Character conversion   :"
+msgstr " O — Претварање знакова        :"
+
+#: src/config.c:846
+msgid " P - Add linefeed           :"
+msgstr " P — Додаје ток реда           :"
+
+#: src/config.c:847
+msgid " Q - Local echo             :"
+msgstr " Q — Локални одјек             :"
+
+#: src/config.c:848
+msgid " R - Line Wrap              :"
+msgstr " R — Прелом реда               :"
+
+#: src/config.c:849
+msgid " S - Hex Display            :"
+msgstr " S — Хексадецимални приказ     :"
+
+#: src/config.c:850
+msgid " T - Add carriage return    :"
+msgstr " T — Додаје крајник реда       :"
+
+#: src/config.c:851 src/config.c:1604
+msgid "Change which setting?  (Esc to exit)"
+msgstr "Које подешавање се мења? (Есц за излазак)"
+
+#: src/config.c:855 src/config.c:1376
+msgid "Screen and keyboard"
+msgstr "Екран и тастатура"
+
+#: src/config.c:874
+msgid " M - Edit Macros\n"
+msgstr " M — Уређује макрое\n"
+
+#: src/config.c:902
+msgid "You can't change colors in black and white mode"
+msgstr "Не можете да измените боје у режиму црног и белог"
+
+#: src/config.c:914
+msgid "Menu foreground == background color, change!"
+msgstr "Испис изборника == боји позадине, промените!"
+
+#: src/config.c:923
+msgid "Terminal foreground == background color, change!"
+msgstr "Испис терминала == боји позадине, промените!"
+
+#: src/config.c:935
+msgid "History Buffer Size"
+msgstr "Величина бафера историјата"
+
+#: src/config.c:936
+#, fuzzy
+msgid ""
+"\n"
+"                You have changed the history buffer size.\n"
+"                You will need to save the configuration file and\n"
+"                restart minicom for the change to take effect.\n"
+"\n"
+"                Hit a key to Continue... "
+msgstr ""
+"\n"
+"                Изменили сте величину бафера историјата.\n"
+"                Треба да сачувате датотеку подешавања и да поново\n"
+"                покренете миником да би измена ступила у дејство.\n"
+"\n"
+"                Притисните неки тастер да наставите... "
+
+#: src/config.c:953
+msgid "Program new command key"
+msgstr "Нови тастер наредбе програма"
+
+#: src/config.c:955
+msgid ""
+"\n"
+" Press the new command key. If you want to use\n"
+" the META or ALT key enter:\n"
+"\n"
+"  o SPACE if your meta key sets the 8th bit high\n"
+"  o ESC   if your meta key sends the ESCAPE prefix (standard)\n"
+"\n"
+"\n"
+" Press new command key: "
+msgstr ""
+"\n"
+" Притисните нови тастер наредбе. Ако желите да користите\n"
+" МЕТА или АЛТ тастер унесите:\n"
+"\n"
+"  o РАЗМАК ако ваш мета тастер поставља 8° висину бита\n"
+"  o ЕСЦ    ако ваш мета тастер шаље ЕСКЕЈП префикс (стандардно)\n"
+"\n"
+"\n"
+" Притисните нови тастер наредбе: "
+
+#: src/config.c:964
+msgid "Meta-8th bit "
+msgstr "Мета-8° бит "
+
+#: src/config.c:966
+msgid "Escape (Meta)"
+msgstr "Ескејп (Мета)"
+
+#: src/config.c:999 src/config.c:1247
+msgid "disabled"
+msgstr "искључено"
+
+#: src/config.c:1002 src/config.c:1250 src/rwconf.c:146
+msgid "enabled"
+msgstr "укључено"
+
+#: src/config.c:1117
+msgid "ERROR: you do not have permission to create a file there!"
+msgstr "ГРЕШКА: немате овлашћења да ту направите датотеку!"
+
+#: src/config.c:1123
+#, c-format
+msgid "ERROR: cannot open macro file %s"
+msgstr "ГРЕШКА: не могу да отворим макро датотеку „%s“"
+
+#: src/config.c:1129
+msgid "Reading macros"
+msgstr "Читам макрое"
+
+#: src/config.c:1188
+msgid " A -      Terminal emulation :"
+msgstr " A —            Емулација терминала :"
+
+#: src/config.c:1189
+msgid " B -     Backspace key sends :"
+msgstr " B —         Тастер повратнице шаље :"
+
+#: src/config.c:1190
+msgid " C -          Status line is :"
+msgstr " C —                   Ред стања је :"
+
+#: src/config.c:1191
+msgid " D -   Newline tx delay (ms) :"
+msgstr " D —    „tx“ застој новог реда (ms) :"
+
+#: src/config.c:1192
+msgid " E -          ENQ answerback :"
+msgstr " E —          ЕНКу повратни одговор :"
+
+#: src/config.c:1193
+msgid " F - Character tx delay (ms) :"
+msgstr " F —         „tx“ застој знака (ms) :"
+
+#: src/config.c:1197
+msgid "Terminal settings"
+msgstr "Подешавања терминала"
+
+#: src/config.c:1301
+#, c-format
+msgid "Cannot write to %s"
+msgstr "Не могу да пишем у „%s“"
+
+#: src/config.c:1308
+msgid "Configuration saved"
+msgstr "Подешавање је сачувано"
+
+#: src/config.c:1323
+msgid "ERROR: Macros have changed but no filename is set!"
+msgstr "ГРЕШКА: Макрои су измењени али није подешен назив датотеке!"
+
+#: src/config.c:1327
+#, c-format
+msgid "Cannot write macros file %s"
+msgstr "Не могу да упишем датотеку макроа „%s“"
+
+#: src/config.c:1333
+msgid "Macros saved"
+msgstr "Макрои су сачувани"
+
+#: src/config.c:1350
+msgid "Give name to save this configuration?"
+msgstr "Дајте назив да сачувам ово подешавање?"
+
+#: src/config.c:1372
+msgid "Filenames and paths"
+msgstr "Називи датотека и путање"
+
+#: src/config.c:1373
+msgid "File transfer protocols"
+msgstr "Протоколи преноса датотеке"
+
+#: src/config.c:1374
+msgid "Serial port setup"
+msgstr "Подешавање серијског порта"
+
+#: src/config.c:1375
+msgid "Modem and dialing"
+msgstr "Модем и бирање"
+
+#: src/config.c:1378
+msgid "Save setup as.."
+msgstr "Сачувај подешавање као.."
+
+#: src/config.c:1379
+msgid "Exit"
+msgstr "Изађи"
+
+#: src/config.c:1380
+msgid "Exit from Minicom"
+msgstr "Изађите из Миникома"
+
+#: src/config.c:1392
+#, c-format
+msgid "Save setup as %s"
+msgstr "Сачувај подешавање као „%s“"
+
+#: src/config.c:1398
+msgid "configuration"
+msgstr "подешавање"
+
+#: src/config.c:1407
+msgid "BLACK"
+msgstr "ЦРНА"
+
+#: src/config.c:1407
+msgid "RED"
+msgstr "ЦРВЕНА"
+
+#: src/config.c:1407
+msgid "GREEN"
+msgstr "ЗЕЛЕНА"
+
+#: src/config.c:1407
+msgid "YELLOW"
+msgstr "ЖУТА"
+
+#: src/config.c:1408
+msgid "BLUE"
+msgstr "ПЛАВА"
+
+#: src/config.c:1408
+msgid "MAGENTA"
+msgstr "РУЖИЧАСТА"
+
+#: src/config.c:1408
+msgid "CYAN"
+msgstr "ПЛАВИЧАСТА"
+
+#: src/config.c:1408
+msgid "WHITE"
+msgstr "БЕЛА"
+
+#: src/config.c:1438
+msgid "Comm Parameters"
+msgstr "Параметри наредбе"
+
+#: src/config.c:1443
+msgid " Speed            Parity      Data\n"
+msgstr " Брзина           Парност      Подаци\n"
+
+#: src/config.c:1444
+msgid " A: <next>        L: None     S: 5\n"
+msgstr " A: <след>        L: Ништа       S: 5\n"
+
+#: src/config.c:1445
+msgid " B: <prev>        M: Even     T: 6\n"
+msgstr " B: <претх>       M: Парно       T: 6\n"
+
+#: src/config.c:1446
+msgid " C:   9600        N: Odd      U: 7\n"
+msgstr " C:   9600        N: Непарно     U: 7\n"
+
+#: src/config.c:1447
+msgid " D:  38400        O: Mark     V: 8\n"
+msgstr " D:  38400        O: Обележје    V: 8\n"
+
+#: src/config.c:1448
+msgid " E: 115200        P: Space\n"
+msgstr " E: 115200        P: Размак\n"
+
+#: src/config.c:1450
+msgid " Stopbits\n"
+msgstr " Зауставни битови\n"
+
+#: src/config.c:1451
+msgid " W: 1             Q: 8-N-1\n"
+msgstr " W: 1             Q: 8-N-1\n"
+
+#: src/config.c:1452
+msgid " X: 2             R: 7-E-1\n"
+msgstr " X: 2             R: 7-E-1\n"
+
+#: src/config.c:1454
+msgid " K: Current\n"
+msgstr " K: Текуће\n"
+
+#: src/config.c:1457
+msgid ""
+"\n"
+" Choice, or <Enter> to exit? "
+msgstr ""
+"\n"
+" Избор, или <Унеси> за излазак? "
+
+#: src/config.c:1465
+#, c-format
+msgid "Current: %5s %s%s%s  "
+msgstr "Текуће: %5s %s%s%s  "
+
+#: src/config.c:1607
+#, fuzzy
+msgid "F1 to F10 Macros"
+msgstr "Макрои од Ф1 до Ф10"
+
+#: src/config.c:1626
+msgid " (LEGEND: ^M = C-M, ^L = C-L, ^G = C-G, ^R = C-R, ^~ = pause 1 second,"
+msgstr ""
+" (ЛЕГЕНДА: ^M = C-M, ^L = C-L, ^G = C-G, ^R = C-R, ^~ = застаје 1 секунду,"
+
+#: src/config.c:1628
+msgid "  \\u = username, \\p = password, \\\\ = \\, \\e = toggle echo, "
+msgstr "  \\u = корисник, \\p = лозинка, \\\\ = \\, \\e = искључује ехо, "
+
+#: src/config.c:1630
+msgid ""
+"  \\l = toggle LF, \\bX1..Xn<sp> = change baud rate. Example: \"\\beq \""
+msgstr "  \\l = окида ЛФ, \\bX1..Xn<sp> = мења проток бода. Пример: „\\beq “"
+
+#: src/config.c:1632
+msgid ""
+"  = 115200 8N1. (See the \"Comm Parameters\" menu for valid values of X.))"
+msgstr ""
+"  = 115200 8N1. (Видите изборник „Параметри наредбе“ за исправним "
+"вредностима за Икс.))"
+
+#: src/config.c:1647
+msgid "CHANGED"
+msgstr "ИЗМЕЊЕНО"
+
+#: src/config.c:1734
+msgid "Character conversion"
+msgstr "Претварање знакова"
+
+#: src/config.c:1739
+msgid " char    in out    char    in out    char    in out    char    in out\n"
+msgstr " знак    у ван    знак    у ван    знак    у ван    знак    у ван\n"
+
+#: src/config.c:1761
+msgid ""
+"\n"
+" A - load table\tB - save table"
+msgstr ""
+"\n"
+" A — учитава табелу\tB — чува табелу"
+
+#: src/config.c:1763
+#, c-format
+msgid "\tfile:%s"
+msgstr "\tдатотека:%s"
+
+#: src/config.c:1764
+msgid ""
+"\n"
+" C - edit char\tD - next screen\tE - prev screen\n"
+msgstr ""
+"\n"
+" C — уређује знак\tD — следећи екран\tE — претходни екран\n"
+
+#: src/config.c:1765
+#, c-format
+msgid " F - convert capture: %s\n"
+msgstr " F — претвара снимање: %s\n"
+
+#: src/config.c:1780
+#, c-format
+msgid "Load file: %s"
+msgstr "Учитавам датотеку: %s"
+
+#: src/config.c:1792
+#, c-format
+msgid "Save as file: %s"
+msgstr "Чувам као датотеку: %s"
+
+#: src/config.c:1803
+msgid "Character to be edited: "
+msgstr "Знак за уређивање: "
+
+#: src/config.c:1811 src/config.c:1823 src/config.c:1835
+msgid "Input character ascii value 0-255"
+msgstr "Уноси аскри вредност знака 0-255"
+
+#: src/config.c:1817
+#, c-format
+msgid "Change input to: %s"
+msgstr "Мењам улаз на: %s"
+
+#: src/config.c:1829
+#, c-format
+msgid "Change output to: %s"
+msgstr "Мењам излаз на: %s"
+
+#: src/config.c:1867
+#, c-format
+msgid "Cannot open conversion table %s"
+msgstr "Не могу да отворим табелу претварања „%s“"
+
+#: src/config.c:1873
+#, fuzzy, c-format
+msgid "Cannot read conversion table %s"
+msgstr "Не могу да запишем табелу претварања „%s“"
+
+#: src/config.c:1885
+#, c-format
+msgid "Cannot write conversion table %s"
+msgstr "Не могу да запишем табелу претварања „%s“"
+
+#: src/dial.c:250
+msgid "Initializing Modem"
+msgstr "Покрећем модем"
+
+#: src/dial.c:266
+msgid "Resetting Modem"
+msgstr "Поново подешавам модем"
+
+#: src/dial.c:280
+msgid "Hanging up"
+msgstr "Прекидам"
+
+#: src/dial.c:284
+#, c-format
+msgid "Hangup (%ld:%02ld:%02ld)"
+msgstr "Прекид (%ld:%02ld:%02ld)"
+
+#: src/dial.c:316
+msgid "Sending BREAK"
+msgstr "Шаљем ПРЕКИД"
+
+#: src/dial.c:382
+#, c-format
+msgid "    No connection: %s.      \n"
+msgstr "    Нема везе: %s.      \n"
+
+#: src/dial.c:384
+msgid "   Press any key to continue..    "
+msgstr "   Притисните неки тастер да наставите..    "
+
+#: src/dial.c:389 src/dial.c:401
+#, c-format
+msgid "     Retry in %2d seconds             "
+msgstr "     Покушајте поново за %2d секунде             "
+
+#: src/dial.c:427
+msgid "Max retries"
+msgstr "Највише покушаја"
+
+#: src/dial.c:437
+msgid "You are already online! Hang up first."
+msgstr "Већ сте на мрежи! Прекините прво."
+
+#: src/dial.c:442
+msgid "Autodial"
+msgstr "Самобирање"
+
+#: src/dial.c:446 src/dial.c:476
+msgid "Dialing"
+msgstr "Бирање"
+
+#: src/dial.c:447 src/dial.c:479
+#, c-format
+msgid "      At : %s"
+msgstr "      У : %s"
+
+#: src/dial.c:450 src/dial.c:483
+#, c-format
+msgid " Last on : %s at %s"
+msgstr " Последње : %s у %s"
+
+#: src/dial.c:498
+#, c-format
+msgid "    Time : %-3d"
+msgstr "    Време : %-3d"
+
+#: src/dial.c:500
+#, c-format
+msgid "     Attempt #%d"
+msgstr "     Покушај #%d"
+
+#: src/dial.c:501
+msgid ""
+"\n"
+"\n"
+"\n"
+" Escape to cancel, space to retry."
+msgstr ""
+"\n"
+"\n"
+"\n"
+" Ескејп да откажете, размак да поново покушате."
+
+#: src/dial.c:542
+msgid "Cancelled"
+msgstr "Отказано"
+
+#: src/dial.c:598
+msgid "Connected. Press any key to continue"
+msgstr "Повезани сте. Притисните неки тастер да наставите"
+
+#: src/dial.c:678
+msgid "Timeout"
+msgstr "Истекло време"
+
+#: src/dial.c:880
+msgid "Manually entered number"
+msgstr "Ручно унесен број"
+
+#: src/dial.c:889
+msgid "Cannot open ~/.dialdir: permission denied"
+msgstr "Не могу да отворим „~/.dialdir“: овлашћење је одбијено"
+
+#: src/dial.c:911
+#, fuzzy
+msgid "Failed to read dialing directory\n"
+msgstr "Нестало је меморије приликом читања директоријума бирања"
+
+#: src/dial.c:945
+msgid "Phonelist garbled (unknown version?)"
+msgstr "Списак телефона је изопачен (непознато издање?)"
+
+#: src/dial.c:952 src/dial.c:960
+msgid "Phonelist corrupted"
+msgstr "Списак телефона је оштећен"
+
+#: src/dial.c:965
+msgid "Unknown dialing directory version"
+msgstr "Непознато издање директоријума бирања"
+
+#: src/dial.c:972
+msgid "Phonelist garbled (?)"
+msgstr "Списак телефона је изопачен (?)"
+
+#: src/dial.c:994
+msgid "Out of memory while reading dialing directory"
+msgstr "Нестало је меморије приликом читања директоријума бирања"
+
+#: src/dial.c:1046
+#, c-format
+msgid "Converted dialdir to new format, old saved as %s.v%hd"
+msgstr ""
+"Директоријум бирања је претворен у нови облик, стари је сачуван као „%s.v%hd“"
+
+#: src/dial.c:1081
+msgid "Cannot open ~/.dialdir for writing!"
+msgstr "Не могу да отворим „~/.dialdir“ ради уписа!"
+
+#: src/dial.c:1097 src/dial.c:1109
+msgid "Error writing to ~/.dialdir!"
+msgstr "Грешка писања у „~/.dialdir“!"
+
+#: src/dial.c:1174
+msgid " A -  Name                :"
+msgstr " A —  Назив                  :"
+
+#: src/dial.c:1175
+msgid " B -  Number              :"
+msgstr " B —  Број                   :"
+
+#: src/dial.c:1176
+msgid " C -  Dial string #       :"
+msgstr " C —  Ниска бирања #         :"
+
+#: src/dial.c:1177
+msgid " D -  Local echo          :"
+msgstr " D —  Локални одјек          :"
+
+#: src/dial.c:1178
+msgid " E -  Script              :"
+msgstr " E —  Скрипта                :"
+
+#: src/dial.c:1179
+msgid " F -  Username            :"
+msgstr " F —  Корисник               :"
+
+#: src/dial.c:1180
+msgid " G -  Password            :"
+msgstr " G —  Лозинка                :"
+
+#: src/dial.c:1181
+msgid " H -  Terminal Emulation  :"
+msgstr " H —  Емулација терминала    :"
+
+#: src/dial.c:1182
+msgid " I -  Backspace key sends :"
+msgstr " I —  Тастер повратнице шаље :"
+
+#: src/dial.c:1183
+msgid " J -  Linewrap            :"
+msgstr " J —  Прелом реда            :"
+
+#: src/dial.c:1184
+msgid " K -  Line Settings       :"
+msgstr " K —  Подешавања реда        :"
+
+#: src/dial.c:1185
+msgid " L -  Conversion table    :"
+msgstr " L —  Табела претварања      :"
+
+#: src/dial.c:1198 src/dial.c:1270 src/dial.c:1277
+msgid "Delete"
+msgstr "Обриши"
+
+#: src/dial.c:1198 src/dial.c:1270 src/dial.c:1277
+msgid "Backspace"
+msgstr "Повратница"
+
+#: src/dial.c:1200 src/dial.c:1272 src/dial.c:1282
+msgid "On"
+msgstr "Укљ"
+
+#: src/dial.c:1200 src/dial.c:1272 src/dial.c:1282
+msgid "Off"
+msgstr "Искљ"
+
+#: src/dial.c:1204
+#, c-format
+msgid "      Last dialed         : %s %s\n"
+msgstr "      Последњи биран      : %s %s\n"
+
+#: src/dial.c:1205
+#, c-format
+msgid "      Times on            : %d"
+msgstr "      Времена             : %d"
+
+#. TRANSLATORS: Translation of each of these menu items should not be
+#. * longer than 7 characters. The upper-case letter is a shortcut,
+#. * so keep them unique and ASCII; 'h', 'j', 'k', 'l' are reserved
+#: src/dial.c:1306
+msgid "Dial"
+msgstr "Бирај"
+
+#: src/dial.c:1306
+msgid "Find"
+msgstr "Нађи"
+
+#: src/dial.c:1306
+msgid "Add"
+msgstr "Додај"
+
+#: src/dial.c:1306
+msgid "Edit"
+msgstr "Уреди"
+
+#: src/dial.c:1306
+msgid "Remove"
+msgstr "Уклони"
+
+#: src/dial.c:1306
+msgid "moVe"
+msgstr "премести"
+
+#: src/dial.c:1307
+msgid "Manual"
+msgstr "Ручно"
+
+#: src/dial.c:1453 src/file.c:71 src/minicom.c:68 src/minicom.c:71
+msgid "   Yes  "
+msgstr "   Да  "
+
+#: src/dial.c:1453 src/file.c:71 src/minicom.c:68 src/minicom.c:71
+msgid "   No   "
+msgstr "   Не   "
+
+#: src/dial.c:1546
+#, c-format
+msgid "Entry \"%s\" not found. Enter dialdir?"
+msgstr "Нисам нашао унос „%s“. Да унесем директоријум бирања?"
+
+#: src/dial.c:1576 src/file.c:429
+msgid "( Escape to exit, Space to tag )"
+msgstr "( Ескејп да изађете, Размак да означите )"
+
+#: src/dial.c:1577
+msgid " Move entry up/down, Escape to exit"
+msgstr " Померајте унос горе/доле, Ескејп да изађете"
+
+#: src/dial.c:1597
+msgid "Dialing Directory"
+msgstr "Директоријум бирања"
+
+#: src/dial.c:1599
+msgid "     Name            Number            Last on      Times Script\n"
+msgstr "     Назив           Број              Последње     Скрипта времена\n"
+
+#: src/dial.c:1773
+msgid "Find an entry"
+msgstr "Нађите унос"
+
+#: src/dial.c:1834
+msgid "Remove entry?"
+msgstr "Да уклоним унос?"
+
+#: src/dial.c:1878
+msgid "Enter number"
+msgstr "Унеси број"
+
+#. TRANSLATORS: Translation of each of these menu items should not be
+#. * longer than 7 characters. The upper-case letter is a shortcut,
+#. * so keep them unique and ASCII; 'h', 'j', 'k', 'l' are reserved
+#: src/file.c:59
+msgid "[Goto]"
+msgstr "[Иди]"
+
+#: src/file.c:59
+msgid "[Prev]"
+msgstr "[Прет]"
+
+#: src/file.c:59
+msgid "[Show]"
+msgstr "[Покажи]"
+
+#: src/file.c:59
+msgid "[Tag]"
+msgstr "[Означи]"
+
+#: src/file.c:59
+msgid "[Untag]"
+msgstr "[Одзначи]"
+
+#: src/file.c:60
+msgid "[Okay]"
+msgstr "[Уреду]"
+
+#: src/file.c:322
+#, c-format
+msgid "Could not change to directory %s (%s)"
+msgstr "Не могу да пређем у директоријум „%s“ (%s)"
+
+#: src/file.c:346
+msgid "Select one or more files for download"
+msgstr "Изаберите једну или више датотека за преузимање"
+
+#: src/file.c:348
+msgid "Select a file for download"
+msgstr "Изаберите датотеку за преузимање"
+
+#: src/file.c:350
+msgid "Select a directory for download"
+msgstr "Изаберите директоријум за преузимање"
+
+#: src/file.c:353
+msgid "Select one or more files for upload"
+msgstr "Изаберите једну или више датотека за слање"
+
+#: src/file.c:355
+msgid "Select a file for upload"
+msgstr "Изаберите датотеку за слање"
+
+#: src/file.c:357
+msgid "Select a directory for upload"
+msgstr "Изаберите директоријум за слање"
+
+#: src/file.c:366
+#, c-format
+msgid "Directory: %%-%ds"
+msgstr "Директоријум: %%-%ds"
+
+#: src/file.c:454
+msgid "Can't back up!"
+msgstr "Не могу да се вратим горе!"
+
+#: src/file.c:552 src/file.c:565
+msgid "Too many files tagged - buffer would overflow"
+msgstr "Означено је превише датотека — бафер ће се препунити"
+
+#: src/file.c:669 src/file.c:796
+msgid "Can select only one!"
+msgstr "Можете изабрати само један!"
+
+#: src/file.c:771
+msgid "Goto directory:"
+msgstr "Иди у директоријум:"
+
+#: src/file.c:785
+msgid "Filename pattern:"
+msgstr "Шаблон назива датотеке:"
+
+#: src/file.c:802
+msgid "Tag pattern:"
+msgstr "Означи шаблон:"
+
+#: src/file.c:806
+msgid "No file(s) tagged"
+msgstr "Није означена ниједна датотека"
+
+#: src/file.c:823
+msgid "Untag pattern:"
+msgstr "Одзначи шаблон:"
+
+#: src/file.c:827
+msgid "No file(s) untagged"
+msgstr "Није одзначена ниједна датотека"
+
+#: src/file.c:843
+msgid "No file selected - enter filename:"
+msgstr "Није изабрана датотека — унесите назив датотеке:"
+
+#: src/file.c:853
+#, c-format
+msgid "File: \"%s\" exists! Overwrite?"
+msgstr "Датотека „%s“ постоји! Да је препишем?"
+
+#: src/file.c:864
+msgid "no such file!"
+msgstr "нема такве датотеке!"
+
+#: src/getsdir.c:315
+#, c-format
+msgid "%d files:\n"
+msgstr "%d датотеке:\n"
+
+#: src/help.c:41
+msgid "Minicom Command Summary"
+msgstr "Сажетак наредби Миникома"
+
+#: src/help.c:45
+#, c-format
+msgid "Commands can be called by %s<key>"
+msgstr "Наредбе се могу позвати са „%s<key>“"
+
+#: src/help.c:51
+msgid "Main Functions"
+msgstr "Главне функције"
+
+#: src/help.c:53
+msgid "Other Functions"
+msgstr "Остале функције"
+
+#: src/help.c:55
+msgid " Dialing directory..D  run script (Go)....G | Clear Screen.......C\n"
+msgstr ""
+" Директоријум бирања...D  покреће скрипту (Иди).....G | Чисти екран.......C\n"
+
+#: src/help.c:56
+msgid " Send files.........S  Receive files......R | cOnfigure Minicom..O\n"
+msgstr ""
+" Шаље датотеке.........S  Прима датотеке............R | пОдешава Миником..O\n"
+
+#: src/help.c:57
+msgid " comm Parameters....P  Add linefeed.......A | "
+msgstr " параметри наредбе.....P  Додаје довод реда.........A | "
+
+#: src/help.c:59
+msgid "Suspend minicom....J\n"
+msgstr "Обуставља миником......J\n"
+
+#: src/help.c:61
+msgid "Jump to a shell....J\n"
+msgstr "Иде на љуску...........J\n"
+
+#: src/help.c:63
+msgid " Capture on/off.....L  Hangup.............H | eXit and reset.....X\n"
+msgstr ""
+" Снимање укљ/искљ......L  Прекида...................H | излази и поново "
+"поставља.....X\n"
+
+#: src/help.c:64
+msgid " send break.........F  initialize Modem...M | Quit with no reset.Q\n"
+msgstr ""
+" шаље прекид...........F  покреће модем.............M | излази без поновног "
+"постављања.Q\n"
+
+#: src/help.c:65
+msgid " Terminal settings..T  run Kermit.........K | Cursor key mode....I\n"
+msgstr ""
+" подешавања терминала..T  извршава кермит...........K | режим тастера "
+"курзора....I\n"
+
+#: src/help.c:66
+msgid " lineWrap on/off....W"
+msgstr " прелом реда укљ/искљ..W"
+
+#: src/help.c:67
+msgid "  local Echo on/off..E | Help screen........Z\n"
+msgstr " локални ехо укљ/искљ..E | екран помоћи.............Z\n"
+
+#: src/help.c:68
+msgid " Paste file.........Y  Timestamp toggle...N | scroll Back........B\n"
+msgstr ""
+" Прошла датотека.......Y  Окидач временске ознаке...N | премиче "
+"уназад........B\n"
+
+#: src/help.c:69
+msgid " Add Carriage Ret...U"
+msgstr " Додаје крајник реда...U"
+
+#: src/help.c:71
+msgid "Select function or press Enter for none."
+msgstr "Изаберите функцију или притисните „Унеси“ за ништа."
+
+#: src/help.c:79
+msgid "Written by Miquel van Smoorenburg 1991-1995"
+msgstr "Написао је Мигел ван Смуренбург 1991-1995"
+
+#: src/help.c:81
+msgid "Some additions by Jukka Lahtinen 1997-2000"
+msgstr "Неке допуне је обавио Јука Латинен 1997-2000"
+
+#: src/help.c:83
+msgid "i18n by Arnaldo Carvalho de Melo 1998"
+msgstr "„i18n“ је урадио Арналдо Карвало де Мело 1998"
+
+#: src/main.c:241
+#, c-format
+msgid "Lockfile is stale. Overriding it..\n"
+msgstr "Датотека закључавања је устајала. Преписујем је..\n"
+
+#: src/main.c:250 src/updown.c:498
+#, c-format
+msgid "Device %s is locked.\n"
+msgstr "Уређај „%s“ је закључан.\n"
+
+#: src/main.c:265
+#, c-format
+msgid "Could not setup for dial out.\n"
+msgstr "Не могу да подесим за бирање.\n"
+
+#: src/main.c:316
+#, c-format
+msgid "minicom: cannot open %s: %s\n"
+msgstr "миником: не могу да отворим „%s“: %s\n"
+
+#: src/main.c:319
+#, c-format
+msgid "minicom: cannot open %s. Sorry.\n"
+msgstr "миником: не могу да отворим „%s“. Извините.\n"
+
+#: src/main.c:326 src/main.c:804
+#, c-format
+msgid "Cannot open %s!"
+msgstr "Не могу да отворим „%s“!"
+
+#: src/main.c:554
+msgid "Offline"
+msgstr "Ван мреже"
+
+#: src/main.c:554
+msgid "OFFLINE"
+msgstr "ВАН_МРЕЖЕ"
+
+#: src/main.c:557
+msgid "Online"
+msgstr "На мрежи"
+
+#: src/main.c:557
+msgid "ONLINE"
+msgstr "НА_МРЕЖИ"
+
+#: src/main.c:627
+#, c-format
+msgid "Gone offline (%ld:%02ld:%02ld)"
+msgstr "На мрежи је (%ld:%02ld:%02ld)"
+
+#: src/main.c:785
+msgid "Could not re-initialize window system."
+msgstr "Не могу поново да покренем систем прозора."
+
+#: src/minicom.c:56 src/minicom.c:58
+#, c-format
+msgid "Got signal %d"
+msgstr "Добих сигнал %d"
+
+#: src/minicom.c:69 src/minicom.c:70
+msgid "  Close "
+msgstr "  Затвори  "
+
+#: src/minicom.c:69
+msgid " Pause  "
+msgstr "  Застани  "
+
+#: src/minicom.c:69 src/minicom.c:70
+msgid "  Exit  "
+msgstr "   Изађи   "
+
+#: src/minicom.c:70
+msgid " Unpause"
+msgstr " Отпаузирај"
+
+#: src/minicom.c:85
+msgid "Hang-up line?"
+msgstr "Да прекинем линију?"
+
+#: src/minicom.c:96
+#, c-format
+msgid "Killed by signal %d !\n"
+msgstr "Убијено сигналом %d !\n"
+
+#: src/minicom.c:120
+msgid "Suspended. Type \"fg\" to resume.\n"
+msgstr "Обустављено. Укуцајте „fg“ да наставите.\n"
+
+#: src/minicom.c:139
+msgid "SHELL variable not set"
+msgstr "Променљива „ЉУСКЕ“ није подешена"
+
+#: src/minicom.c:143 src/updown.c:314 src/updown.c:526 src/updown.c:725
+msgid "Out of memory: could not fork()"
+msgstr "Нема више меморије: не могу да испелцујем"
+
+#: src/minicom.c:153
+msgid "Shelled out. Type \"exit\" to return.\n"
+msgstr "У љусци сте. Укуцајте „exit“ да се вратите.\n"
+
+#: src/minicom.c:266
+msgid "SEARCH FOR (ESC=Exit)"
+msgstr "ПОТРАЖИ (ЕСЦ=Изађите)"
+
+#: src/minicom.c:316 src/minicom.c:337
+msgid "Search Wrapping Around to Start!"
+msgstr "Тражим прелом око почетка!"
+
+#: src/minicom.c:462
+msgid ""
+"HISTORY: U=Up D=Down F=PgDn B=PgUp s=Srch S=CaseLess N=Next C=Cite ESC=Exit "
+msgstr ""
+"ИСТОРИЈАТ: U=Горе D=Доле F=Стр_доле B=Стр_горе s=Тражи S=Мање_слова N=Даље "
+"C=Цитат ESC=Изађи "
+
+#: src/minicom.c:501
+msgid "History buffer Disabled!"
+msgstr "Бафер историјата је искључен!"
+
+#: src/minicom.c:506
+msgid "History buffer empty!"
+msgstr "Бафер историјата је празан!"
+
+#: src/minicom.c:564
+msgid ""
+"No previous search!\n"
+"  Please 's' or 'S' first!"
+msgstr ""
+"Нема претходне претраге!\n"
+"  Прво упишите „s“ или „S“!"
+
+#: src/minicom.c:721 src/minicom.c:764
+msgid ""
+"  CITATION: ENTER=select start line ESC=exit                               "
+msgstr ""
+"  ЦИТАТ: УНЕСИ=бира почетни ред ЕСЦ=излази                               "
+
+#: src/minicom.c:738
+msgid ""
+"  CITATION: ENTER=select end line ESC=exit                                 "
+msgstr ""
+"  ЦИТАТ: УНЕСИ=бира крајњи ред ЕСЦ=излази                                 "
+
+#: src/minicom.c:798
+#, c-format
+msgid "Wrong option in environment MINICOM=\"%s\"\n"
+msgstr "Погрешна опција у окружењу МИНИКОМ=„%s“\n"
+
+#: src/minicom.c:799
+#, c-format
+msgid "Type \"minicom %s\" for help.\n"
+msgstr "Укуцајте „minicom %s“ за помоћ.\n"
+
+#: src/minicom.c:809
+#, fuzzy, c-format
+msgid ""
+"Usage: %s [OPTION]... [configuration]\n"
+"A terminal program for Linux and other unix-like systems.\n"
+"\n"
+"  -b, --baudrate         : set baudrate (ignore the value from config)\n"
+"  -D, --device           : set device name (ignore the value from config)\n"
+"  -s, --setup            : enter setup mode\n"
+"  -o, --noinit           : do not initialize modem & lockfiles at startup\n"
+"  -m, --metakey          : use meta or alt key for commands\n"
+"  -M, --metakey8         : use 8bit meta key for commands\n"
+"  -l, --ansi             : literal; assume screen uses non IBM-PC character "
+"set\n"
+"  -L, --iso              : don't assume screen uses ISO8859\n"
+"  -w, --wrap             : Linewrap on\n"
+"  -H, --displayhex       : display output in hex\n"
+"  -z, --statline         : try to use terminal's status line\n"
+"  -7, --7bit             : force 7bit mode\n"
+"  -8, --8bit             : force 8bit mode\n"
+"  -c, --color=on/off     : ANSI style color usage on or off\n"
+"  -a, --attrib=on/off    : use reverse or highlight attributes on or off\n"
+"  -t, --term=TERM        : override TERM environment variable\n"
+"  -S, --script=SCRIPT    : run SCRIPT at startup\n"
+"  -d, --dial=ENTRY       : dial ENTRY from the dialing directory\n"
+"  -p, --ptty=TTYP        : connect to pseudo terminal\n"
+"  -C, --capturefile=FILE : start capturing to FILE\n"
+"  -F, --statlinefmt      : format of status line\n"
+"  -R, --remotecharset    : character set of communication partner\n"
+"  -v, --version          : output version information and exit\n"
+"  -h, --help             : show help\n"
+"  configuration          : configuration file to use\n"
+"\n"
+"These options can also be specified in the MINICOM environment variable.\n"
+msgstr ""
+"Употреба: %s [ОПЦИЈА]... [подешавање]\n"
+"Терминални програм за Линукс и друге јуниксолике системе.\n"
+"\n"
+"  -b, --baudrate          : подешава проток бода (занемарује вредност из "
+"подешавања)\n"
+"  -D, --device            : подешава назив уређаја (занемарује вредност из "
+"подешавања)\n"
+"  -s, --setup             : улази у режим подешавања\n"
+"  -o, --noinit            : не покреће модем и датотеке закључавања приликом "
+"покретања\n"
+"  -m, --metakey           : користи мета или алт тастер за наредбе\n"
+"  -M, --metakey8          : користи 8-битни мета тастер за наредбе\n"
+"  -l, --ansi              : дословно; претпоставља да екран користи не ИБМ-"
+"ПЦ скуп знакова\n"
+"  -L, --iso               : не претпоставља да екран користи ИСО8859\n"
+"  -w, --wrap              : укључује прелом реда\n"
+"  -H, --displayhex        : приказује хексадецимални излаз\n"
+"  -z, --statline          : покушава да користи терминалов ред стања\n"
+"  -7, --7бита             : приморава режим 7бита\n"
+"  -8, --8бита             : приморава режим 8 бита\n"
+"  -c, --color=укљ/искљ    : укључује или искључује коришћење боје АНСИ "
+"стила\n"
+"  -a, --attrib=укљ/искљ   : користи укључене или искључене обратне или "
+"атрибуте истицања\n"
+"  -t, --term=ТЕРМ         : преписује променљиву окружења ТЕРМИНАЛ\n"
+"  -S, --script=СКРИПТА    : покреће СКРИПТУ приликом покретања\n"
+"  -d, --dial=УНОС         : бира УНОС из директоријума бирања\n"
+"  -p, --ptty=ТТYП         : повезује се на псеудотерминал\n"
+"  -C, --capturefile=ДТТКА : почиње да снима у ДАТОТЕКУ\n"
+"  -T, --disabletime       : искључује приказ времена проведеног на мрежи\n"
+"  -R, --remotecharset     : скуп знакова комуникационог партнера\n"
+"  -v, --version           : исписује податке о издању и излази\n"
+"  configuration           : датотека подешавања за коришћење\n"
+"\n"
+"Ове опције такође могу бити наведене у променљивој окружења МИНИКОМ-а.\n"
+
+#: src/minicom.c:839
+#, c-format
+msgid "This variable is currently set to \"%s\".\n"
+msgstr "Ова променљива је тренутно подешена на „%s“.\n"
+
+#: src/minicom.c:841
+#, c-format
+msgid "This variable is currently unset.\n"
+msgstr "Ова променљива тренутно није подешена.\n"
+
+#: src/minicom.c:844
+#, c-format
+msgid ""
+"The configuration directory for the access file and the configurations\n"
+"is compiled to %s.\n"
+"\n"
+"Report bugs to <minicom-devel@lists.alioth.debian.org>.\n"
+msgstr ""
+"Директоријум подешавања за датотеку приступа и подешавања\n"
+"је преведен у „%s“.\n"
+"\n"
+"Грешке пријавите на <minicom-devel@lists.alioth.debian.org>.\n"
+
+#: src/minicom.c:1161
+#, c-format
+msgid "%s version %s"
+msgstr "%s издање %s"
+
+#: src/minicom.c:1163
+#, c-format
+msgid " (compiled %s)"
+msgstr " (преведено %s)"
+
+#: src/minicom.c:1166
+#, c-format
+msgid ""
+"Copyright (C) Miquel van Smoorenburg.\n"
+"\n"
+msgstr ""
+"Ауторска права © Мигел ван Смуренбург.\n"
+"\n"
+
+#: src/minicom.c:1189
+#, c-format
+msgid "minicom: argument to -p must be a pty\n"
+msgstr "мниником: аргумент за „-p“ мора бити „pty“\n"
+
+#: src/minicom.c:1253 src/minicom.c:1580
+msgid "Cannot open capture file"
+msgstr "Не могу да отворим датотеку снимања"
+
+#: src/minicom.c:1316
+msgid "You don't exist. Go away.\n"
+msgstr "Ви не постојите. Бришите одавде.\n"
+
+#: src/minicom.c:1391
+msgid "Sorry. Your screen is too small.\n"
+msgstr "Извините. Ваш екран је премали.\n"
+
+#: src/minicom.c:1463
+msgid "Welcome to minicom"
+msgstr "Добро дошли у миником"
+
+#: src/minicom.c:1464
+msgid "OPTIONS"
+msgstr "ОПЦИЈЕ"
+
+#: src/minicom.c:1466
+msgid "Compiled on"
+msgstr "Преведен"
+
+#: src/minicom.c:1482
+msgid "Port"
+msgstr "Порт"
+
+#: src/minicom.c:1485
+msgid "Using character set conversion"
+msgstr "Користим претварање скупа знакова"
+
+#: src/minicom.c:1486
+#, c-format
+msgid ""
+"\n"
+"Press %sZ for help on special keys%c\n"
+"\n"
+msgstr ""
+"\n"
+"Притисните „%sZ“ за помоћ о посебним тастерима%c\n"
+"\n"
+
+#: src/minicom.c:1507
+msgid "Add linefeed ON"
+msgstr "Додај довод реда УКЉ"
+
+#: src/minicom.c:1507
+msgid "Add linefeed OFF"
+msgstr "Додај довод реда ИСКЉ"
+
+#: src/minicom.c:1512
+msgid "Add carriage return ON"
+msgstr "Додај крајник реда УКЉ"
+
+#: src/minicom.c:1512
+msgid "Add carriage return OFF"
+msgstr "Додај крајник реда ИСКЉ"
+
+#: src/minicom.c:1517
+msgid "Local echo ON"
+msgstr "Локални ехо УКЉ"
+
+#: src/minicom.c:1517
+msgid "Local echo OFF"
+msgstr "Локални ехо ИСКЉ"
+
+#: src/minicom.c:1536
+msgid "You are online. Really initialize?"
+msgstr "На мрежи сте. Да почнем стварно?"
+
+#: src/minicom.c:1543
+msgid "Leave without reset?"
+msgstr "Да напустим без повраћаја?"
+
+#: src/minicom.c:1547 src/minicom.c:1565
+msgid "Save macros?"
+msgstr "Да сачувам макрое?"
+
+#: src/minicom.c:1557
+msgid "Leave Minicom?"
+msgstr "Да напустим Миником?"
+
+#: src/minicom.c:1576
+msgid "Capture to which file? "
+msgstr "Да снимим у коју датотеку? "
+
+#: src/minicom.c:1585 src/minicom.c:1594
+msgid "Capture file"
+msgstr "Сними датотеку"
+
+#: src/minicom.c:1628
+msgid "Linewrap ON"
+msgstr "Прелом реда УКЉ"
+
+#: src/minicom.c:1628
+msgid "Linewrap OFF"
+msgstr "Прелом реда ИСКЉ"
+
+#: src/minicom.c:1637
+msgid "Timestamp OFF"
+msgstr "Временска ознака ИСКЉ"
+
+#: src/minicom.c:1640
+msgid "Timestamp every line (simple)"
+msgstr "Временска ознака у сваком реду (једноставно)"
+
+#: src/minicom.c:1643
+msgid "Timestamp every line (extended)"
+msgstr "Временска ознака у сваком реду (проширено)"
+
+#: src/minicom.c:1646
+msgid "Timestamp lines every second"
+msgstr "Временска ознака редова сваке секунде"
+
+#: src/minicom.c:1687
+msgid "Quit without reset while online."
+msgstr "Изађите без повраћаја док сте на мрежи."
+
+#: src/rwconf.c:115 src/rwconf.c:149
+msgid "No"
+msgstr "Не"
+
+#: src/rwconf.c:226
+#, c-format
+msgid "# Machine-generated file - use \"minicom -s\" to change parameters.\n"
+msgstr ""
+"# Машински створена датотека — употребите „minicom -s“ да измените "
+"параметре.\n"
+
+#: src/rwconf.c:228
+#, c-format
+msgid ""
+"# Machine-generated file - use setup menu in minicom to change parameters.\n"
+msgstr ""
+"# Машински створена датотека — користите изборник подешавања у миникому да "
+"измените параметре.\n"
+
+#: src/rwconf.c:253
+#, c-format
+msgid "Memory allocation failed.\n"
+msgstr "Додела меморије није успела.\n"
+
+#: src/rwconf.c:322
+#, c-format
+msgid "** Line %d of the %s config file is unparsable.\n"
+msgstr "** %d. ред „%s“ датотеке подешавања се не може обрадити.\n"
+
+#: src/rwconf.c:323
+msgid "global"
+msgstr "опште"
+
+#: src/rwconf.c:323
+msgid "personal"
+msgstr "лично"
+
+#: src/script.c:134
+#, c-format
+msgid "script \"%s\": syntax error in line %d %s%s\n"
+msgstr "скрипта „%s“: грешка синтаксе у %d. реду „%s%s“\n"
+
+#: src/script.c:158
+#, c-format
+msgid "script \"%s\": global timeout%s\n"
+msgstr "скрипта „%s“: општи истек времена%s\n"
+
+#: src/script.c:297
+msgid "(word contains ESC or quote)"
+msgstr "(реч садржи ЕСЦ или наводник)"
+
+#: src/script.c:350
+#, c-format
+msgid "runscript: couldn't open \"%s\"%s\n"
+msgstr "покрени_скрипту: не могу да отворим „%s“%s\n"
+
+#: src/script.c:371 src/script.c:485
+#, c-format
+msgid "script \"%s\": out of memory%s\n"
+msgstr "скрипта „%s“: нема више меморије%s\n"
+
+#: src/script.c:479
+#, c-format
+msgid "script \"%s\" line %d: unknown variable \"%s\"%s\n"
+msgstr "скрипта „%s“ %d. ред: непозната променљива „%s“%s\n"
+
+#: src/script.c:524
+#, c-format
+msgid "script \"%s\": unexpected end of file%s\n"
+msgstr "скрипта „%s“: неочекивани крај датотеке%s\n"
+
+#: src/script.c:532
+msgid "(garbage after })"
+msgstr "(ђубре након })"
+
+#: src/script.c:540
+msgid "(too many arguments)"
+msgstr "(превише аргумената)"
+
+#: src/script.c:559
+#, c-format
+msgid "script \"%s\" line %d: nested expect%s\n"
+msgstr "скрипта „%s“ %d. ред: угнеждени је очекиван%s\n"
+
+#: src/script.c:569
+msgid "(garbage after {)"
+msgstr "(ђубре након {)"
+
+#: src/script.c:590 src/script.c:891 src/script.c:959
+msgid "(argument expected)"
+msgstr "(очекиван је аргумент)"
+
+#: src/script.c:593 src/script.c:893
+msgid "(invalid argument)"
+msgstr "(неисправан аргумент)"
+
+#: src/script.c:724
+msgid "(in goto/gosub label)"
+msgstr "(у натпису „goto/gosub“)"
+
+#: src/script.c:731
+#, c-format
+msgid "script \"%s\" line %d: label \"%s\" not found%s\n"
+msgstr "скрипта „%s“ %d. ред: натпис „%s“ нисам нашао%s\n"
+
+#: src/script.c:753
+#, c-format
+msgid "script \"%s\": no return from gosub%s\n"
+msgstr "скрипта „%s“: нема резултата из „gosub“-а%s\n"
+
+#: src/script.c:796
+msgid "(missing var name)"
+msgstr "(недостаје назив променљиве)"
+
+#: src/script.c:813 src/script.c:829
+msgid "(expected variable)"
+msgstr "(очекивана је променљива)"
+
+#: src/script.c:861
+msgid "(expected command after if)"
+msgstr "(очекивана је наредба након „if“)"
+
+#: src/script.c:876
+msgid "(unknown operator)"
+msgstr "(непознат оператор)"
+
+#: src/script.c:915
+msgid "(unexpected argument)"
+msgstr "(неочекивани аргумент)"
+
+#: src/script.c:942
+#, c-format
+msgid "script \"%s\" line %d: break outside of expect%s\n"
+msgstr "скрипта „%s“ %d. ред: прекид ван очекиваног%s\n"
+
+#: src/script.c:962
+#, c-format
+msgid "script \"%s\" line %d: call inside expect%s\n"
+msgstr "скрипта „%s“ %d. ред: позив унутар очекиваног%s\n"
+
+#: src/script.c:1031
+#, c-format
+msgid "script \"%s\" line %d: unknown command \"%s\"%s\n"
+msgstr "скрипта „%s“ %d. ред: непозната наредба „%s“%s\n"
+
+#: src/script.c:1072
+#, c-format
+msgid "runscript, part of minicom version %s\n"
+msgstr "„runscript“, део миникома издање %s\n"
+
+#: src/script.c:1077
+#, c-format
+msgid "Usage: runscript <scriptfile> [logfile [homedir]]%s\n"
+msgstr ""
+"Употреба: runscript <скрипта> [датотека_дневника [полазни_директоријум]]%s\n"
+
+#: src/updown.c:73
+#, c-format
+msgid "Cannot chdir to %.30s"
+msgstr "Не могу да пређем у директоријум „%.30s“"
+
+#: src/updown.c:225
+msgid "Upload"
+msgstr "Пошаљи"
+
+#: src/updown.c:225
+msgid "Download"
+msgstr "Преузми"
+
+#: src/updown.c:281
+msgid "Please enter file names"
+msgstr "Унесите називе датотека"
+
+#: src/updown.c:290
+msgid "Out of memory: could allocate buffer for command line"
+msgstr "Нема више меморије: не могу да доделим бафер за линију наредби"
+
+#: src/updown.c:302
+#, c-format
+msgid "%.30s %s - Press CTRL-C to quit"
+msgstr "%.30s %s — Притисните КТРЛ-Ц да изађете"
+
+#: src/updown.c:303
+msgid "upload"
+msgstr "пошаљи"
+
+#: src/updown.c:303
+msgid "download"
+msgstr "преузми"
+
+#: src/updown.c:433
+msgid ""
+"\n"
+" READY: press any key to continue..."
+msgstr ""
+"\n"
+" СПРЕМАН: притисните неки тастер да наставите..."
+
+#: src/updown.c:478
+msgid "Cannot create lockfile!"
+msgstr "Не могу да направим датотеку закључавања!"
+
+#: src/updown.c:486
+#, fuzzy, c-format
+msgid "Failed to write lockfile %s\n"
+msgstr "Не могу да упишем датотеку макроа „%s“"
+
+#: src/updown.c:496
+#, c-format
+msgid "Cannot create lockfile for %s: %s\n"
+msgstr "Не могу да направим датотеку закључавања „%s“: %s\n"
+
+#: src/updown.c:643
+msgid "Same as last"
+msgstr "Исто као и „last“"
+
+#: src/updown.c:644
+msgid " A -   Username        :"
+msgstr " A —  Корисник        :"
+
+#: src/updown.c:645
+msgid " B -   Password        :"
+msgstr " B —  Лозинка         :"
+
+#: src/updown.c:646
+msgid " C -   Name of script  :"
+msgstr " C —   Назив скрипте  :"
+
+#: src/updown.c:647
+msgid "Change which setting?     (Return to run, ESC to stop)"
+msgstr "Које подешавање се мења?    (Унеси да покренете, ЕСЦ да зауставите)"
+
+#: src/updown.c:652
+msgid "Run a script"
+msgstr "Покрените скрипту"
+
+#: src/window.c:1938
+#, c-format
+msgid "Environment variable TERM not set\n"
+msgstr "Променљиве окружења ТЕРМ није подешена\n"
+
+#: src/window.c:1944
+#, c-format
+msgid "No termcap entry for %s\n"
+msgstr "Нема уноса могућности терминала за „%s“\n"
+
+#: src/window.c:1947
+#, c-format
+msgid "No termcap database present!\n"
+msgstr "Није присутна база података могућности терминала!\n"
+
+#: src/window.c:1955
+#, c-format
+msgid "No cursor motion capability (cm)\n"
+msgstr "Нема могућности кретања курзора (cm)\n"
+
+#: src/window.c:1964
+#, c-format
+msgid "Number of terminal lines unknown\n"
+msgstr "Број редова термианла није познат\n"
+
+#: src/window.c:1968
+#, c-format
+msgid "Number of terminal columns unknown\n"
+msgstr "Број колона термианла није познат\n"
+
+#, fuzzy
+#~ msgid "%H for help | %b | %C | Minicom %V | %T | %t | %D"
+#~ msgstr " %7.7sZ за помоћ |           |     | Миником %-6.6s |       | "
+
+#, fuzzy
+#~ msgid "Timestamp delta between lines"
+#~ msgstr "Временска ознака у сваком реду (једноставно)"
+
+#, fuzzy
+#~ msgid "out of memory"
+#~ msgstr "скрипта „%s“: нема више меморије%s\n"

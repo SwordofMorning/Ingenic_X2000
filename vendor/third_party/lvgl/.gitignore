@@ -7,3 +7,8 @@ config.h
 .config.in
 .vscode/
 *.so
+
+liblvgl.a
+lv_demo_widgets
+lvgl.8.39.tar.bz2
+lvgl/

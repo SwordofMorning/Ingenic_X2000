@@ -8,3 +8,4 @@ config.h
 output/
 awtk-1.7.1.tar.gz
 release/
+awtk/
