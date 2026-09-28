@@ -50,17 +50,23 @@ VID="${VID:-0x18D1}"
 PID="${PID:-0x4EE1}"
 MANUFACTURER="${MANUFACTURER:-VOT}"
 PRODUCT="${PRODUCT:-VOT X2000 Board}"
-# Serial number: Windows keys a device instance on it, and it has to differ per
-# board (two boards with the same serial share one driver binding, and Windows
-# would reuse a cached "this device has no Microsoft OS descriptors" answer).
-# Take the WiFi MAC when it is available, so it is unique and stable.
+# Serial number: Windows keys the whole driver installation on it, so it has to
+# differ per board (two boards sharing one serial would fight over a single
+# binding) and it has to change when the USB descriptor layout changes: Windows
+# caches the enumeration result (including "this device has no Microsoft OS
+# descriptors" and which driver went to which interface number) per device
+# instance, and a known instance keeps its old settings even after replugging.
+# USB_REV is that revision marker - bump it whenever the functions, their order
+# or the OS descriptors change, so hosts see a new device and re-read
+# everything.
+USB_REV="${USB_REV:-2}"
 SERIALNUMBER="${SERIALNUMBER:-}"
 if [ -z "$SERIALNUMBER" ]; then
     WIFI_MAC_FILE=/sys/class/net/wlan0/address
     if [ -r "$WIFI_MAC_FILE" ]; then
-        SERIALNUMBER="X2000-$(cat "$WIFI_MAC_FILE" | tr -d ':\n')"
+        SERIALNUMBER="X2000-$(cat "$WIFI_MAC_FILE" | tr -d ':\n')-$USB_REV"
     else
-        SERIALNUMBER="X2000-0123456789"
+        SERIALNUMBER="X2000-0123456789-$USB_REV"
     fi
 fi
 

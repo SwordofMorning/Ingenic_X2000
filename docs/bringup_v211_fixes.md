@@ -368,4 +368,38 @@ ln -s "$g/configs/c.1" "$g/os_desc/c.1"
   本次操作时状态为 `configured`，dmesg 里有 `new device is high-speed` 与 `new address 21`，
   说明是主机侧正常枚举的。
 
+### 14.6 主机侧的两个前提（2026-09-28 实测补充）
+
+板端描述符补齐后，Windows 仍给出"其他设备 → RNDIS、驱动程序名称 null"。此时设备侧已逐条验证
+（os_desc 三项 + compatible id + 软链 + 内核里 `fill_ext_compat()`/`if_id` 的对应关系都确认无误），
+剩下的是主机侧必须同时满足的两个条件：
+
+1. **Windows 按"设备实例"缓存整份驱动安装结果**。实例 ID 是
+   `USB\VID_xxxx&PID_xxxx\<序列号>`；同一个实例重新插拔**不会**重读 Microsoft OS 描述符，
+   接口编号变化也不会重新分配驱动。用户日志里就能看到它沿用旧映射：
+   给 `MI_00` 加装 `WUDFWpdMtp` + `WinUsb` 服务 —— 那是"MI_00 = MTP"时期的记录（那时 MTP+RNDIS
+   的 MTP 在 0 号接口），而现在这个模式下 MI_00 已经变成 RNDIS 的控制接口。
+   结论：**只要描述符或接口布局变了，就必须换序列号**。S70USB 的 `USB_REV` 就是干这个的，
+   它把版本标记追加在序列号后面（当前为 `X2000-<wlan0 MAC>-2`）。
+2. **主机上要真的存在 RNDIS 驱动**。设备侧的 compatible id `RNDIS` 只负责"告诉 Windows 用哪个驱动"，
+   实际驱动是 Windows 自带的 `netrndis.inf`（Remote NDIS Compatible Device）。
+   如果主机没有这个 INF（部分 Windows 11 24H2 已不再附带/不迁移），再正确的描述符也绑不上。
+
+### 14.7 现场排查清单（Windows 侧，按顺序做）
+
+1. `winver`：确认是 Windows 10 还是 11、内部版本号（是否 24H2）。
+2. 看 `C:\Windows\INF\netrndis.inf` 是否存在（资源管理器要开"显示隐藏的文件/系统文件"，
+   或命令行 `dir C:\Windows\INF\netrndis.inf`）。不存在 = 这台主机没有 RNDIS 驱动。
+3. 设备管理器 → 那个未识别的 "RNDIS" → 详细信息 → **硬件 ID**，看有没有 `USB\MS_COMP_RNDIS`：
+   - 有 → 描述符已经送到主机，只是驱动没挂上（回到第 2 步的驱动可用性）；
+   - 没有 → 主机没读描述符（实例缓存问题：换 `USB_REV`/序列号，或把父设备实例彻底卸载）。
+4. 手动指定驱动（不用下载任何东西）：右键该设备 → 更新驱动程序 → 浏览我的电脑上的驱动程序 →
+   让我从计算机上的可用驱动程序列表中选取 → 网络适配器 → Microsoft → Remote NDIS Compatible Device。
+5. 若第 2 步确认没有 `netrndis.inf`，或想彻底摆脱 Windows 的驱动差异，可考虑换传输方式：
+   - **CDC-NCM**：Windows 11 自带 NCM 驱动，Windows 10 需装微软的 NCM 驱动包；
+   - **RNDIS + NCM 双网卡**：Linux/macOS 走 NCM，Windows 谁有驱动用谁（BeagleBone 等板子就这么做）。
+   两者的前提都是内核打开 `CONFIG_USB_CONFIGFS_NCM` / `CONFIG_USB_F_NCM`（当前 `not set`），
+   需要重编内核并重烧 `xImage`。
+
+
 
