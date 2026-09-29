@@ -13,6 +13,15 @@
  # @note The root filesystem is writable UBIFS, so /etc/ssh is a real directory
  #       and host keys persist across reboots.
  #
+ # @note Host keys are generated here on first boot, but only when they are
+ #       usable: a zero-length key file counts as missing. This was a real trap
+ #       on the board - ssh-keygen -A created the eight files as 0 bytes (first
+ #       boot, no RTC, barely seeded random pool) and the old "does the file
+ #       exist" test kept them forever, so sshd died with "no hostkeys
+ #       available -- exiting" on every boot and the board became unreachable.
+ #       Unusable keys are now deleted and regenerated, and the result is
+ #       verified before sshd is started.
+ #
  # @note Authentication is the factory account (user root, password from
  #       products/<product>.conf) installed into /etc/shadow at build time by
  #       scripts/pack_images.sh. Nothing has to be provisioned on the board and
@@ -25,12 +34,45 @@ SSH_DIR=/etc/ssh
 HOST_KEY="$SSH_DIR/ssh_host_rsa_key"
 SHADOW=/etc/shadow
 
-Func_start() {
-    # host keys on first boot (or when they were wiped by a reflash)
-    if [ ! -f "$HOST_KEY" ]; then
-        echo "[S50sshd] generating host keys (first boot)"
+##
+ # @brief True when a host key file exists and holds a readable key.
+ #
+Key_usable() {
+    [ -s "$1" ] && /usr/bin/ssh-keygen -l -f "$1" >/dev/null 2>&1
+}
+# End-func Key_usable
+
+##
+ # @brief Make sure all host keys exist and are valid.
+ #
+Keys_ensure() {
+    local f fresh=0
+
+    # drop anything that is not a usable key (missing, empty, truncated)
+    for f in "$SSH_DIR"/ssh_host_*_key "$SSH_DIR"/ssh_host_*_key.pub; do
+        [ -e "$f" ] || continue
+        Key_usable "$f" || { echo "[S50sshd] removing unusable key file $f"; rm -f "$f"; }
+    done
+
+    [ -f "$SSH_DIR/ssh_host_rsa_key" ] || fresh=1
+
+    if [ "$fresh" = "1" ]; then
+        echo "[S50sshd] generating host keys (first boot or unusable keys)"
         /usr/bin/ssh-keygen -A
+        if ! Key_usable "$HOST_KEY"; then
+            echo "[S50sshd] ERROR: ssh-keygen did not produce a usable key"
+            echo "[S50sshd]   $HOST_KEY is $(wc -c < "$HOST_KEY" 2>/dev/null) bytes"
+            df -h / | sed 's/^/[S50sshd] /'
+            echo "[S50sshd]   (out of space? no entropy? run ssh-keygen -A by hand)"
+            return 1
+        fi
     fi
+    return 0
+}
+# End-func Keys_ensure
+
+Func_start() {
+    Keys_ensure || { echo "[S50sshd] cannot start sshd without host keys"; return 1; }
 
     mkdir -p /run/sshd
 
@@ -55,6 +97,7 @@ Func_status() {
     if pgrep -x sshd >/dev/null 2>&1; then
         echo "sshd: running"
         echo "host keys: $(ls -1 "$SSH_DIR"/ssh_host_*_key 2>/dev/null | wc -l)"
+        Key_usable "$HOST_KEY" && echo "rsa key: usable" || echo "rsa key: MISSING OR UNUSABLE"
         case "$(awk -F: '$1=="root"{print $2}' "$SHADOW" 2>/dev/null)" in
             ''|'x'|'*'|'!'*)
                 echo "root password: NOT set (password login is impossible)" ;;
@@ -63,6 +106,8 @@ Func_status() {
         esac
     else
         echo "sshd: not running"
+        Key_usable "$HOST_KEY" && echo "rsa key: usable" \
+            || echo "rsa key: MISSING OR UNUSABLE (fix: rm -f $SSH_DIR/ssh_host_*; $0 restart)"
         echo "hint: run /usr/sbin/sshd -e -d in the foreground to see the error"
         return 1
     fi

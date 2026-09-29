@@ -44,15 +44,17 @@
  #
  #   start    default at boot: MTP + NCM
  #   mtp      MTP only
- #   ncm      MTP + NCM     (default; usb1 = 192.168.9.168/24)
- #   rndis    MTP + RNDIS   (older Windows; usb0 = 192.168.8.168/24)
+ #   ncm      MTP + NCM     (default; usbncm0 = 169.254.9.168/16, no DHCP)
+ #   rndis    MTP + RNDIS   (older Windows; usbrndis0 = 192.168.8.168/24 + DHCP)
  #   both     MTP + NCM + RNDIS (two network links, maximum compatibility)
  #   serial   MTP + NCM + CDC-ACM serial (/dev/ttyGS0)
  #   status   show gadget directory, bound UDC, both links, umtprd process
  #   stop     unbind and remove every gadget
  #
- # Environment overrides: NCM_IP (192.168.9.168), RNDIS_IP (192.168.8.168),
- # MTP_STORAGE (/usr/data: the ubi user-data partition mounted by S21mount_ubifs).
+ # Environment overrides: NCM_IP (169.254.9.168), NCM_IF (usbncm0), RNDIS_IP
+ # (192.168.8.168), RNDIS_IF (usbrndis0), UDHCPD_NCM_CONF (empty: no DHCP on the
+ # NCM link), UDHCPD_USB_CONF (/etc/udhcpd_usb.conf), MTP_STORAGE (/usr/data: the
+ # ubi user-data partition mounted by S21mount_ubifs).
  #
 
 USB_GADGET=/sys/kernel/config/usb_gadget
@@ -91,12 +93,15 @@ RNDIS_IP="${RNDIS_IP:-192.168.8.168}"
 RNDIS_NETMASK="${RNDIS_NETMASK:-255.255.255.0}"
 UDHCPD_USB_CONF="${UDHCPD_USB_CONF:-/etc/udhcpd_usb.conf}"
 
-# NCM network (the default link). Deliberately on its own subnet: both links can
-# be active at once ("both" mode) and two interfaces in one subnet would only
-# confuse the host's routing table.
-NCM_IP="${NCM_IP:-192.168.9.168}"
-NCM_NETMASK="${NCM_NETMASK:-255.255.255.0}"
-UDHCPD_NCM_CONF="${UDHCPD_NCM_CONF:-/etc/udhcpd_ncm.conf}"
+# NCM network (the default link). The board uses a link-local address and NO
+# DHCP server by default: Windows and macOS then assign themselves a 169.254/16
+# address automatically (APIPA), so a fresh board talks to a fresh PC with no
+# configuration on either side - no DHCP, no static setup, nothing to refresh on
+# the host. Set UDHCPD_NCM_CONF (plus NCM_IP, e.g. 192.168.9.168/24) if you would
+# rather serve leases on this link.
+NCM_IP="${NCM_IP:-169.254.9.168}"
+NCM_NETMASK="${NCM_NETMASK:-255.255.0.0}"
+UDHCPD_NCM_CONF="${UDHCPD_NCM_CONF:-}"
 
 # Netdev names. The kernel's ifname attribute wants a TEMPLATE with exactly one
 # "%d" (gether_set_ifname() returns -EINVAL for anything else, see

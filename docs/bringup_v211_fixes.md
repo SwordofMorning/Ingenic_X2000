@@ -516,6 +516,47 @@ class 02h/02h/FF + CDC 功能描述符，控制报文走 class 请求）。这�
 
 影响范围：**纯用户态**，只需重烧 `rootfs.ubi`（内核不用动）。
 
+### 14.11 掉进 SSH 死循环的坑：0 字节主机密钥 + NCM 改链路本地地址
+
+**一、`sshd` 起不来的真正原因（板端实测）**
+
+重烧之后板子 ping 得通但 22 端口是 `Connection refused`。串口上看到：
+
+```text
+# ls -l /etc/ssh/
+-rw------- 1 root root 0 Mar  1 12:00 ssh_host_rsa_key        <- 0 字节
+-rw------- 1 root root 0 Mar  1 12:00 ssh_host_ecdsa_key
+-rw------- 1 root root 0 Mar  1 12:00 ssh_host_ed25519_key
+# /etc/init.d/S50sshd restart
+Unable to load host key "/etc/ssh/ssh_host_rsa_key": invalid format
+...
+sshd: no hostkeys available -- exiting.
+```
+
+即：首次启动时 `ssh-keygen -A` 把密钥文件**建出来了但内容是 0 字节**（无 RTC、随机池刚起来就动、文件系统也刚挂上，
+具体原因待查），而 `S50sshd` 当时的判断是"文件存在就跳过生成" —— 于是这个坏状态被永久固化，
+每次启动 sshd 都退出，板子彻底失联。
+
+修法（`fs_overlay/common/etc/init.d/S50sshd`）：
+
+- 判断改成"密钥存在**且可用**"：`[ -s "$f" ] && ssh-keygen -l -f "$f"`；不可用的（缺失/0 字节/损坏）先删掉再重新生成；
+- 生成后再次校验，失败时打印文件字节数 + `df -h /`，并明确报错（是磁盘满还是随机数问题，一眼可辨）；
+- `status` 也报告 `rsa key: usable / MISSING OR UNUSABLE`，并给出修复命令。
+
+**二、NCM 链路改成链路本地静态地址（不再依赖 DHCP）**
+
+需求：Windows 侧不愿每次手动刷新 DHCP/缓存。方案：板子在这条链路上直接用链路本地地址，
+主机侧交给系统自动分配（Windows/macOS 的 APIPA，169.254/16），两边都不需要任何配置：
+
+- `NCM_IP=169.254.9.168`、`NCM_NETMASK=255.255.0.0`，默认**不启 udhcpd**；
+- `etc/udhcpd_ncm.conf` 保留为**可选**（`UDHCPD_NCM_CONF=/etc/udhcpd_ncm.conf NCM_IP=192.168.9.168 ...` 才启用）；
+- RNDIS 链路维持原样（192.168.8.168/24 + udhcpd），因为 RNDIS 只面向老 Windows，那里 DHCP 是现成的。
+
+实测依据：修好命名之后，板端 `usb0`（当时的 NCM 网卡）`RX packets: 26` —— 说明主机的 APIPA 已经在这条链路上
+发 ARP/探测包了，链路是通的，唯一缺的就是板子这边的地址（见第 2 节）。所以只要板子给出 169.254.x.x，
+Windows 直接就能 ping 通，无需 DHCP、无需静态配置、无需刷新。
+
+
 
 
 
