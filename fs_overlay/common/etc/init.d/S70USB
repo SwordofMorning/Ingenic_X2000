@@ -318,6 +318,39 @@ gadget_bind() {
     echo "$udc" > "$g/UDC"
     log "bound to UDC $udc"
 
+    # The dwc2 controller occasionally stays in "not attached" after a soft
+    # (re)bind: the pull-up is on but the controller never notices the host, and
+    # the board then comes up invisible to the PC (no MTP, no network link, no
+    # error anywhere). Writing the UDC again makes it attach, so re-arm a few
+    # times and always report the final state: with a cable and a powered host
+    # this loop exits on the first check, without one it tells the operator to
+    # look at the cable instead of at the drivers.
+    local try=0 state=""
+    sleep 2
+    while [ "$try" -lt 3 ]; do
+        state="$(cat "/sys/class/udc/$udc/state" 2>/dev/null)"
+        case "$state" in
+            configured|addressed|default|powered) break ;;
+        esac
+        log "no host seen yet (state: $state), re-arming $udc"
+        echo "" > "$g/UDC" 2>/dev/null
+        sleep 1
+        echo "$udc" > "$g/UDC" 2>/dev/null
+        sleep 2
+        try=$((try + 1))
+    done
+
+    state="$(cat "/sys/class/udc/$udc/state" 2>/dev/null)"
+    case "$state" in
+        configured|addressed|default|powered)
+            log "host attached (USB state: $state)" ;;
+        suspended)
+            log "host attached but idle (USB state: $state)" ;;
+        *)
+            log "WARN: no host on the Micro-USB&Download port (state: $state) - check the cable"
+            log "      (the gadget itself is fine: $(ls -1 "$g/functions" 2>/dev/null | tr '\n' ' '))" ;;
+    esac
+
     [ "$with_ncm" = "1" ]   && bring_up_link "$NCM_IF"   "$NCM_IP"   "$NCM_NETMASK"   "$UDHCPD_NCM_CONF"
     [ "$with_rndis" = "1" ] && bring_up_link "$RNDIS_IF" "$RNDIS_IP" "$RNDIS_NETMASK" "$UDHCPD_USB_CONF"
     return 0
