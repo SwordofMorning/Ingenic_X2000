@@ -580,6 +580,60 @@ Windows 直接就能 ping 通，无需 DHCP、无需静态配置、无需刷新�
 - 好处：开机自愈（密钥坏了下一次启动或 `keys` 都能修好）、排错不靠猜（每条依赖都有检查与说明）、
   与另外两个脚本同源同风格。
 
+## 15. 相机模块（soc_camera.ko）的两处修复
+
+本节整理同事 gwp 的改动（`_Workspace_/.playground/camera_gwp20260929.tar.gz` 对比得出），
+代码以 `configs/module_driver/` 覆盖层的形式进入本仓库。
+
+### 15.1 先认清对象：这个 .ko 是什么、源码在哪
+
+- 它**不是**内核里的 V4L2 `soc_camera` 框架（那个在 `kernel/.../media/{platform,i2c}/soc_camera/`，与本次无关）；
+  它是君正自己的相机/ISP 模块，源码在 `vendor/module_driver/soc/x2000_510/camera/`，
+  构建产物是 `build/module_driver/soc/x2000_510/camera/soc_camera.ko`。
+- 组成（权威清单 = 该目录 `Makefile` 的 `MODULE_NAME := soc_camera`）：
+  `camera.c`、`hal/{camera_gpio,csi,vic,dsys}.c`、`cim/cim.c`、`vic/vic_channel_mem.c`、
+  `isp/{isp,isp_sys,mscaler,isp_sensor,isp_tuning,vic_channel_tiziano}.c`、`isp/isp-core/`。
+- 参数与加载：`vendor/module_driver/package/soc/x2000_510/camera/camera.mk` 生成 `/module_driver/soc_camera.sh`
+  （参数来自产品配置 `MD_X2000_510_CAMERA_VIC*` 等键），开机由 `S11module_driver_default` 统一加载。
+- 取证方法：`build/module_driver/soc/x2000_510/camera/.soc_camera.o.cmd`（每个 .o 的完整源/头文件清单）、
+  `.soc_camera.ko.cmd`（链接命令）、`modinfo`（vermagic/depends）。
+
+### 15.2 修复一：ISP 掉电位没有被清掉（isp.c）
+
+原厂代码在 ISP 软复位里只把 `CPM_LCR.ISP0_PD / ISP1_PD` 置位，全驱动没有一处把它清 0，
+结果 ISP 寄存器块（0x13700000）读回恒为 0，**永远抓不到帧**。
+修法：软复位之后清 PD 位并 `udelay(20)`。
+
+### 15.3 修复二：mscaler 的三类问题（mscaler.c，共 7 处）
+
+1. 补两处漏掉的 `mutex_unlock()` —— 否则互斥锁永久泄漏，`mscaler_open/release` 会卡死；
+2. get_frame **持锁睡眠**：原代码在 `wait_event_*()` 期间一直持有 `data->lock`，而 `put_frame()`
+   （把缓冲还给驱动）需要同一把锁，free_list 一见底就互相卡死（实测 VI 帧率 29.8 → 14.9）。
+   修法：睡前解锁、醒来再锁，并检查 `is_stream_on` 后继续；
+3. 帧泄漏回收：新增 `mscaler_reclaim_leaked()`，只回收"卡在 `trans` 且不是 DMA 目标"的帧，
+   以及"卡在 `user` 超过 1.5 s"的帧（为此在 `hal/camera_sensor.h` 的 `struct frame_data` 里加了
+   `user_jiffies` 时间戳做老化判断，避免误回收在飞帧）；触发点是 get_frame 里每 2 s 检查一次
+   "既无空闲又无可用且 frame_counter==0"，以及连续 3 次超时；回收时打印 `recovered N leaked frame(s)`。
+
+可观测性：新增 `timeout_streak/recover_cnt/reclaim_cnt/last_reclaim` 计数，并在
+`/sys/isp1/mscaler/show_mscaler_info` 输出帧状态汇总（free/usable/user/trans/other + mem_cnt/frame_counter/dma_index）
+与 DMA 目标索引。现场判断标准：free/usable 有数、user/trans 不堆积，dmesg 不频繁出现 recovered。
+
+### 15.4 落地方式
+
+- 我们的改动放在 `configs/module_driver/soc/x2000_510/camera/{hal/camera_sensor.h,isp/isp.c,isp/mscaler.c}`，
+  由 `build.sh` 的 `sync_sources()` 覆盖进沙箱（与 `configs/kernel`、`configs/uboot` 完全同构），
+  `vendor/` 继续逐字节不变 —— 厂商升级时这三个文件就是"我们的 delta"。
+- 只重编驱动模块：`./build.sh module_driver`（内部就是 `make apps packages=module_driver`；
+  vendor 的 `apps` 目标会顺带把 `.ko` 装进 rootfs target 树），随后 `./build.sh fs` 重打文件系统。
+
+### 15.5 提醒：别人编好的 .ko 不要直接用
+
+同事那份 `soc_camera.ko` 的 vermagic 是 `5.10.186+ ...`（多一个 `+` = 他那边内核树是 dirty 的），
+我们是 `5.10.186 ...`；vermagic 不一致 `insmod` 会直接拒绝（`version magic ... should be ...`）。
+**永远在目标树里重编**，不要用 `insmod -f` 之类的手段绕。
+
+
 
 
 

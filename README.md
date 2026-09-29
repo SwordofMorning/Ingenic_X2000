@@ -63,7 +63,7 @@ phase 4/4  合并 fs_overlay/ 并重新打包 rootfs
 ```text
 build.sh             唯一构建入口
 products/            产品真源（darwin_v211.conf：配置四元组 / 介质 / 工具链 / overlay / 交付名）
-configs/             我们对厂商配置的覆盖（kernel HIGHMEM、uboot LPJ、build/Config.in）
+configs/             我们对厂商配置的覆盖（kernel HIGHMEM、uboot LPJ、build/Config.in、module_driver 相机模块修复）
 fs_overlay/          产品根文件系统层（common + <product>，见其 README）
 device/              烧录说明与 NAND 分区口径
 doc/.Markdown/       厂商文档（Markdown 版，1886 个文件；PDF 未导入）

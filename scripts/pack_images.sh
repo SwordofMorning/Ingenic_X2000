@@ -74,7 +74,46 @@ if [ -f "$USERS_TABLE" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 2) factory root password: products/<product>.conf -> /etc/shadow field 2
+# 2) strip, following buildroot's own target-finalize policy
+#    buildroot strips the target tree during its final pass, and the full
+#    "make all" flow runs that pass after the vendor packages. When we repack
+#    after a LATER package build (./build.sh module_driver, make apps), the
+#    freshly installed libraries and executables are still unstripped - that
+#    inflated the rootfs by about 5 MB once (libmedia.so, libavpu.so, the demo
+#    and test binaries). Reproducing the policy here makes the image
+#    independent of the build order.
+#    Policy (see buildroot/Makefile, STRIP_FIND_CMD):
+#      - strip executables (mode +x) and shared objects
+#      - never strip kernel modules (*.ko)
+#      - ld-*.so* and libpthread*.so* get debug symbols only
+# ---------------------------------------------------------------------------
+stripcmd=""
+# Kconfig strings are quoted ("mips-linux-gnu"), so strip the quotes; fall back to
+# any *-strip present in the buildroot host directory.
+prefix="$(cfg BR2_TOOLCHAIN_EXTERNAL_PREFIX | tr -d '"')"
+for c in "$HOST/bin/$prefix-strip" "$HOST/bin/mips-linux-gnu-strip" "$HOST/bin"/*-strip; do
+    [ -x "$c" ] && { stripcmd="$c"; break; }
+done
+
+if [ "$(cfg BR2_STRIP_strip)" = "y" ] && [ -x "$stripcmd" ] && command -v file >/dev/null 2>&1; then
+    log "stripping binaries (executables + shared libraries, keeping *.ko intact)"
+    find "$TARGET" -type f \( -perm /111 -o -name '*.so*' \) -not -name '*.ko' -print0 \
+        | xargs -0 -r file 2>/dev/null \
+        | grep -E ': *ELF ' | cut -d: -f1 \
+        | while IFS= read -r f; do
+              case "$f" in
+                  */ld-*.so*|*/libpthread*.so*)
+                      "$stripcmd" --strip-debug "$f" 2>/dev/null || true ;;
+                  *)
+                      "$stripcmd" -s "$f" 2>/dev/null || true ;;
+              esac
+          done
+else
+    log "WARNING: not stripping (strip=$stripcmd, BR2_STRIP_strip=$(cfg BR2_STRIP_strip), file=$(command -v file || echo missing))"
+fi
+
+# ---------------------------------------------------------------------------
+# 3) factory root password: products/<product>.conf -> /etc/shadow field 2
 #    Must run after mkusers (which owns the account list) and only ever touches
 #    the root line, so the daemon accounts keep their locked passwords.
 #    Mode 0600 root:root: only the daemons and login/passwd (all root) read it.
@@ -97,7 +136,7 @@ if [ -n "${ROOT_PASSWORD_HASH:-}" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 3) rootfs.squashfs (read-only fallback image)
+# 4) rootfs.squashfs (read-only fallback image)
 # ---------------------------------------------------------------------------
 if [ "$(cfg BR2_TARGET_ROOTFS_SQUASHFS)" = "y" ] && [ -x "$HOST/bin/mksquashfs" ]; then
     comp="gzip"
@@ -112,7 +151,7 @@ if [ "$(cfg BR2_TARGET_ROOTFS_SQUASHFS)" = "y" ] && [ -x "$HOST/bin/mksquashfs" 
 fi
 
 # ---------------------------------------------------------------------------
-# 4) rootfs.ubifs + rootfs.ubi (the writable root filesystem)
+# 5) rootfs.ubifs + rootfs.ubi (the writable root filesystem)
 # ---------------------------------------------------------------------------
 if [ "$(cfg BR2_TARGET_ROOTFS_UBIFS)" = "y" ] && [ -x "$HOST/sbin/mkfs.ubifs" ]; then
     leb="$(cfg BR2_TARGET_ROOTFS_UBIFS_LEBSIZE)"

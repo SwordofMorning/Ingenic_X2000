@@ -73,6 +73,7 @@ Targets:
   all                     full vendor build (uboot + buildroot + kernel + apps + images)
   uboot | kernel | buildroot | apps
                           build one module only
+  module_driver           rebuild only the kernel driver modules (module_driver)
   fs                      refresh the board root filesystem view (buildroot output)
   release                 collect flashable artifacts into build/release/<product>/
   check                   self-test the whole setup
@@ -86,6 +87,7 @@ Options:
 Examples:
   ./build.sh toolchain check && ./build.sh toolchain setup
   ./build.sh sync && ./build.sh config && ./build.sh all
+  ./build.sh module_driver && ./build.sh fs     # iterate on a driver module
   ./build.sh release
 EOF
 }
@@ -361,6 +363,17 @@ sync_sources() {
         done
     fi
 
+    # driver-module delta we maintain ourselves: configs/module_driver/ mirrors
+    # the layout of vendor/module_driver/ (soc/<soc>/<module>/...). Used for the
+    # camera module fixes we carry (docs/bringup_v211_fixes.md section 15); the
+    # vendor tree stays byte-identical, all our changes are visible as a diff
+    # between vendor/module_driver/... and configs/module_driver/...
+    if [ -d "$CONFIGS_DIR/module_driver" ]; then
+        info "overlaying configs/module_driver -> module_driver"
+        mkdir -p "$BUILD_DIR/module_driver"
+        rsync -a "$CONFIGS_DIR/module_driver/" "$BUILD_DIR/module_driver/"
+    fi
+
     link_toolchains
     info "sync done"
 }
@@ -402,15 +415,31 @@ do_config() {
 # End-func do_config
 
 ##
- # @brief Run a vendor make target inside the sandbox (no sync).
+ # @brief Run vendor make target(s) inside the sandbox (no sync).
  #
- # @param $1 vendor make target
+ # @param $@ vendor make targets/overrides (e.g. "apps packages=module_driver")
  #
 vendor_make_nosync() {
-    local target="$1"
-    ( cd "$BUILD_DIR/build" && make "$target" THREAD_ARG="-j$JOBS" )
+    ( cd "$BUILD_DIR/build" && make "$@" THREAD_ARG="-j$JOBS" )
 }
 # End-func vendor_make_nosync
+
+##
+ # @brief Rebuild the kernel driver modules only (the module_driver package).
+ #
+ # @note The vendor framework builds module_driver as one entry of its "apps"
+ #       target; overriding that target's package list reuses its make and
+ #       install hooks (the built .ko files are copied into the rootfs target
+ #       tree) while building nothing else. Used while iterating on a driver
+ #       module, e.g. the camera fixes carried in configs/module_driver/.
+ #
+do_module_driver() {
+    sync_sources
+    ensure_config
+    info "make apps packages=module_driver (jobs=$JOBS)"
+    vendor_make_nosync apps packages=module_driver
+}
+# End-func do_module_driver
 
 ##
  # @brief Pass a vendor make target through inside the sandbox.
@@ -837,6 +866,7 @@ case "$TARGET" in
     kernel)     do_vendor_make kernel ;;
     buildroot)  do_vendor_make buildroot ;;
     apps)       do_vendor_make apps ;;
+    module_driver) do_module_driver ;;
     fs)         do_fs ;;
     release)    do_release ;;
     check)      do_check ;;
