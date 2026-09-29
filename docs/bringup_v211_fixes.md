@@ -556,6 +556,31 @@ sshd: no hostkeys available -- exiting.
 发 ARP/探测包了，链路是通的，唯一缺的就是板子这边的地址（见第 2 节）。所以只要板子给出 169.254.x.x，
 Windows 直接就能 ping 通，无需 DHCP、无需静态配置、无需刷新。
 
+### 14.12 SSH 启动脚本整合：S50sshd → S80SSH
+
+第 14.11 节查到 0 字节主机密钥之后，把 SSH 的启动脚本彻底换成我们自己的，
+不再沿用 buildroot（以及更早的厂商适配）的 `S50sshd`：
+
+- 文件：`fs_overlay/common/etc/init.d/S80SSH`（buildroot 的 `etc/init.d/S50sshd` 进了 `prune.txt`）；
+- 为什么放到 S80：网络（S40/S60）已经就绪，SSH 起来时板子的地址和日志都已定型，
+  控制台上看到的就是最终状态；
+- 风格与 S60WiFi / S70USB 一致：Part I `Func_*`（一个函数一件事）+ Part III `main`，
+  带 doxygen 头注释；没有 Part II `API_*` 层，因为 SSH 没有"多步用户操作"那类需求。
+  三个脚本共享的设计准则：**依赖项要验证、能修就修并说明、报告真实结果**：
+  - 主机密钥按**可用性**判断（非空 + `ssh-keygen -l` 能解析），不可用的先删再重建，重建后再次校验；
+    失败时打印文件字节数与 `df -h /`，并提示是空间问题还是随机数问题；
+  - 启动前检查 sshd 依赖的文件与权限：`sshd_config` 不能组/其他可写、`/var/empty` 必须 root 所有、
+    `/run/sshd` 要存在 —— 不对就自动修正并打印；
+  - 启动用 `sshd -e`（错误打到控制台），失败明确报 `FAILED` 并提示 `S80SSH debug`；
+  - `status` 一次给全：进程、22 端口监听（直接读 `/proc/net/tcp`，不依赖 netstat）、密钥可用性、
+    配置权限与认证方式、privsep 属主、root 口令状态。
+- 动词：`start | stop | restart | status | keys | debug | authorized`
+  （`keys` 就是这次人工修密钥的自动化版本；`debug` = 前台 `sshd -e -d`；
+  `authorized` 保留"从可写分区安装公钥"的能力，虽然默认已关闭公钥认证）。
+- 好处：开机自愈（密钥坏了下一次启动或 `keys` 都能修好）、排错不靠猜（每条依赖都有检查与说明）、
+  与另外两个脚本同源同风格。
+
+
 
 
 

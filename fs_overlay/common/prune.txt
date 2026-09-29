@@ -29,7 +29,13 @@ etc/init.d/S44wifi_bcm_up
 # vendor SSH adaptation for a read-only root filesystem (APP_br_ssh is not set):
 # etc/ssh was a symlink into the data partition and /save held the real config
 # which S30cp_ssh copied at boot. This product uses a plain, writable /etc/ssh
-# (see fs_overlay/common/etc/ssh/sshd_config and etc/init.d/S50sshd).
+# (see fs_overlay/common/etc/ssh/sshd_config and etc/init.d/S80SSH).
 etc/ssh
 save
 etc/init.d/S30cp_ssh
+
+# buildroot's own start script for OpenSSH. It only tests whether the host key
+# files EXIST, so a zero-length key file (seen on this board: no RTC, freshly
+# seeded random pool) kept sshd dead on every boot. Replaced by our S80SSH,
+# which validates the keys and repairs what it can.
+etc/init.d/S50sshd

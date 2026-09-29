@@ -76,17 +76,21 @@ cat /etc/init.d/S4*wifi*         # 无线启动脚本
 - 串口：见第 3 节（3000000 8N1）。串口是唯一的"救砖"入口，建议先接好再烧录。
   注意当前 `etc/inittab` 的串口是 `respawn:-/bin/sh`，**不要求登录**（直接就是 root shell）。
 - 网络：`wlan0` 用 `S60WiFi connect <ssid> [pwd]` 联网（见 `docs/bringup_v211_fixes.md` 第 11 节），
-  或 USB RNDIS（`usb0`）直连。板子能 ping 通说明网络层没问题。
-- SSH：镜像内是 buildroot 的 **OpenSSH**（`sshd` + `ssh-keygen`），开机由 `S50sshd` 启动；
+  或 USB 网络直连（NCM 链路 `usbncm0` 是 169.254.9.168，见第 7 节）。板子能 ping 通说明网络层没问题。
+- SSH：镜像内是 buildroot 的 **OpenSSH**（`sshd` + `ssh-keygen`），由我们自己的 `S80SSH` 管理
+  （不再使用 buildroot/vendor 的 `S50sshd`，原因见 `docs/bringup_v211_fixes.md` 第 14.12 节）；
   认证方式为**口令**（`PubkeyAuthentication no`，板上不需要放任何密钥）：
 
   ```sh
   ssh root@<板子IP>        # 口令 cdjp123
   ```
 
-- 排错：`/etc/init.d/S50sshd status` 会报告 sshd 是否在跑、主机密钥数量、root 口令是否已设置；
-  仍失败就 `/usr/sbin/sshd -e -d` 前台运行看具体报错。
-  第四轮（SSH 起不来）的排查过程见 `docs/bringup_v211_fixes.md` 第 12 节，口令实现见第 13 节。
+- 排错与自检（都走 S80SSH）：
+  - `/etc/init.d/S80SSH status`：进程、22 端口监听、主机密钥是否**可用**、配置权限、
+    privsep 目录属主、root 口令状态，一次全给；
+  - 主机密钥坏了（历史故障：文件是 0 字节）不用手敲命令：`/etc/init.d/S80SSH keys` 重建；
+  - 起不来时 `/etc/init.d/S80SSH debug` 前台跑并打印 sshd 的完整调试输出。
+  历史排查记录见 `docs/bringup_v211_fixes.md` 第 12/13 节，脚本整合见第 14.12 节。
 
 ## 7. USB 直连：MTP 与 RNDIS
 
