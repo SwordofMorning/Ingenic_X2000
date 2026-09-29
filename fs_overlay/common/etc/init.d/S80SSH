@@ -65,6 +65,60 @@ log() { echo "[S80SSH] $*"; }
 # ---------------------------------------------------------------------------
 
 ##
+ # @brief True when the process is running.
+ #
+ # @note pidof, not "pgrep -x": busybox' -x compares the WHOLE command line, so
+ #       "pgrep -x sshd" never matches "/usr/sbin/sshd -e" and every check here
+ #       reported "not running" while the daemon was happily serving.
+ #
+ # @param $1 process name
+ #
+Func_running() {
+    pidof "$1" >/dev/null 2>&1
+}
+# End-func Func_running
+
+##
+ # @brief Permission string of a file/directory, e.g. "-rw-r--r--".
+ #
+ # @note Uses ls(1) instead of stat(1): busybox in this image is built without the
+ #       stat applet ("stat: not found"), which silently produced empty results.
+ #
+ # @param $1 path
+ #
+Func_perms() {
+    ls -ld "$1" 2>/dev/null | awk '{print $1}'
+}
+# End-func Func_perms
+
+##
+ # @brief True when group or other may write the given path.
+ #
+ # @note openssh refuses such a sshd_config ("Bad owner or permissions"), so the
+ #       check looks at the group-write (position 6) and other-write (position 9)
+ #       characters of the ls(1) permission string.
+ #
+ # @param $1 path
+ #
+Func_group_writable() {
+    case "$(Func_perms "$1")" in
+        ?????w*|????????w) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+# End-func Func_group_writable
+
+##
+ # @brief Owner of a path as "user:group" (empty when it does not exist).
+ #
+ # @param $1 path
+ #
+Func_owner() {
+    ls -ld "$1" 2>/dev/null | awk '{print $3":"$4}'
+}
+# End-func Func_owner
+
+##
  # @brief True when a host key file exists and actually holds a readable key.
  #
  # @param $1 path to a key (private) or public key file
@@ -120,14 +174,13 @@ Func_keys_ensure() {
  #       checked and corrected here instead of being trusted.
  #
 Func_config_check() {
-    local cfg="$SSH_DIR/sshd_config" m
+    local cfg="$SSH_DIR/sshd_config"
 
     if [ -f "$cfg" ]; then
-        m="$(stat -c %a "$cfg" 2>/dev/null)"
-        case "$m" in
-            600|640|644) ;;
-            *) log "fixing mode of $cfg: $m -> 644"; chmod 644 "$cfg" ;;
-        esac
+        if Func_group_writable "$cfg"; then
+            log "fixing permissions of $cfg ($(Func_perms "$cfg") -> 644)"
+            chmod 644 "$cfg"
+        fi
     else
         log "WARN: $cfg is missing, sshd will fall back to built-in defaults"
     fi
@@ -205,7 +258,7 @@ Func_start() {
  # @brief Stop the SSH server.
  #
 Func_stop() {
-    if ! pgrep -x sshd >/dev/null 2>&1; then
+    if ! Func_running sshd; then
         log "sshd is not running"
         return 0
     fi
@@ -214,7 +267,7 @@ Func_stop() {
     killall sshd 2>/dev/null
     sleep 1
 
-    if pgrep -x sshd >/dev/null 2>&1; then
+    if Func_running sshd; then
         log "WARN: sshd is still running"
         return 1
     fi
@@ -226,10 +279,10 @@ Func_stop() {
  # @brief Print everything a human needs to judge "can I log in?".
  #
 Func_status() {
-    local rc=0 m
+    local rc=0
 
-    if pgrep -x sshd >/dev/null 2>&1; then
-        log "process: running (pid $(pgrep -x sshd | head -1))"
+    if Func_running sshd; then
+        log "process: running (pid $(pidof sshd | cut -d' ' -f1))"
     else
         log "process: NOT running"
         rc=1
@@ -251,13 +304,13 @@ Func_status() {
     fi
 
     if [ -f "$SSH_DIR/sshd_config" ]; then
-        m="$(stat -c %a "$SSH_DIR/sshd_config" 2>/dev/null)"
-        log "config: $SSH_DIR/sshd_config mode $m, auth: $(grep -h -E '^(PasswordAuthentication|PubkeyAuthentication)' "$SSH_DIR/sshd_config" 2>/dev/null | tr '\n' ' ')"
+        log "config: $(Func_perms "$SSH_DIR/sshd_config") $(Func_owner "$SSH_DIR/sshd_config") $SSH_DIR/sshd_config"
+        log "auth: $(grep -h -E '^(PasswordAuthentication|PubkeyAuthentication)' "$SSH_DIR/sshd_config" 2>/dev/null | tr '\n' ' ')"
     else
         log "config: MISSING ($SSH_DIR/sshd_config)"
     fi
 
-    log "privsep: $(stat -c '%U:%G %a' "$PRIVSEP_DIR" 2>/dev/null) $PRIVSEP_DIR"
+    log "privsep: $(Func_owner "$PRIVSEP_DIR") $(Func_perms "$PRIVSEP_DIR") $PRIVSEP_DIR"
 
     case "$(awk -F: '$1=="root"{print $2}' "$SHADOW_FILE" 2>/dev/null)" in
         ''|'x'|'*'|'!'*) log "root password: NOT set (password login is impossible)" ;;

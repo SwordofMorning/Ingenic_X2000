@@ -107,5 +107,20 @@ cat /etc/init.d/S4*wifi*         # 无线启动脚本
   - 板端自查：`/etc/init.d/S70USB status`（会打印 os_desc 状态、compatible id 与 usb0 的 rx/tx 包数；
     rx 长期为 0 说明主机还没挂上 RNDIS 驱动）。
 - 为什么以前只有 MTP 能用、RNDIS 认不到：见 `docs/bringup_v211_fixes.md` 第 14 节（缺 Microsoft OS 描述符）。
+- **CDC-NCM 是默认链路**（Windows 11 / Linux / macOS），板子固定 `usbncm0 = 169.254.9.168/16`，
+  不给 DHCP：主机在无 DHCP 时会自己分配一个 `169.254.x.x`（APIPA），两边同一个 /16 直接互通。
+  **Windows 侧看到 `Autoconfiguration IPv4 Address 169.254.x.x` 就是正常状态**，不要去给它配静态 IP。
+  Windows 上直接 `ping 169.254.9.168`、`ssh root@169.254.9.168` 即可。
+- **主机上看不到任何 USB 设备时，先看线和口**（2026-09-29 现场踩过两次）：
+  - 板端自查一句就够：`/etc/init.d/S70USB status`，或直接看
+    `cat /sys/class/udc/13500000.otg/state` —— 显示 `not attached` 就是"控制器没看到主机的 VBUS/会话"，
+    和驱动、描述符、MTP 全都无关；
+  - 已知的两个物理原因：**用了 USB 延长线**（信号/供电劣化，实测直接把设备"弄没"）、
+    烧录后数据线没插回 `Micro-USB&Download` 口（cloner 用的也是这个口）；
+  - 换一根短的数据线、直插主机（台式机建议后置口）就能恢复；S70USB 现在会在启动时把结论直接打到控制台
+    （`host attached (state: ...)` 或 `WARN: no host on the Micro-USB&Download port - check the cable`）。
+- 板端→主机的 `ping` 可能不通，这是 Windows 防火墙默认丢弃入站 ICMP，不代表链路有问题：
+  判断链路更可靠的依据是 ARP 是否解析（`cat /proc/net/arp`，`usbncm0` 上应能看到主机的
+  `169.254.x.x` 与其 MAC）以及网卡收发计数是否在增长。
 
 
