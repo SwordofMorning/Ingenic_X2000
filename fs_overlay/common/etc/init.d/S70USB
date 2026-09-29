@@ -98,6 +98,17 @@ NCM_IP="${NCM_IP:-192.168.9.168}"
 NCM_NETMASK="${NCM_NETMASK:-255.255.255.0}"
 UDHCPD_NCM_CONF="${UDHCPD_NCM_CONF:-/etc/udhcpd_ncm.conf}"
 
+# Netdev names. The kernel's ifname attribute wants a TEMPLATE with exactly one
+# "%d" (gether_set_ifname() returns -EINVAL for anything else, see
+# drivers/usb/gadget/function/u_ether.c) and the index is substituted at
+# registration. Distinct templates are used on purpose: with the plain default
+# ("usb%d") the names would depend on the instantiation order, so the same
+# address would live on usb0 in one mode and on usb1 in another.
+NCM_IF="${NCM_IF:-usbncm0}"
+RNDIS_IF="${RNDIS_IF:-usbrndis0}"
+NCM_IF_TEMPLATE="${NCM_IF_TEMPLATE:-usbncm%d}"
+RNDIS_IF_TEMPLATE="${RNDIS_IF_TEMPLATE:-usbrndis%d}"
+
 # MTP backing store. /usr/data is the writable ubi volume (see
 # device/NAND_LAYOUT.md); it is created here if the mount script has not run.
 MTP_STORAGE="${MTP_STORAGE:-/usr/data}"
@@ -194,8 +205,12 @@ gadget_build() {
                 ;;
             ncm.usb0)
                 mkdir -p "$g/functions/ncm.usb0"
-                # fixed netdev name (the default is usb%d in creation order)
-                echo "usb1" > "$g/functions/ncm.usb0/ifname"
+                # name template: MUST contain exactly one %d (see the notes on
+                # NCM_IF_TEMPLATE above) - "usbncm1" would be rejected with
+                # EINVAL and the netdev would silently keep its default name,
+                # which is how the first version of this script ended up
+                # configuring an interface that did not exist.
+                echo "$NCM_IF_TEMPLATE" > "$g/functions/ncm.usb0/ifname"
                 # locally administered MAC pair (host <-> device)
                 echo "1a:55:89:b4:10:21" > "$g/functions/ncm.usb0/dev_addr"
                 echo "1a:55:89:b4:10:22" > "$g/functions/ncm.usb0/host_addr"
@@ -210,8 +225,8 @@ gadget_build() {
                 ;;
             rndis.usb0)
                 mkdir -p "$g/functions/rndis.usb0"
-                # fixed netdev name (the default is usb%d in creation order)
-                echo "usb0" > "$g/functions/rndis.usb0/ifname"
+                # name template, same rule as NCM above
+                echo "$RNDIS_IF_TEMPLATE" > "$g/functions/rndis.usb0/ifname"
                 # locally administered MAC pair (host <-> device)
                 echo "1a:55:89:b4:10:11" > "$g/functions/rndis.usb0/dev_addr"
                 echo "1a:55:89:b4:10:12" > "$g/functions/rndis.usb0/host_addr"
@@ -298,8 +313,8 @@ gadget_bind() {
     echo "$udc" > "$g/UDC"
     log "bound to UDC $udc"
 
-    [ "$with_ncm" = "1" ]   && bring_up_link usb1 "$NCM_IP"   "$NCM_NETMASK"   "$UDHCPD_NCM_CONF"
-    [ "$with_rndis" = "1" ] && bring_up_link usb0 "$RNDIS_IP" "$RNDIS_NETMASK" "$UDHCPD_USB_CONF"
+    [ "$with_ncm" = "1" ]   && bring_up_link "$NCM_IF"   "$NCM_IP"   "$NCM_NETMASK"   "$UDHCPD_NCM_CONF"
+    [ "$with_rndis" = "1" ] && bring_up_link "$RNDIS_IF" "$RNDIS_IP" "$RNDIS_NETMASK" "$UDHCPD_USB_CONF"
     return 0
 }
 # End-func gadget_bind
@@ -307,25 +322,40 @@ gadget_bind() {
 ##
  # @brief Give one gadget network link an address and (optionally) a DHCP server.
  #
- # @note The netdev only appears once the host enumerates the function, so this
- #       runs right after the UDC write with a short settle delay.
+ # @note The netdev is registered while the gadget binds, so wait for it and
+ #       report honestly when it does not show up: a silent failure here looks
+ #       exactly like a broken host driver (Windows: "media disconnected").
  #
- # @param $1 netdev name (usb0 for RNDIS, usb1 for NCM)
+ # @param $1 netdev name (see NCM_IF / RNDIS_IF)
  # @param $2 board address
  # @param $3 netmask
  # @param $4 udhcpd configuration file (skipped when it does not exist)
  #
 bring_up_link() {
     local ifc="$1" ip="$2" mask="$3" conf="$4"
+    local n=0
 
-    sleep 1
-    ifconfig "$ifc" "$ip" netmask "$mask" up 2>/dev/null \
-        || ip addr add "$ip"/24 dev "$ifc" 2>/dev/null
-    ifconfig "$ifc" up 2>/dev/null
-    if [ -f "$conf" ] && command -v udhcpd >/dev/null 2>&1; then
-        udhcpd "$conf" 2>/dev/null && log "udhcpd started on $ifc"
+    while [ ! -d "/sys/class/net/$ifc" ] && [ "$n" -lt 10 ]; do
+        sleep 1
+        n=$((n + 1))
+    done
+    if [ ! -d "/sys/class/net/$ifc" ]; then
+        log "ERROR: $ifc did not appear - check the function's ifname template (needs %d)"
+        return 1
     fi
-    log "$ifc up: $ip/24"
+
+    ifconfig "$ifc" "$ip" netmask "$mask" up 2>/dev/null \
+        || ip addr add "$ip"/24 dev "$ifc" 2>/dev/null \
+        || { log "ERROR: cannot configure $ifc"; return 1; }
+    ifconfig "$ifc" up 2>/dev/null
+
+    if [ -f "$conf" ] && command -v udhcpd >/dev/null 2>&1; then
+        udhcpd "$conf" 2>/dev/null && log "udhcpd started on $ifc" \
+            || log "WARN: udhcpd did not start on $ifc (check $conf)"
+    else
+        log "no DHCP config for $ifc, host needs a static address"
+    fi
+    log "$ifc up: $ip/24 (carrier $(cat "/sys/class/net/$ifc/carrier" 2>/dev/null))"
 }
 # End-func bring_up_link
 
@@ -373,7 +403,7 @@ status() {
         ls "$g/functions"
     done
     echo "--- network ---"
-    for d in usb0 usb1; do
+    for d in "$NCM_IF" "$RNDIS_IF"; do
         if [ -d "/sys/class/net/$d" ]; then
             echo "$d: $(cat /sys/class/net/$d/operstate 2>/dev/null) rx=$(cat /sys/class/net/$d/statistics/rx_packets 2>/dev/null) tx=$(cat /sys/class/net/$d/statistics/tx_packets 2>/dev/null) packets"
             ifconfig "$d" 2>/dev/null | sed -n '2p'

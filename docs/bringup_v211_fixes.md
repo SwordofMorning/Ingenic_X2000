@@ -488,6 +488,35 @@ class 02h/02h/FF + CDC 功能描述符，控制报文走 class 请求）。这�
   - `USB_REV` 升到 4（描述符布局又变了，Windows 需要新的设备实例）。
 - 交付含义：这一轮除了 `rootfs.ubi` **还要重烧 `xImage`**（内核变了），u-boot 不用动。
 
+### 14.10 NCM 首测暴露的问题：`ifname` 必须是带 `%d` 的模板
+
+现象：Windows 侧驱动绑定成功（"网络适配器 → UsbNcm Host Device" ✓），但该网卡一直
+"Media disconnected"、拿不到 IP。
+
+根因在板端：第一版脚本写的是 `echo "usb1" > functions/ncm.usb0/ifname`，而内核的
+`gether_set_ifname()`（`drivers/usb/gadget/function/u_ether.c`）要求名字里**恰好有一个 `%d`**：
+
+```c
+	/* Require exactly one %d, so binding will not fail with EEXIST. */
+	p = strchr(name, '%');
+	if (!p || p[1] != 'd' || strchr(p + 2, '%'))
+		return -EINVAL;
+```
+
+所以那次写入被拒（`-EINVAL`），NCM 网卡保留了默认名（该模式下即 `usb0`），脚本随后的
+`ifconfig usb1 ...` 全部落空 —— 而且被 `2>/dev/null` 吞掉了错误、日志里照样打印 "up"，
+从主机侧看就完全像一个"驱动挂了"的问题。
+
+修法：
+
+- 每个功能用各自的名字**模板**：`usbncm%d` → `usbncm0`，`usbrndis%d` → `usbrndis0`
+  （不用默认 `usb%d`：那样名字会随创建顺序变化，同一个地址会在不同模式下落到不同网卡上）；
+- `etc/udhcpd_ncm.conf` / `etc/udhcpd_usb.conf` 的 `interface` 行同步成 `usbncm0` / `usbrndis0`；
+- `bring_up_link()` 改成"等网卡出现（最多 10 秒）+ 失败必须报错"，不再静默成功。
+
+影响范围：**纯用户态**，只需重烧 `rootfs.ubi`（内核不用动）。
+
+
 
 
 
